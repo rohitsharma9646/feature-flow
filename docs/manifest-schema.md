@@ -19,6 +19,10 @@ makes phases composable, standalone-runnable, and resumable from disk.
     "<phase>": { "status": "pending|in_progress|complete", "artifact": "<relative path or null>" }
   },
   "signOff": { "required": true, "signed": false, "date": null },
+  "bugfix": {
+    "red":   { "command": "<test cmd>", "exit": 1, "evidence": "<failing output, pre-fix>" },
+    "green": { "command": "<test cmd>", "exit": 0, "evidence": "<passing output, post-fix>" }
+  },
   "artifacts": {
     "spec": "spec.md",
     "design": "design.md",
@@ -43,6 +47,10 @@ makes phases composable, standalone-runnable, and resumable from disk.
   phase produced, or `null` if it writes no file (e.g. explore may summarize inline).
 - **`signOff`**: feature track and escalated (`full`) bugfixes require sign-off before
   `/ff-implement` may write code. Lite bugfixes set `required: false`.
+- **`bugfix`** (bugfix track only): the test-first evidence. `/ff-implement` writes
+  `red` when the regression test fails pre-fix and `green` after the fix passes;
+  `/ff-verify` cites both for the RED→GREEN contract (AC11). A run with no `bugfix.red`
+  recorded was not done test-first and `/ff-verify` reports it incomplete.
 - **`artifacts`** maps logical names to file names. If a path is overridden via
   `.feature-flow.json` (`paths.spec` / `paths.plan`), the value here is the resolved
   path actually used, so resume and status read the real location.
