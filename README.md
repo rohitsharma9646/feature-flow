@@ -127,14 +127,14 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     AC4). Encoded in those 3 commands + `SKILL.md` + the spec template. **Recommend a quick
     smoke** (run `ff-design` on an unsigned spec → should STOP + route to clarify) in the next
     fresh-session batch; the implement gate (AC4) is already smoke-verified.
-  - **OPEN — escalated-bugfix sign-off is unwired (found 2026-06-11 reconciling #3, out of its
-    scope).** `ff-implement` routes a `full`-tier bug to `/feature-flow:ff-plan` "for sign-off,"
-    but `ff-plan`'s bugfix bullet neither **collects** nor **gates** sign-off, and `ff-diagnose`
-    writes a `Sign-off: no` line on `diagnosis.md` that nothing ever flips. So a full-tier bug's
-    sign-off has no actual collection point — `ff-implement`'s gate would block forever. Wire a
-    collection point (likely: `ff-diagnose` asks for sign-off when it sets `tier: full`, or
-    `ff-plan` collects it for bugfix as `ff-clarify` does for feature) + a gate. Separate from
-    the feature-track decision; needs its own small design pass.
+  - ~~**Escalated-bugfix sign-off was unwired** (found 2026-06-11 reconciling #3).~~ ✅ DONE —
+    decision: collect at **`ff-diagnose` (full tier)**, mirroring `ff-clarify`→spec→sign-off
+    (the bug's signed contract is the fix approach in `diagnosis.md`, not the task breakdown).
+    `ff-diagnose` now sets `signOff.required` by tier, collects sign-off in-place for `full`
+    (gating diagnose completion), and only routes to `ff-plan` once signed; `ff-plan`'s bugfix
+    bullet gates on the signed diagnosis and routes back to `ff-diagnose` if unsigned;
+    `ff-implement`'s routing hint corrected (`ff-diagnose`, not `ff-plan`); `SKILL.md` names the
+    collection point. **Pending live-smoke** (escalated-bug path) in the next batch.
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
   `ff-review`, the dispatched `ff-code-reviewer` agents each called the harness-native
   `advisor` tool (configured only by `settings.json > advisorModel`; injected into ALL

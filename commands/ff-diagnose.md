@@ -55,7 +55,9 @@ the answer is "proper fix only". If a hotfix is recommended, record what the pro
   to a `plan.md` + sign-off, exactly like the feature track. The Sign-off line reads `no`
   until the user signs off.
 
-Record `tier` in the manifest. When in doubt between lite and full, choose **full**.
+Record `tier` in the manifest. **Full** → set `signOff.required = true` (the diagnosis is the
+bug's signed contract and must be signed before a fix). **Lite** → `signOff.required = false`.
+When in doubt between lite and full, choose **full**.
 
 ## Write the artifact + update manifest
 
@@ -65,14 +67,26 @@ fix approach (hotfix-vs-proper + recommendation), fix surface, regression-test p
 `Tier:` line, and the Sign-off line (`no` for full / `n/a (lite)` for lite). Record the
 path in `artifacts.diagnosis`.
 
-Update the manifest: set `phases.diagnose = { status: "complete", artifact: "diagnosis.md" }`,
-`track: "bugfix"`, `tier`, bump `updatedAt`.
+Update the manifest: set `track: "bugfix"`, `tier`, `artifacts.diagnosis`, bump `updatedAt`.
+- **lite:** set `phases.diagnose = { status: "complete", artifact: "diagnosis.md" }` now.
+- **full:** leave `phases.diagnose.status = "in_progress"` until sign-off (next section).
+
+## Sign-off gate — full tier only (mirrors `/feature-flow:ff-clarify`)
+
+A **full**-tier diagnosis is the bug's signed contract, exactly like a feature `spec.md`.
+After writing `diagnosis.md`, **STOP: end your turn by explicitly asking the user to sign off
+on the fix approach.** Do **not** plan, implement, or mark sign-off yourself. When the user
+confirms (this or a later turn), set `signOff.signed = true` and `signOff.date`, update the
+diagnosis `User signed off:` line to `yes (<date>)`, and set
+`phases.diagnose = { status: "complete", artifact: "diagnosis.md" }`. A **lite** diagnosis
+needs no sign-off — its confirmed diagnosis is itself the gate.
 
 ## STOP — route by tier
 
 - **lite:** tell the user to run `/feature-flow:ff-implement` next (the confirmed diagnosis
   is the gate; the fix is **test-first** — failing regression test → RED → fix → GREEN).
-- **full:** tell the user to run `/feature-flow:ff-plan`, then sign off, then
-  `/feature-flow:ff-implement`. Do **not** mark sign-off yourself.
+- **full:** **only once the diagnosis is signed off** (above), tell the user to run
+  `/feature-flow:ff-plan` next, then `/feature-flow:ff-implement`. If it is not yet signed,
+  STOP at the sign-off ask — do **not** route forward.
 
 End your turn here. Do not plan, implement, or fix now.

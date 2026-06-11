@@ -30,6 +30,9 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
    - **bugfix:** if this is a `tier: lite` run, **STOP** — lite bugs skip planning; route
      the user to `/feature-flow:ff-implement` (the confirmed diagnosis is the gate). If no
      `diagnosis.md` exists, route to `/feature-flow:ff-diagnose`. Do not plan against nothing.
+     **Sign-off gate (full tier):** if `diagnosis.md` is not signed off (`signOff.signed !=
+     true` / `User signed off: no`), **STOP** and route to `/feature-flow:ff-diagnose` to record
+     sign-off — a full-tier fix requires a **signed** diagnosis (sign-off is collected there).
 3. Read the contract: **feature** → `spec.md` + `design.md`; **bugfix** → `diagnosis.md`.
    Set `phases.plan.status = "in_progress"`, bump `currentPhase`.
 

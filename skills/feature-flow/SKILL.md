@@ -72,8 +72,9 @@ Nothing in the harness fails closed — the gates are prose you must respect:
     **signed** `spec.md` (lock the WHAT before building the HOW) and route back to
     `/feature-flow:ff-clarify` on `Signed off: no` / `signOff.signed: false`.
   - **Escalated (`full`) bugfix:** the contract is `diagnosis.md` (there is no clarify or
-    design phase); sign-off gates `ff-plan` and `ff-implement`. Lite bugfixes need no sign-off
-    — a confirmed `diagnosis.md` is the gate.
+    design phase); sign-off is **collected at the end of `/feature-flow:ff-diagnose`** (mirroring
+    clarify) and gates `ff-plan` and `ff-implement`. Lite bugfixes need no sign-off — a
+    confirmed `diagnosis.md` is the gate.
   - `/feature-flow:ff-implement` is the hard backstop on every track: it writes **no** code until
     the track's gate is satisfied (AC4).
 - **Diagnosis gate (bugfix):** `/feature-flow:ff-implement` requires a confirmed `diagnosis.md`

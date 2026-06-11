@@ -33,8 +33,8 @@ work, and write **no** code until it passes.
   **If sign-off is `no` / `signed: false`, STOP immediately.** Tell the user:
 
   > Implementation is gated on sign-off. Sign off on the contract
-  > (`/feature-flow:ff-clarify` for a feature spec, `/feature-flow:ff-plan` for an escalated
-  > bug), then re-run `/feature-flow:ff-implement`.
+  > (`/feature-flow:ff-clarify` for a feature spec, `/feature-flow:ff-diagnose` for an escalated
+  > bug's diagnosis), then re-run `/feature-flow:ff-implement`.
 
 - **Bugfix `tier: lite` (AC13):** there is no separate sign-off; the gate is a **confirmed**
   `diagnosis.md` — reproduced + root cause + chosen fix approach. **If `diagnosis.md` is
