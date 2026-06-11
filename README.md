@@ -105,7 +105,23 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 - **Sign-off gate (AC1 gate):** ✅ VERIFIED. `/feature-flow:ff-clarify` wrote `spec.md`
   (binary acceptance criteria, `User signed off: no`) and STOPPED asking for sign-off;
   honored "don't sign off" by holding `clarify: in_progress` with nothing downstream.
-### Task 13 — bugfix track end to end (staged, handed off 2026-06-11)
+### Task 13 — bugfix track end to end (✅ COMPLETE, 2026-06-11)
+- **Smoked GREEN** against `/tmp/ff-sample` (planted bug `cli hi`→`hihi`, `cli.js:11`):
+  - **AC10** ✅ `/ff` classified bugfix → `manifest.track:bugfix`, `diagnosis.md`, **no** `design.md`.
+  - **AC11** ✅ test-first: `ff-implement` wrote the regression test first, captured RED
+    (`bugfix.red` exit 1, `'hihi' !== 'hi'`, 6/7) then GREEN (`bugfix.green` exit 0, 7/7);
+    `verify.md` maps RED→GREEN with real `node --test` output.
+  - **AC12** ✅ `diagnosis.md` named hotfix + proper + recommendation.
+  - **AC13-lite** ✅ tier `lite`, no separate sign-off; implement proceeded from the confirmed diagnosis.
+  - **advisor** ✅ 6 bugfix subagents, **0** advisor `tool_use`.
+- **🔩 Hardening encoded post-smoke (`7dcd082`):** the run executed **review→verify** (the
+  user's order), and `ff-verify` had to override its literal "never set `done` on bugfix"
+  rule because review was already complete. Now encoded: on bugfix, `ff-verify` sets `done`
+  if review is already complete, else hands off to review — mirrors `ff-review`. Both phases
+  converge on `done` in either order (consistent with AC2 standalone-command design). The
+  smoke itself proved order-independence.
+
+### Task 13 — staging notes (build + pre-smoke)
 - **Tasks 10–12 built:** `ff-diagnose` + `diagnosis.md` (hotfix-vs-proper, tiering);
   test-first bugfix mode in `ff-implement`/`ff-verify` (AC11 RED→GREEN via
   `manifest.bugfix.red/green`); track classification + routing in `/ff` (feature vs bugfix,
