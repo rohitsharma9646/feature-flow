@@ -17,9 +17,10 @@ no upstream artifact is required (cold-start safe).
 
 ## Manifest contract (follow exactly)
 
-1. **Resolve the run.** Read config: a repo-root `.feature-flow.json` (if present)
-   overrides `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`. Use `paths.base` (default
-   `.feature-flow`) as the sandbox root.
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous; cold-start derives a new slug from
+   `$ARGUMENTS`).
 2. **Read or create the manifest** at `<base>/<slug>/manifest.json` (schema:
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If `$ARGUMENTS` starts a new run,
    derive a short kebab `slug` from it, create the run dir, and write a manifest with

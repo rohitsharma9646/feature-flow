@@ -17,7 +17,9 @@ the chosen approach and rejected alternatives.
 
 ## Manifest contract
 
-1. Resolve config + manifest (as in `/feature-flow:ff-explore`).
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
 2. **Cold-start:** if no `spec.md` exists (per `artifacts.spec`), tell the user to run
    `/feature-flow:ff-clarify` first to produce a spec — do not invent requirements. Stop unless they
    explicitly ask you to design against an inline description in `$ARGUMENTS`.

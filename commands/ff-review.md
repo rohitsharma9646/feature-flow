@@ -16,8 +16,10 @@ Static review of the implemented change. Output: `review.md`.
 
 ## Manifest contract
 
-1. Resolve config + manifest. Read `reviewThreshold` (default 80) and `reviewerAgents`
-   (default 3).
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`. Read
+   `reviewThreshold` (default 80) and `reviewerAgents` (default 3).
 2. Set `phases.review.status = "in_progress"`, bump `currentPhase`.
 
 ## Cold-start

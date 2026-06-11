@@ -17,8 +17,9 @@ acceptance criteria and a sign-off block.
 
 ## Manifest contract
 
-1. Resolve config + manifest as in `/feature-flow:ff-explore` (read `.feature-flow.json` →
-   `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; locate `<base>/<slug>/manifest.json`).
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
 2. **Cold-start:** if no manifest exists, create one (`track: "feature"`); if no
    `explore.md` exists, tell the user `/feature-flow:ff-explore` usually runs first — offer to
    proceed using `$ARGUMENTS` as the request, or stop so they can explore.

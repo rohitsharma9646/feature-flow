@@ -18,7 +18,9 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 
 ## Manifest contract
 
-1. Resolve config + manifest (as in `/feature-flow:ff-explore`). Read `track`.
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`. Read `track`.
 2. **Cold-start, by track:**
    - **feature:** if no `design.md` exists, tell the user to run `/feature-flow:ff-design` first; if
      `spec.md` is also missing, route back to `/feature-flow:ff-clarify`. Do not plan against nothing.

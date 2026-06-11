@@ -19,8 +19,10 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
 
 ## Manifest contract
 
-1. Resolve config + manifest (read `.feature-flow.json` →
-   `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; locate `<base>/<slug>/manifest.json`).
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous; cold-start derives a new slug from the bug
+   report), then read its `manifest.json`.
 2. **Cold-start:** if no manifest exists, create one with `track: "bugfix"` (slug from the
    bug report). If a manifest exists with `track: "feature"`, this is the wrong track —
    tell the user and stop.

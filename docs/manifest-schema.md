@@ -55,6 +55,23 @@ makes phases composable, standalone-runnable, and resumable from disk.
   `.feature-flow.json` (`paths.spec` / `paths.plan`), the value here is the resolved
   path actually used, so resume and status read the real location.
 
+## Run resolution (how every command finds the run before reading the manifest)
+
+All commands resolve the target run the **same way** — this is the canonical rule; phase
+commands reference it instead of restating their own:
+
+1. **Resolve the base.** Read config (`.feature-flow.json` →
+   `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); use `paths.base` (default `.feature-flow`)
+   as the sandbox root.
+2. **Named run wins.** If `$ARGUMENTS` names a slug (or a run dir), use `<base>/<slug>/`.
+3. **Single run.** Otherwise, if exactly one run exists under `<base>/`, use it.
+4. **Several runs → most recent, but disambiguate when unclear.** If more than one run
+   exists, use the **most recently updated** (`updatedAt`). If that is genuinely ambiguous
+   (e.g. two updated at nearly the same time, or the request clearly points at a different
+   run), **ask the user which run** rather than guessing.
+5. **Cold-start / new run.** An entry or first-phase command starting fresh work instead
+   derives a new kebab `slug` from `$ARGUMENTS` and **creates** `<base>/<slug>/`.
+
 ## Rules every command MUST follow
 
 1. **Read the manifest first.** If absent, create it (set `slug`, `track`, `tier`,

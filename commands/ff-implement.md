@@ -18,8 +18,9 @@ Implements the planned work for **either track**. Branch on `manifest.track`:
 
 ## Manifest contract
 
-1. Resolve config + manifest (read `.feature-flow.json` →
-   `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; locate the run's `manifest.json`).
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
 2. Set `phases.implement.status = "in_progress"` only **after** the gate passes.
 
 ## Gate — STOP if the contract is not satisfied

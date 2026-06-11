@@ -101,10 +101,12 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     an un-winnable arms race. Robust ambient UX would require shadowing superpowers' skills in
     `~/.claude/skills/` (the coexistence path in the locked doctrine) — a separate, larger task if
     ever wanted.
-  - **Run resolution:** phase commands (`ff-verify`, `ff-design`, `ff-plan`, `ff-implement`,
-    `ff-review`) say only "resolve the manifest" — standardize on `ff-resume`/`ff-status`'s
-    rule (named slug → most-recently-updated → ask if ambiguous). Fine with one run; ambiguous
-    with several. (Commands already accept a slug arg as the escape hatch.)
+  - ~~**Run resolution:** phase commands say only "resolve the manifest" — standardize on
+    `ff-resume`/`ff-status`'s rule (named slug → most-recently-updated → ask if ambiguous).~~
+    ✅ DONE — canonical **Run resolution** rule defined once in `docs/manifest-schema.md`; all
+    8 phase commands (`ff-explore`/`ff-clarify`/`ff-design`/`ff-plan`/`ff-diagnose`/
+    `ff-implement`/`ff-review`/`ff-verify`) now reference it with identical phrasing instead of
+    each inventing its own. (Doc/prompt change — low risk, no fresh-session smoke required.)
   - ~~**Slash namespace:** audit bare `/ff*` → `/feature-flow:ff*`.~~ ✅ DONE (`fbb3134`).
   - ~~**Self-executing skill (Option A):** make the `feature-flow` skill START a run when it
     auto-triggers from a natural-language request (not just point at `/feature-flow:ff`), for

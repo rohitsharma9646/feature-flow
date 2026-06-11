@@ -17,8 +17,10 @@ declare "done" on reasoning alone.
 
 ## Manifest contract
 
-1. Resolve config + manifest. Set `phases.verify.status = "in_progress"`, bump
-   `currentPhase`.
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`. Set
+   `phases.verify.status = "in_progress"`, bump `currentPhase`.
 
 ## Cold-start
 
