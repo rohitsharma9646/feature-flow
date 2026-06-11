@@ -2,6 +2,6 @@
   "name": "feature-flow",
   "description": "Composable, durable, verifying workflow for feature development and bug fixing — two tracks, one spine, real verification.",
   "version": "0.1.0",
-  "author": { "name": "vt-claude-6", "email": "vt-claude-6@vtnetzwelt.com" },
+  "author": { "name": "Rohit Sharma", "email": "rohitsharma9646@gmail.com" },
   "license": "MIT"
 }
