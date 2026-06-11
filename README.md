@@ -35,11 +35,17 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     `/plugin marketplace add` does NOT persist (Claude may narrate "Installed" anyway).
   - TODO (Task 16): audit doc/prompt references that say bare `/ff` — confirm whether the
     unqualified alias resolves, else update them to `/feature-flow:ff`.
-- **⚠️ Dev-loop gotcha:** the install **copies** source into
-  `~/.claude/plugins/cache/feature-flow-dev/feature-flow/<version>/` (NOT a symlink). Editing
-  `~/feature-flow/` does not affect a running session until the cache is refreshed
-  (`/plugin marketplace update feature-flow-dev` + `/reload-plugins`, or reinstall). Always
-  re-verify the cached copy after a fix before re-smoking, or you'll test stale prompts.
+- **⚠️ Dev-loop refresh (verified):** the install **copies** source into
+  `~/.claude/plugins/cache/feature-flow-dev/feature-flow/<version>/` (NOT a symlink). After
+  editing `~/feature-flow/`, refresh the cache with **uninstall + reinstall** —
+  `claude plugin update` no-ops on an unchanged version (won't re-copy):
+  ```
+  claude plugin uninstall feature-flow@feature-flow-dev
+  claude plugin install   feature-flow@feature-flow-dev
+  ```
+  (drivable headlessly from a shell; stays enabled at user scope). Then **always** confirm
+  with `diff -rq ~/feature-flow/commands <cache>/commands` before re-smoking, and the user
+  must **fully restart** their Claude session to load the refreshed cache.
 - **AC1 (orchestrator scaffolds + gates):** ❌→🔧 First smoke FAILED: `/feature-flow:ff`
   produced no `.feature-flow/` sandbox, no manifest, no `spec.md`, and skipped the sign-off
   gate. Root cause (confirmed via artifact on disk): the session's **global
