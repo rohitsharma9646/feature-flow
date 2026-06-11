@@ -55,9 +55,11 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
 
 - **Feature track:** verify is the **terminal** phase. If all contract items pass, set
   `currentPhase = "done"`. **STOP** and report the run complete.
-- **Bugfix track:** verify is **not** terminal — `/ff-review` runs last. Do **not** set
-  `currentPhase = "done"` here; leave `currentPhase = "verify"`. **STOP**, report the
-  RED→GREEN result, and tell the user to run `/feature-flow:ff-review` next (the terminal
-  phase).
+- **Bugfix track:** review is the terminal phase, so the two can be run in either order —
+  converge on `done` only when **both** verify and review are complete:
+  - If `phases.review.status == "complete"` (review already ran) and verify passed, both
+    terminal phases are satisfied → set `currentPhase = "done"` and report the run complete.
+  - Otherwise review still has to run: leave `currentPhase = "verify"`, **STOP**, report the
+    RED→GREEN result, and tell the user to run `/feature-flow:ff-review` next.
 
 Report the verification result (pass/fail per contract item, with evidence) and end your turn.
