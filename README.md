@@ -20,7 +20,7 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 
 ## Smoke log
 
-### Task 9 — feature track end to end (in progress, 2026-06-11)
+### Task 9 — feature track end to end (✅ COMPLETE, 2026-06-11)
 - **On disk (necessary, not sufficient):** ✅ `known_marketplaces.json`
   (`feature-flow-dev` → directory source `/home/netzwelt/feature-flow`), `settings.json`
   `enabledPlugins["feature-flow@feature-flow-dev"]=true`, cache populated (10 cmds, 5 agents).
@@ -94,7 +94,10 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   directly; do not call `advisor`, spawn subagents, or invoke skills). Portable (harmless
   where advisor doesn't exist). The proper *global* fix would be a harness `<SUBAGENT-STOP>`
   guard on the advisor guidance — not config-fixable today; worth an Anthropic feature
-  request. Verify at the post-restart `ff-verify` (ff-test-runner should NOT call advisor).
+  request. **✅ Fix VERIFIED post-restart:** the 3 `ff-code-reviewer` agents re-dispatched by
+  the AC5 resume invoked only read-only discovery tools (Glob/Grep/Read) — **0** `advisor`
+  `tool_use` calls across all three subagent transcripts (the word "advisor" survives only as
+  the injected guidance + our own suppression directive).
 - **AC4 (implement refuses w/o sign-off):** ✅ VERIFIED. With `signOff.signed: false`,
   `/feature-flow:ff-implement` read the manifest + spec, refused to write code (verbatim
   gate message), and made **no** manifest changes — `cli.js` unmodified, `currentPhase`
@@ -102,4 +105,13 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 - **Sign-off gate (AC1 gate):** ✅ VERIFIED. `/feature-flow:ff-clarify` wrote `spec.md`
   (binary acceptance criteria, `User signed off: no`) and STOPPED asking for sign-off;
   honored "don't sign off" by holding `clarify: in_progress` with nothing downstream.
-- **AC5 (resume targets deleted phase):** _pending_
+- **AC5 (resume targets exactly the missing phase):** ✅ VERIFIED. Set-up: `review.md`
+  deleted on disk while the manifest still recorded `review: complete` **and**
+  `currentPhase: done`. After a full restart, `/feature-flow:ff-resume` detected the
+  **missing artifact** (not just trusting manifest status), re-entered at **review
+  specifically** — overriding the `done` currentPhase — re-dispatched the 3 `ff-code-reviewer`
+  agents, rewrote `review.md` (correctly dismissing two ≥-threshold convention nits against
+  the design record), and **stopped** (did not chain into verify/done). Resume keys off
+  artifact presence, exactly the intended semantic.
+- **✅ Feature track smoked GREEN end-to-end** (AC1, AC2, AC3, AC4, AC5, AC8, sign-off gate)
+  — Task 9 feature-track complete (2026-06-11).
