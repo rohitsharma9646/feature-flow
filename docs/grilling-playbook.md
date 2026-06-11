@@ -31,9 +31,11 @@ Surface 2–3 genuinely distinct *whats* that satisfy the need; let the user cho
 ## Beat 3 — Scope + examples→ACs (Example Mapping)
 Turn the chosen approach into concrete, testable behaviour.
 - State scope and explicit non-goals for the chosen approach.
-- For each rule/behaviour, write a concrete input→output example. Edge cases emerge as you try to
-  example each rule: empty/zero input, the boundary, the input that includes the feature itself,
-  repeated/duplicate input, the error path.
+- For each rule/behaviour, write a concrete input→output example. Then **walk the edge-archetype
+  checklist explicitly and, for each, either write an example AC or note why it does not apply** —
+  do not skip an archetype silently, because silence reads as "covered" when it isn't:
+  empty/zero input · the boundary · the input that includes the feature itself · **repeated/duplicate
+  input (the same flag/token passed more than once)** · the error path.
 - Each example becomes a binary acceptance criterion: "When <input>, <observable output>" — no
   judgement words ("good", "clean", "intuitive"); each checkable by a named action.
 
