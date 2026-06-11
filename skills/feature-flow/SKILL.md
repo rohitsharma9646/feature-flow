@@ -13,6 +13,8 @@ on-disk artifacts, so work is resumable and a dropped session is recoverable.
 
 - **Feature** — adding new behavior. Phases:
   `explore → clarify → design → plan → implement → review → verify`.
+  *clarify* challenges the premise (is this the right need?), weighs 2-3 problem-level solution
+  approaches, and locks testable acceptance criteria — it owns the WHAT; *design* owns the HOW.
 - **Bugfix** — restoring intended behavior in existing code. Phases (test-first):
   `diagnose → implement (write failing regression test → RED → fix → GREEN) → verify → review`.
 
