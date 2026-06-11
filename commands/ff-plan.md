@@ -1,12 +1,13 @@
 ---
-description: "[feature] Turn the spec + chosen design into a phased plan.md with an Outcome gate."
-argument-hint: "<run after /ff-design>"
+description: "[shared] Turn the contract (feature spec+design, or an escalated bug's diagnosis) into a phased plan.md with an Outcome gate."
+argument-hint: "<feature: after /ff-design | full-tier bug: after /ff-diagnose>"
 ---
 
-# /ff-plan — feature plan phase
+# /ff-plan — plan phase
 
-You are running the **plan** phase of the feature track. Output: `plan.md` with a
-populated Outcome gate.
+You are running the **plan** phase. Output: `plan.md` with a populated Outcome gate. This
+phase serves the **feature** track and **escalated (`tier: full`) bugfixes** — a trivial
+(`tier: lite`) bug skips planning and goes straight from `/ff-diagnose` to `/ff-implement`.
 
 > **Precedence — read first.** You are executing the feature-flow workflow. Its phases
 > REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
@@ -17,20 +18,28 @@ populated Outcome gate.
 
 ## Manifest contract
 
-1. Resolve config + manifest (as in `/ff-explore`).
-2. **Cold-start:** if no `design.md` exists, tell the user to run `/ff-design` first.
-   If `spec.md` is also missing, route them back to `/ff-clarify`. Do not plan against
-   nothing.
-3. Read `spec.md` and `design.md`. Set `phases.plan.status = "in_progress"`, bump
-   `currentPhase`.
+1. Resolve config + manifest (as in `/ff-explore`). Read `track`.
+2. **Cold-start, by track:**
+   - **feature:** if no `design.md` exists, tell the user to run `/ff-design` first; if
+     `spec.md` is also missing, route back to `/ff-clarify`. Do not plan against nothing.
+   - **bugfix:** if this is a `tier: lite` run, **STOP** — lite bugs skip planning; route
+     the user to `/feature-flow:ff-implement` (the confirmed diagnosis is the gate). If no
+     `diagnosis.md` exists, route to `/feature-flow:ff-diagnose`. Do not plan against nothing.
+3. Read the contract: **feature** → `spec.md` + `design.md`; **bugfix** → `diagnosis.md`.
+   Set `phases.plan.status = "in_progress"`, bump `currentPhase`.
 
 ## Do the work
 
-Write `plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`. Decompose the chosen
-design into bite-sized tasks, each with files-to-touch and a verification step. **Populate
-the Outcome gate** from the spec: spec path, acceptance criteria reference, and the
-current `signOff` state (`User signed off: <no | yes (date)>` — copy from the manifest,
-do not assume yes).
+Write `plan.md` from `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`. Decompose into bite-sized
+tasks, each with files-to-touch and a verification step:
+- **feature:** decompose the chosen design.
+- **bugfix (full):** decompose the diagnosis's fix approach into tasks, and make the **first
+  task the test-first regression test** (write it, capture RED) before the fix tasks — so the
+  plan preserves the AC11 order.
+
+**Populate the Outcome gate** from the contract: contract path (`spec.md` or `diagnosis.md`),
+acceptance-criteria / "bug no longer reproduces" reference, and the current `signOff` state
+(`User signed off: <no | yes (date)>` — copy from the manifest, do not assume yes).
 
 Resolve the plan path: if `paths.plan` is set in config, write there; else `<run dir>/plan.md`.
 Record it in `artifacts.plan`.
@@ -41,4 +50,4 @@ Set `phases.plan = { status: "complete", artifact: "<resolved plan path>" }`, bu
 `updatedAt`.
 
 **STOP.** Do not implement now. Tell the user to run `/feature-flow:ff-implement` next
-(which will refuse to write code until the spec is signed off), then end your turn.
+(which will refuse to write code until the contract is signed off), then end your turn.

@@ -86,5 +86,9 @@ Set `phases.implement = { status: "complete", artifact: null }` (code lives in t
 not the sandbox), bump `updatedAt`, `currentPhase = "implement"`. On the bugfix track,
 ensure the captured `bugfix.red` / `bugfix.green` evidence is recorded.
 
-**STOP.** Tell the user to run `/feature-flow:ff-review` next (then `/feature-flow:ff-verify`),
-and end your turn.
+**STOP** and hand off by track (the two tracks end in opposite order — match the manifest):
+- **feature:** run `/feature-flow:ff-review` next, then `/feature-flow:ff-verify` (verify is terminal).
+- **bugfix:** run `/feature-flow:ff-verify` next (to confirm RED→GREEN), then
+  `/feature-flow:ff-review` (review is terminal).
+
+End your turn.

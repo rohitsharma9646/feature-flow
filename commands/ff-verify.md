@@ -48,11 +48,16 @@ explicit `manual-unverified` line with a reason. If automated tests are absent, 
 run build/lint/smoke instead and never call a no-tests run a pass. On the bugfix track, a
 fix without a regression test (RED→GREEN evidence) is reported **incomplete**, not done.
 
-## Update manifest
+## Update manifest + hand off (order differs by track)
 
 **Use the Write tool** to write `verify.md`. Set
-`phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`. If all
-contract items pass, set `currentPhase = "done"`.
+`phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`.
 
-**STOP.** Report the verification result (pass/fail per contract item, with evidence) and
-end your turn.
+- **Feature track:** verify is the **terminal** phase. If all contract items pass, set
+  `currentPhase = "done"`. **STOP** and report the run complete.
+- **Bugfix track:** verify is **not** terminal — `/ff-review` runs last. Do **not** set
+  `currentPhase = "done"` here; leave `currentPhase = "verify"`. **STOP**, report the
+  RED→GREEN result, and tell the user to run `/feature-flow:ff-review` next (the terminal
+  phase).
+
+Report the verification result (pass/fail per contract item, with evidence) and end your turn.

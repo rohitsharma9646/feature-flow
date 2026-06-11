@@ -41,8 +41,15 @@ Consolidate findings (de-duplicate across agents) into `review.md` from
 issue, and a concrete fix. If nothing meets the threshold, record the "no high-confidence
 issues" summary — do not invent findings to look thorough.
 
-## Update manifest
+## Update manifest + hand off (order differs by track)
 
 Set `phases.review = { status: "complete", artifact: "review.md" }`, bump `updatedAt`.
 
-**STOP.** Tell the user to run `/feature-flow:ff-verify` next, then end your turn.
+- **Feature track:** review runs **before** verify. Leave `currentPhase = "review"` and
+  **STOP**, telling the user to run `/feature-flow:ff-verify` next.
+- **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
+  already passed (`phases.verify.status == "complete"`) and this review surfaced no blocking
+  issue, set `currentPhase = "done"`. **STOP** and report the run complete. If review found
+  a blocking issue, leave `currentPhase = "review"` and tell the user what to fix.
+
+End your turn.
