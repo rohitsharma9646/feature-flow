@@ -33,7 +33,9 @@ assistant) drive it — the user never has to know the command names:
 1. **Classify** feature vs bugfix (soft judgment). Ambiguous → ask once. Genuinely both →
    split (fix first, then feature), don't run a hybrid.
 2. **Read config** (`.feature-flow.json` → `config/defaults.json`) and **write the
-   `manifest.json`** with the resolved `track`.
+   `manifest.json`** with the resolved `track`. **If you are in plan mode**, the manifest
+   write is blocked — call `ExitPlanMode` first (the feature-flow run IS the plan), or tell
+   the user to exit plan mode and re-run. See Step 2.0 in `commands/ff.md`.
 3. **Run the first phase only** — feature → `explore` inline; bugfix → hand off to the gated
    `diagnose` phase — then **STOP** at the phase boundary. Do not chain forward.
 

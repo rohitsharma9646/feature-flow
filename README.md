@@ -80,10 +80,15 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   no-tests run." Verdict DONE, nothing `manual-unverified`. Matches an independent
   `node --test` (6/6). **Feature spine verified end-to-end.**
 - **🔩 Task 16 hardening backlog (found during smoke):**
-  - **Plan mode:** `/feature-flow:ff` should auto-`ExitPlanMode` or document "don't run in plan mode."
-    Re-confirmed in the Task-15 smoke: a plan-mode session produced a native plan-mode plan
-    (`~/.claude/plans/…`) instead of a feature-flow run, because feature-flow's first action is
-    a manifest write that plan mode forbids.
+  - **Plan mode:** ✏️ FIX WRITTEN (pending live-smoke) — `commands/ff.md` Step 2.0 + `SKILL.md`
+    entry step 2 now detect plan mode and call `ExitPlanMode` before the first manifest write
+    (the feature-flow run IS the plan), with a fallback to telling the user to exit plan mode.
+    Re-confirmed broken in the Task-15 smoke: a plan-mode session produced a native plan-mode
+    plan (`~/.claude/plans/…`) instead of a feature-flow run, because feature-flow's first
+    action is a manifest write that plan mode forbids. **Must be live-smoked** in a fresh
+    plan-mode session (the explicit-command path) before claiming done. Residual: phase
+    commands (`ff-clarify` … `ff-verify`) also write and would hit the same block if invoked
+    directly in plan mode — smaller follow-up, not yet handled.
   - **Ambient/auto-trigger coexistence (Task-15 finding):** Option A's self-executing skill does
     **not** reliably win the trigger slot against the user's global superpowers framework — in a
     normal-mode session, `superpowers:test-driven-development` was selected instead of feature-flow

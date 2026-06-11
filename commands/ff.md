@@ -33,6 +33,18 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
 
 ## Step 2 — Set up the run (do this now)
 
+0. **If you are in plan mode, leave it before writing anything.** feature-flow's first real
+   action is writing `manifest.json` to disk, and **plan mode forbids non-plan writes** — a
+   session that stays in plan mode falls back to a generic native plan (e.g. a file under
+   `~/.claude/plans/`) instead of starting a run. Classifying (Step 1) and reading config
+   below are read-only and fine in plan mode, but **before the first Write you MUST exit plan
+   mode**: call **`ExitPlanMode`** with a one-line plan — *"Start a feature-flow `<track>`
+   run: write the manifest, run the `<first phase>` phase, then stop at the next gate."* —
+   and once the user approves, continue with the writes below. The feature-flow workflow **is**
+   the plan (its own explore/clarify/design/plan phases and sign-off gate provide the review),
+   so do **not** also present a generic native plan or write to `~/.claude/plans/`. (If
+   `ExitPlanMode` is unavailable in your environment, **STOP** and tell the user to exit plan
+   mode — shift+tab — then re-run `/feature-flow:ff`.)
 1. **Read config:** a repo-root `.feature-flow.json` overrides
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`. Resolve `paths.base` (default
    `.feature-flow`), agent counts, models, `reviewThreshold`, and toggles.
