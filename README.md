@@ -67,8 +67,20 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   - **TODO (real follow-up):** feature-flow should handle plan mode explicitly (auto
     `ExitPlanMode` in `/ff`, or an edge-case note "don't run in plan mode"). Hit immediately
     in practice → worth a spec edge case + Task 16 hardening.
-- **AC2 (standalone commands r/w manifest):** _pending_
-- **AC3 (ff-test-runner really executes):** _pending_
+- **AC2 (standalone commands r/w manifest):** ✅ VERIFIED. `ff-clarify`, `ff-design`,
+  `ff-plan`, and `ff-implement` each ran standalone, read the manifest + upstream artifacts
+  on their own, updated state, and stopped — phase-by-phase continuity works.
+- **AC3 (ff-test-runner really executes):** _pending (ff-verify step)._
+- **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
+  `ff-review`, the dispatched `ff-code-reviewer` agents each called the harness-native
+  `advisor` tool (configured only by `settings.json > advisorModel`; injected into ALL
+  subagents of ALL plugins regardless of their `tools:` grant — there is no config toggle
+  to exclude subagents). Multiplies cost/latency across a parallel fleet. **Fix:** each of
+  feature-flow's 5 agents now opens with a *leaf-subagent* directive (return findings
+  directly; do not call `advisor`, spawn subagents, or invoke skills). Portable (harmless
+  where advisor doesn't exist). The proper *global* fix would be a harness `<SUBAGENT-STOP>`
+  guard on the advisor guidance — not config-fixable today; worth an Anthropic feature
+  request. Verify at the post-restart `ff-verify` (ff-test-runner should NOT call advisor).
 - **AC4 (implement refuses w/o sign-off):** ✅ VERIFIED. With `signOff.signed: false`,
   `/feature-flow:ff-implement` read the manifest + spec, refused to write code (verbatim
   gate message), and made **no** manifest changes — `cli.js` unmodified, `currentPhase`
