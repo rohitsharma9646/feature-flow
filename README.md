@@ -69,5 +69,11 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     in practice → worth a spec edge case + Task 16 hardening.
 - **AC2 (standalone commands r/w manifest):** _pending_
 - **AC3 (ff-test-runner really executes):** _pending_
-- **AC4 (implement refuses w/o sign-off):** _pending_
+- **AC4 (implement refuses w/o sign-off):** ✅ VERIFIED. With `signOff.signed: false`,
+  `/feature-flow:ff-implement` read the manifest + spec, refused to write code (verbatim
+  gate message), and made **no** manifest changes — `cli.js` unmodified, `currentPhase`
+  stayed `clarify`. Gate is checked before the cold-start path, so this is a true gate hit.
+- **Sign-off gate (AC1 gate):** ✅ VERIFIED. `/feature-flow:ff-clarify` wrote `spec.md`
+  (binary acceptance criteria, `User signed off: no`) and STOPPED asking for sign-off;
+  honored "don't sign off" by holding `clarify: in_progress` with nothing downstream.
 - **AC5 (resume targets deleted phase):** _pending_
