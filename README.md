@@ -86,6 +86,11 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     rule (named slug → most-recently-updated → ask if ambiguous). Fine with one run; ambiguous
     with several. (Commands already accept a slug arg as the escape hatch.)
   - ~~**Slash namespace:** audit bare `/ff*` → `/feature-flow:ff*`.~~ ✅ DONE (`fbb3134`).
+  - ~~**Self-executing skill (Option A):** make the `feature-flow` skill START a run when it
+    auto-triggers from a natural-language request (not just point at `/feature-flow:ff`), for
+    a superpowers-style ambient UX while keeping the short-pointer hook (AC9).~~ ✅ DONE
+    (`a6c6b72`) — to be verified live in the Task-15 smoke (say "add a …" without typing the
+    command; confirm the run auto-starts).
   - **Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
     (SKILL says implement-only; clarify's hand-off implies before design).
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
