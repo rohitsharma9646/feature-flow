@@ -46,19 +46,27 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   (drivable headlessly from a shell; stays enabled at user scope). Then **always** confirm
   with `diff -rq ~/feature-flow/commands <cache>/commands` before re-smoking, and the user
   must **fully restart** their Claude session to load the refreshed cache.
-- **AC1 (orchestrator scaffolds + gates):** ❌→🔧 First smoke FAILED: `/feature-flow:ff`
-  produced no `.feature-flow/` sandbox, no manifest, no `spec.md`, and skipped the sign-off
-  gate. Root cause (confirmed via artifact on disk): the session's **global
-  CLAUDE.md/superpowers `writing-plans` workflow hijacked** the command — output landed in
-  `~/.claude/plans/add-a-greeting-flag-*.md`, not the sandbox. feature-flow's soft
-  *descriptive* gate prose lost to standing instructions that *command* a different flow.
-  **Fix applied (pending re-smoke):** (1) every command now opens with a **precedence
-  block** asserting feature-flow phases REPLACE generic brainstorming/writing-plans and
-  forbidding writes to `~/.claude/plans`/`docs/plans`; (2) orchestrator `ff.md` rewritten
-  **phase-by-phase** — setup + explore + hard STOP, no chaining (user-chosen design,
-  revises the signed-off "chain end-to-end" behavior); (3) imperative "use the Write tool"
-  for every artifact + explicit STOP at each phase boundary; (4) `ff-resume` no longer
-  "continues the chain."
+- **AC1 (orchestrator scaffolds + stops):** ✅ VERIFIED (2nd smoke). `/feature-flow:ff`
+  created `.feature-flow/add-greeting-flag/manifest.json` (`track: feature`, `tier: full`,
+  `signOff.signed: false`, `currentPhase: explore`), wrote `explore.md` with real codebase
+  analysis, marked only explore complete, and **stopped** — no writes to `~/.claude/plans/`,
+  repo untouched.
+  - **TRUE root cause of the 1st-smoke failure: PLAN MODE was active.** Plan mode forbids
+    all writes except the plan file in `~/.claude/plans/` and "supersedes any other
+    instructions" — so the manifest/`explore.md` writes were *impossible*, and the only
+    writable file was the one feature-flow forbids. (My initial "writing-plans workflow
+    hijack" diagnosis was wrong; the artifact on disk was a plan-mode plan file.)
+  - **The fix still mattered:** before it, the model silently produced a plan; after, the
+    precedence block made it **conflict-aware** — it detected the plan-mode↔feature-flow
+    incompatibility, asked, then recovered via `ExitPlanMode` and ran the real phase.
+  - **Fix shipped:** (1) **precedence block** on every command (feature-flow phases REPLACE
+    generic brainstorming/writing-plans; no writes to `~/.claude/plans`/`docs/plans`);
+    (2) `ff.md` rewritten **phase-by-phase** (setup + explore + hard STOP, no chaining —
+    user-chosen, revises the signed-off "chain end-to-end" behavior); (3) imperative Write
+    + explicit STOP at each boundary; (4) `ff-resume` no longer chains.
+  - **TODO (real follow-up):** feature-flow should handle plan mode explicitly (auto
+    `ExitPlanMode` in `/ff`, or an edge-case note "don't run in plan mode"). Hit immediately
+    in practice → worth a spec edge case + Task 16 hardening.
 - **AC2 (standalone commands r/w manifest):** _pending_
 - **AC3 (ff-test-runner really executes):** _pending_
 - **AC4 (implement refuses w/o sign-off):** _pending_
