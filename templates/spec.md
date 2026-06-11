@@ -13,9 +13,17 @@
 <What you will see / the observable end-state when this is done. Describe behavior,
 not implementation.>
 
-## Assumptions
+## Solution approaches considered
 
-- <Assumption surfaced so it can be challenged before building.>
+<The 2-3 problem-level approaches to the underlying need that were weighed (different *whats*,
+not architectures). For each: a one-line trade-off. Mark the **chosen** one and why, and each
+**rejected** one and why. If the feature genuinely had one sane approach, write "one obvious
+approach: <X>" and say why no alternatives applied.>
+
+## Assumptions (WHAT-changing)
+
+- <Only assumptions that would change scope or acceptance criteria if wrong. Deep risk,
+  pre-mortem, and quality concerns (security/UX/a11y/cost/perf) belong in design/review, not here.>
 
 ## Constraints
 
