@@ -127,6 +127,14 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     AC4). Encoded in those 3 commands + `SKILL.md` + the spec template. **Recommend a quick
     smoke** (run `ff-design` on an unsigned spec → should STOP + route to clarify) in the next
     fresh-session batch; the implement gate (AC4) is already smoke-verified.
+  - **OPEN — escalated-bugfix sign-off is unwired (found 2026-06-11 reconciling #3, out of its
+    scope).** `ff-implement` routes a `full`-tier bug to `/feature-flow:ff-plan` "for sign-off,"
+    but `ff-plan`'s bugfix bullet neither **collects** nor **gates** sign-off, and `ff-diagnose`
+    writes a `Sign-off: no` line on `diagnosis.md` that nothing ever flips. So a full-tier bug's
+    sign-off has no actual collection point — `ff-implement`'s gate would block forever. Wire a
+    collection point (likely: `ff-diagnose` asks for sign-off when it sets `tier: full`, or
+    `ff-plan` collects it for bugfix as `ff-clarify` does for feature) + a gate. Separate from
+    the feature-track decision; needs its own small design pass.
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
   `ff-review`, the dispatched `ff-code-reviewer` agents each called the harness-native
   `advisor` tool (configured only by `settings.json > advisorModel`; injected into ALL

@@ -46,7 +46,10 @@ makes phases composable, standalone-runnable, and resumable from disk.
 - **`phases.<phase>.artifact`** is the relative path (within the run dir) of the artifact that
   phase produced, or `null` if it writes no file (e.g. explore may summarize inline).
 - **`signOff`**: feature track and escalated (`full`) bugfixes require sign-off before
-  `/ff-implement` may write code. Lite bugfixes set `required: false`.
+  `/ff-implement` may write code. Lite bugfixes set `required: false`. The manifest's
+  `signOff.signed` is **authoritative**; the `User signed off:` line in `spec.md`/`diagnosis.md`
+  is a human-readable **mirror**. If the two ever disagree (a hand-edit or partial resume),
+  trust the manifest and offer to re-sync the document line.
 - **`bugfix`** (bugfix track only): the test-first evidence. `/ff-implement` writes
   `red` when the regression test fails pre-fix and `green` after the fix passes;
   `/ff-verify` cites both for the RED→GREEN contract (AC11). A run with no `bugfix.red`
