@@ -8,6 +8,13 @@ argument-hint: "<run after /ff-plan, with spec signed off>"
 Builds the feature (feature track). The bugfix branch is added later; for now this
 command serves the **feature** track.
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, run only this one phase,
+> then STOP.
+
 ## Manifest contract
 
 1. Resolve config + manifest (read `.feature-flow.json` →
@@ -20,10 +27,11 @@ On the **feature** track (and any escalated `tier: full` run), read `signOff` fr
 manifest and the `User signed off:` line in `spec.md`. **If sign-off is `no` / `signed:
 false`, STOP immediately.** Do not write any code. Tell the user:
 
-> Implementation is gated on sign-off. Run `/ff-clarify` and sign off on the spec, then
-> re-run `/ff-implement`.
+> Implementation is gated on sign-off. Run `/feature-flow:ff-clarify` and sign off on the
+> spec, then re-run `/feature-flow:ff-implement`.
 
-Only proceed when sign-off is recorded.
+Only proceed when sign-off is recorded. **End your turn here when gated** — do not write
+code, and do not fall back to a generic implement/plan workflow.
 
 ## Cold-start
 
@@ -42,5 +50,7 @@ toggles:
 ## Update manifest
 
 Set `phases.implement = { status: "complete", artifact: null }` (code lives in the repo,
-not the sandbox), bump `updatedAt`, `currentPhase = "implement"`. Next: `/ff-review`,
-then `/ff-verify`.
+not the sandbox), bump `updatedAt`, `currentPhase = "implement"`.
+
+**STOP.** Tell the user to run `/feature-flow:ff-review` next (then `/feature-flow:ff-verify`),
+and end your turn.

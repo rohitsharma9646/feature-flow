@@ -8,6 +8,13 @@ argument-hint: "<run after /ff-clarify; or your choice among presented options>"
 You are running the **design** phase of the feature track. Output: `design.md` recording
 the chosen approach and rejected alternatives.
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP.
+
 ## Manifest contract
 
 1. Resolve config + manifest (as in `/ff-explore`).
@@ -29,7 +36,9 @@ choose (or confirm your recommendation). Do not pick silently.
 
 ## Write the artifact + update manifest
 
-Write `design.md` from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`: chosen approach,
-rejected alternatives + why, component map, data flow, risks. Set
+**Use the Write tool** to write `design.md` from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`:
+chosen approach, rejected alternatives + why, component map, data flow, risks. Set
 `phases.design = { status: "complete", artifact: "design.md" }`, bump `updatedAt`.
-Next phase: `/ff-plan`.
+
+**STOP.** Do not plan or implement now. Tell the user to run `/feature-flow:ff-plan` next,
+then end your turn.

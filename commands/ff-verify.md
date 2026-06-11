@@ -8,6 +8,13 @@ argument-hint: "<run after /ff-implement (and /ff-review)>"
 Real, executed verification. Output: `verify.md` with evidence. This phase refuses to
 declare "done" on reasoning alone.
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP.
+
 ## Manifest contract
 
 1. Resolve config + manifest. Set `phases.verify.status = "in_progress"`, bump
@@ -40,5 +47,9 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
 
 ## Update manifest
 
-Set `phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`. If
-all contract items pass, set `currentPhase = "done"`.
+**Use the Write tool** to write `verify.md`. Set
+`phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`. If all
+contract items pass, set `currentPhase = "done"`.
+
+**STOP.** Report the verification result (pass/fail per contract item, with evidence) and
+end your turn.

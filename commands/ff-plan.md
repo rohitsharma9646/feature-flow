@@ -8,6 +8,13 @@ argument-hint: "<run after /ff-design>"
 You are running the **plan** phase of the feature track. Output: `plan.md` with a
 populated Outcome gate.
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP.
+
 ## Manifest contract
 
 1. Resolve config + manifest (as in `/ff-explore`).
@@ -31,5 +38,7 @@ Record it in `artifacts.plan`.
 ## Update manifest
 
 Set `phases.plan = { status: "complete", artifact: "<resolved plan path>" }`, bump
-`updatedAt`. Next phase: `/ff-implement` (which will refuse to write code until the spec
-is signed off).
+`updatedAt`.
+
+**STOP.** Do not implement now. Tell the user to run `/feature-flow:ff-implement` next
+(which will refuse to write code until the spec is signed off), then end your turn.

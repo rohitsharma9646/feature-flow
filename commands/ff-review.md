@@ -7,6 +7,13 @@ argument-hint: "<run after /ff-implement>"
 
 Static review of the implemented change. Output: `review.md`.
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP.
+
 ## Manifest contract
 
 1. Resolve config + manifest. Read `reviewThreshold` (default 80) and `reviewerAgents`
@@ -37,4 +44,5 @@ issues" summary — do not invent findings to look thorough.
 ## Update manifest
 
 Set `phases.review = { status: "complete", artifact: "review.md" }`, bump `updatedAt`.
-Next: `/ff-verify`.
+
+**STOP.** Tell the user to run `/feature-flow:ff-verify` next, then end your turn.

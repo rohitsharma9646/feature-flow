@@ -5,6 +5,12 @@ argument-hint: "[slug, if more than one run exists]"
 
 # /ff-resume — resume a run
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Re-enter the one incomplete phase, run it, then STOP.
+
 ## Do the work
 
 1. Resolve `paths.base` from config. Find the run dir (named slug in `$ARGUMENTS`, else the
@@ -19,5 +25,6 @@ argument-hint: "[slug, if more than one run exists]"
    Re-enter at the first phase whose artifact is absent. If you must, reconstruct a minimal
    manifest from what's on disk before continuing.
 4. Announce the resume point and the reason (which artifact was missing/incomplete), then
-   run that phase's logic and continue the chain. Honor all gates (sign-off, design choice)
-   exactly as a fresh run would.
+   run **only that one phase** to completion, honoring its gates (sign-off, design choice)
+   exactly as a fresh run would. **STOP** at the end and tell the user the next command —
+   do **not** chain forward through the remaining phases yourself.

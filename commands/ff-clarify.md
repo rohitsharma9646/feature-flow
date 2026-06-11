@@ -8,6 +8,13 @@ argument-hint: "<answers to clarifying questions, or run after /ff-explore>"
 You are running the **clarify** phase of the feature track. Output: a `spec.md` with
 acceptance criteria and a sign-off block.
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP.
+
 ## Manifest contract
 
 1. Resolve config + manifest as in `/ff-explore` (read `.feature-flow.json` →
@@ -32,11 +39,15 @@ write there; otherwise `<run dir>/spec.md`. Record the resolved path in the mani
 
 ## Sign-off gate (required)
 
-The spec must end with `User signed off: no`. **End your turn by explicitly asking the
-user to sign off.** When they confirm, set `signOff.signed = true` and `signOff.date`,
-and update the spec's Sign-off line to `yes (<date>)`. Do not mark sign-off yourself.
+The spec must end with `User signed off: no`. Write `spec.md` with the Write tool, then
+**STOP: end your turn by explicitly asking the user to sign off.** Do not design, plan, or
+implement, and do not mark sign-off yourself. When the user confirms (this or a later
+turn), set `signOff.signed = true` and `signOff.date`, and update the spec's Sign-off line
+to `yes (<date>)`.
 
-## Update manifest
+## Update manifest (after sign-off)
 
-Set `phases.clarify = { status: "complete", artifact: "<resolved spec path>" }`,
-`signOff.required = true`, bump `updatedAt`. Next phase: `/ff-design`.
+Once sign-off is recorded, set
+`phases.clarify = { status: "complete", artifact: "<resolved spec path>" }`,
+`signOff.required = true`, bump `updatedAt`. Then **STOP** and tell the user to run
+`/feature-flow:ff-design` next.

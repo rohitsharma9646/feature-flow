@@ -8,6 +8,13 @@ argument-hint: "<feature request, or run after /ff sets up the manifest>"
 You are running the **explore** phase of the feature track. This is the entry phase;
 no upstream artifact is required (cold-start safe).
 
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP.
+
 ## Manifest contract (follow exactly)
 
 1. **Resolve the run.** Read config: a repo-root `.feature-flow.json` (if present)
@@ -33,6 +40,9 @@ feature will live, what to reuse, constraints discovered, and open questions for
 
 ## Write the artifact + update manifest
 
-Write the findings summary to `<run dir>/explore.md`. Set
+**Use the Write tool** to write the findings summary to `<run dir>/explore.md`. Set
 `phases.explore = { status: "complete", artifact: "explore.md" }`, bump `updatedAt`.
-Tell the user the next phase is `/ff-clarify`.
+
+**STOP.** Explore is the only phase you run here. Tell the user: *"Explore complete —
+findings in `explore.md`. Run `/feature-flow:ff-clarify` next."* Then end your turn — do
+not begin clarify yourself.
