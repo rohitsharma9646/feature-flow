@@ -28,16 +28,46 @@ acceptance criteria and a sign-off block.
 
 ## Do the work
 
-Ask the user a small, **organized** set of clarifying questions (group them: scope,
-behavior, edge cases, non-goals, constraints). Wait for answers. Don't over-ask — only
-what genuinely shapes the spec.
+**Your one job — the invariant: lock the WHAT** — the right problem, the chosen solution
+approach, and testable acceptance criteria. Everything below serves that. Anything that is not
+WHAT is routed elsewhere, **never added here**:
 
-When you have answers, write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`,
-filling Problem, Expected outcome, Assumptions, Constraints, Edge cases, Non-goals, and
-binary **Acceptance criteria**. Resolve the spec path per the `artifacts` note in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if `paths.spec` is set it is a **directory**
-— write `<paths.spec>/<slug>.md` (create the dir if needed); otherwise `<run dir>/spec.md`.
-Record the resolved path in the manifest's `artifacts.spec`.
+| Concern | Home |
+|---|---|
+| **WHAT** — problem, solution options, scope, acceptance criteria | **this phase** |
+| **HOW** — architecture, technical risk, migration, pre-mortem | `/feature-flow:ff-design` |
+| **HOW-WELL** — security, UX, accessibility, cost, performance | `/feature-flow:ff-review` |
+
+Run an **adaptive interrogation over this 4-beat floor** — probe the murkiest / highest-value
+beat next, dig on shallow answers, and skip what is already obvious from `explore.md` or the
+request. Don't over-ask. The technique *how-to* for each beat lives in
+`${CLAUDE_PLUGIN_ROOT}/docs/grilling-playbook.md` — read it and follow it.
+
+1. **Premise** — anchor to the real underlying need, not the feature as phrased (The Mom Test;
+   one "why" probe on a shallow answer).
+2. **Solution options** — for non-trivial work, surface 2–3 distinct *problem-level* approaches
+   to the need, weigh them lightly, recommend, and have the user pick. These are different
+   *whats*, **not** architectures (that is `ff-design`). One genuinely obvious approach → say so,
+   don't invent alternatives.
+3. **Scope + examples→ACs** — set scope / non-goals for the chosen approach; drive its behaviours
+   into concrete input→output examples (Example Mapping) so edge cases fall out; each example
+   becomes a binary acceptance criterion.
+4. **Assumptions that change the WHAT** — surface only assumptions that would alter the spec.
+   Deep risk / pre-mortem and quality dimensions are **not** clarify's job (see the router above).
+
+Then write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`, filling Problem, Expected
+outcome, **Solution approaches considered** (chosen + rejected, each justified), Scope, Edge
+cases, Non-goals, the WHAT-changing **Assumptions**, and binary **Acceptance criteria**. Resolve
+the spec path per the `artifacts` note in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if
+`paths.spec` is set it is a **directory** — write `<paths.spec>/<slug>.md` (create the dir if
+needed); otherwise `<run dir>/spec.md`. Record the resolved path in the manifest's
+`artifacts.spec`.
+
+**Red-team your own draft before sign-off** (one discipline, not a checklist): re-read the spec
+against the invariant — is the problem the real need? is the chosen approach the best of the
+options? is every AC binary and checkable? any WHAT-changing assumption left implicit? — then
+revise, or ask the user the questions that survive. The how-to is in the playbook. Then proceed
+to the sign-off gate below.
 
 ## Sign-off gate (required)
 
