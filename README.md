@@ -71,6 +71,15 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   `ff-plan`, and `ff-implement` each ran standalone, read the manifest + upstream artifacts
   on their own, updated state, and stopped — phase-by-phase continuity works.
 - **AC3 (ff-test-runner really executes):** _pending (ff-verify step)._
+- **🔩 Task 16 hardening backlog (found during smoke):**
+  - **Plan mode:** `/ff` should auto-`ExitPlanMode` or document "don't run in plan mode."
+  - **Run resolution:** phase commands (`ff-verify`, `ff-design`, `ff-plan`, `ff-implement`,
+    `ff-review`) say only "resolve the manifest" — standardize on `ff-resume`/`ff-status`'s
+    rule (named slug → most-recently-updated → ask if ambiguous). Fine with one run; ambiguous
+    with several. (Commands already accept a slug arg as the escape hatch.)
+  - **Slash namespace:** audit any doc/prompt references to bare `/ff*` → `/feature-flow:ff*`.
+  - **Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
+    (SKILL says implement-only; clarify's hand-off implies before design).
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
   `ff-review`, the dispatched `ff-code-reviewer` agents each called the harness-native
   `advisor` tool (configured only by `settings.json > advisorModel`; injected into ALL
