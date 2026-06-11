@@ -31,6 +31,12 @@ the chosen approach and rejected alternatives.
 
 ## Do the work
 
+> **Boundary with clarify.** `ff-clarify` already locked the *what* — the underlying need, the
+> chosen problem-level approach, and the acceptance criteria. Your job is the *how*: the
+> architecture that builds that chosen approach, plus technical risk / pre-mortem (the HOW lane).
+> Do **not** re-open the solution choice; if the chosen approach itself looks wrong, STOP and send
+> the user back to `/feature-flow:ff-clarify` rather than silently substituting a different *what*.
+
 Dispatch `architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each
 committed to a distinct focus so the options are genuinely different:
 - **minimal** — smallest change that satisfies the spec.
