@@ -31,10 +31,13 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     a freshly-installed plugin (`/feature-flow:ff` stays "Unknown command"). Confirmed by Anthropic's
     `plugin-dev > command-development` skill ("Command not appearing → Restart Claude Code").
   - **Commands invoke under the namespace `/feature-flow:<cmd>`** (e.g. `/feature-flow:ff`),
-    not bare `/feature-flow:ff`. Run BOTH install steps first; a bare `/plugin install` without a succeeded
+    NOT bare `/ff`. Per the Claude Code docs, plugin commands are **always** namespaced —
+    there is no bare-name form, no collision-only fallback, and no frontmatter alias. Run
+    BOTH install steps first; a bare `/plugin install` without a succeeded
     `/plugin marketplace add` does NOT persist (Claude may narrate "Installed" anyway).
-  - TODO (Task 16): audit doc/prompt references that say bare `/feature-flow:ff` — confirm whether the
-    unqualified alias resolves, else update them to `/feature-flow:ff`.
+  - ✅ DONE (Task 16, `fbb3134`): audited + namespaced all 59 doc/prompt references that
+    said bare `/ff*` → `/feature-flow:ff*`. Confirmed authoritatively that the unqualified
+    form does not resolve.
 - **⚠️ Dev-loop refresh (verified):** the install **copies** source into
   `~/.claude/plugins/cache/feature-flow-dev/feature-flow/<version>/` (NOT a symlink). After
   editing `~/feature-flow/`, refresh the cache with **uninstall + reinstall** —
@@ -82,7 +85,7 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     `ff-review`) say only "resolve the manifest" — standardize on `ff-resume`/`ff-status`'s
     rule (named slug → most-recently-updated → ask if ambiguous). Fine with one run; ambiguous
     with several. (Commands already accept a slug arg as the escape hatch.)
-  - **Slash namespace:** audit any doc/prompt references to bare `/feature-flow:ff*` → `/feature-flow:ff*`.
+  - ~~**Slash namespace:** audit bare `/ff*` → `/feature-flow:ff*`.~~ ✅ DONE (`fbb3134`).
   - **Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
     (SKILL says implement-only; clarify's hand-off implies before design).
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
