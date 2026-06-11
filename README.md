@@ -105,6 +105,26 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 - **Sign-off gate (AC1 gate):** ✅ VERIFIED. `/feature-flow:ff-clarify` wrote `spec.md`
   (binary acceptance criteria, `User signed off: no`) and STOPPED asking for sign-off;
   honored "don't sign off" by holding `clarify: in_progress` with nothing downstream.
+### Task 13 — bugfix track end to end (staged, handed off 2026-06-11)
+- **Tasks 10–12 built:** `ff-diagnose` + `diagnosis.md` (hotfix-vs-proper, tiering);
+  test-first bugfix mode in `ff-implement`/`ff-verify` (AC11 RED→GREEN via
+  `manifest.bugfix.red/green`); track classification + routing in `/ff` (feature vs bugfix,
+  ask-once, split-if-both).
+- **🔧 Pre-smoke advisor review caught a coherence bug (fixed `5c11d68`):** the bugfix track
+  is spec'd `diagnose→implement→verify→**review**` (review terminal), but the phase handoffs
+  executed `review→verify` (`ff-implement` routed to review-then-verify; `ff-verify` set the
+  run `done`) — contradicting the spec, schema, and `ff-resume`. Per a user decision
+  (conform to the signed-off spec), `ff-implement`/`ff-verify`/`ff-review` are now
+  **track-aware** (bugfix ends verify→review, review sets `done`), and `ff-plan` is now
+  **bugfix-aware** (reads `diagnosis.md` for full-tier bugs; routes lite bugs straight to
+  implement). Grep/`plugin validate` could not have caught this — only cross-file reasoning.
+- **Smoke pending:** needs a fresh session. Sample repo pre-staged with a planted bug
+  (`cli <word>` echoes twice; `cli.js:11`) that the 6/6-green suite does NOT cover — forcing
+  the flow to write a real regression test (AC11). Handoff:
+  `~/.claude/handoffs/2026-06-11T09-16-12Z-feature-flow-task13-bugfix-smoke.md`.
+
+### Task 9 (feature track) — detail
+
 - **AC5 (resume targets exactly the missing phase):** ✅ VERIFIED. Set-up: `review.md`
   deleted on disk while the manifest still recorded `review: complete` **and**
   `currentPhase: done`. After a full restart, `/feature-flow:ff-resume` detected the
