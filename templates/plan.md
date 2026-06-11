@@ -9,7 +9,7 @@
 to specific ACs; the final task verifies all of them.
 **User signed off:** <no | yes (date)>
 
-> No task executes while sign-off is "no". At completion, `/ff-verify` checks the
+> No task executes while sign-off is "no". At completion, `/feature-flow:ff-verify` checks the
 > result against the spec's acceptance criteria — not just the task list.
 
 ## Tasks

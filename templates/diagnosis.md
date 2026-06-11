@@ -59,6 +59,6 @@ code and pass after the fix. Name the test file/path and the assertion that pins
 **User signed off:** no | yes (<date>) | n/a (lite)
 
 > **Tier gate.** On the **full** tier (non-trivial bug) this must read `yes (<date>)` before
-> `/ff-implement` writes a fix — same gate as a feature `spec.md`. On the **lite** tier
+> `/feature-flow:ff-implement` writes a fix — same gate as a feature `spec.md`. On the **lite** tier
 > (trivial/obvious bug) this reads `n/a (lite)`: a *confirmed* diagnosis (reproduced + root
 > cause + chosen approach) is itself the gate; no separate sign-off is required.

@@ -1,9 +1,9 @@
 ---
 description: "[shared] Fan out read-only reviewers at the configured threshold and consolidate into review.md."
-argument-hint: "<run after /ff-implement>"
+argument-hint: "<run after /feature-flow:ff-implement>"
 ---
 
-# /ff-review — review phase
+# /feature-flow:ff-review — review phase
 
 Static review of the implemented change. Output: `review.md`.
 

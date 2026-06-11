@@ -1,6 +1,6 @@
 ---
 name: feature-flow
-description: Use when developing a non-trivial feature or fixing a bug and you want a durable, resumable, verified workflow. Runs two tracks (feature: explore→clarify→design→plan→implement→review→verify; bugfix test-first: diagnose→failing-regression-test→fix→verify→review) over on-disk artifacts with real executed verification. Triggers on "build a feature", "add X", "fix this bug", "/ff", or any request that benefits from gated, recoverable, evidence-backed development.
+description: Use when developing a non-trivial feature or fixing a bug and you want a durable, resumable, verified workflow. Runs two tracks (feature: explore→clarify→design→plan→implement→review→verify; bugfix test-first: diagnose→failing-regression-test→fix→verify→review) over on-disk artifacts with real executed verification. Triggers on "build a feature", "add X", "fix this bug", "/feature-flow:ff", or any request that benefits from gated, recoverable, evidence-backed development.
 ---
 
 # feature-flow
@@ -16,11 +16,11 @@ on-disk artifacts, so work is resumable and a dropped session is recoverable.
 - **Bugfix** — restoring intended behavior in existing code. Phases (test-first):
   `diagnose → implement (write failing regression test → RED → fix → GREEN) → verify → review`.
 
-`/ff "<request>"` classifies the request and runs the matching track, pausing at human
+`/feature-flow:ff "<request>"` classifies the request and runs the matching track, pausing at human
 gates. If a request is genuinely both, split it: fix first, then feature — don't run a
-hybrid. Every phase is also runnable standalone (`/ff-explore`, `/ff-clarify`,
-`/ff-design`, `/ff-plan`, `/ff-diagnose`, `/ff-implement`, `/ff-review`, `/ff-verify`),
-plus `/ff-status` and `/ff-resume`.
+hybrid. Every phase is also runnable standalone (`/feature-flow:ff-explore`, `/feature-flow:ff-clarify`,
+`/feature-flow:ff-design`, `/feature-flow:ff-plan`, `/feature-flow:ff-diagnose`, `/feature-flow:ff-implement`, `/feature-flow:ff-review`, `/feature-flow:ff-verify`),
+plus `/feature-flow:ff-status` and `/feature-flow:ff-resume`.
 
 ## The manifest is the shared state
 
@@ -34,13 +34,13 @@ from which artifacts exist on disk.
 
 Nothing in the harness fails closed — the gates are prose you must respect:
 
-- **Sign-off gate:** on the feature track (and escalated bugfixes), `/ff-implement` does
+- **Sign-off gate:** on the feature track (and escalated bugfixes), `/feature-flow:ff-implement` does
   **not** write code until `spec.md` is signed off. If it reads `Signed off: no`, stop and
-  route back to `/ff-clarify`.
-- **Diagnosis gate (bugfix):** `/ff-implement` requires a confirmed `diagnosis.md`
+  route back to `/feature-flow:ff-clarify`.
+- **Diagnosis gate (bugfix):** `/feature-flow:ff-implement` requires a confirmed `diagnosis.md`
   (reproduced + root cause + chosen fix approach). An unreproduced bug never proceeds to a
   fix — guessing a fix for an unconfirmed bug is forbidden.
-- **Verification gate:** `/ff-verify` refuses "done" unless every contract item has a
+- **Verification gate:** `/feature-flow:ff-verify` refuses "done" unless every contract item has a
   `pass` or an explicit `manual-unverified` line, backed by **real executed** test output
   from `ff-test-runner`. A bugfix without a RED→GREEN regression test is incomplete.
 

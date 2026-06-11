@@ -1,9 +1,9 @@
 ---
 description: "[shared] Implement the planned work: feature from plan.md (sign-off gated), or a test-first bugfix from diagnosis.md (RED→fix→GREEN)."
-argument-hint: "<feature: after /ff-plan + sign-off | bugfix: after /ff-diagnose>"
+argument-hint: "<feature: after /feature-flow:ff-plan + sign-off | bugfix: after /feature-flow:ff-diagnose>"
 ---
 
-# /ff-implement — implementation phase
+# /feature-flow:ff-implement — implementation phase
 
 Implements the planned work for **either track**. Branch on `manifest.track`:
 - **feature** → build the feature from `plan.md` (sign-off gated).
@@ -46,8 +46,8 @@ implement/plan workflow.
 ## Cold-start
 
 - **Feature:** if there is no `plan.md` (or no `spec.md`), route to the prior phase
-  (`/ff-plan` → `/ff-design` → `/ff-clarify`) rather than implementing against nothing.
-- **Bugfix:** if there is no `diagnosis.md`, route to `/ff-diagnose`.
+  (`/feature-flow:ff-plan` → `/feature-flow:ff-design` → `/feature-flow:ff-clarify`) rather than implementing against nothing.
+- **Bugfix:** if there is no `diagnosis.md`, route to `/feature-flow:ff-diagnose`.
 
 ## Do the work — feature track
 
@@ -67,11 +67,11 @@ if the bug escalated to `tier: full`. Then, **in this exact order**:
    regression-test plan).
 2. **Run it and capture RED** — it MUST fail against the current, pre-fix code. Record the
    real failing output (command, exit status, failing assertion) into the manifest under
-   `bugfix.red` so `/ff-verify` can cite it.
+   `bugfix.red` so `/feature-flow:ff-verify` can cite it.
 3. **Apply the minimal fix** per `diagnosis.md`'s chosen approach (root-cause unless a
    hotfix was explicitly chosen) — touching only the fix surface named in the diagnosis.
 4. **Run the test again and capture GREEN** — record the passing output under `bugfix.green`.
-5. Hand both the RED and GREEN evidence forward to `/ff-verify`.
+5. Hand both the RED and GREEN evidence forward to `/feature-flow:ff-verify`.
 
 > **Never apply the fix before the test has been observed failing.** Once the fix is in
 > place the pre-fix RED state is unrecoverable and AC11 (RED→GREEN evidence) cannot be met.

@@ -3,7 +3,7 @@ description: "Print the current feature-flow run: track, tier, phase, per-phase 
 argument-hint: "[slug, if more than one run exists]"
 ---
 
-# /ff-status — run status
+# /feature-flow:ff-status — run status
 
 ## Do the work
 
@@ -19,4 +19,4 @@ argument-hint: "[slug, if more than one run exists]"
    - which artifacts exist on disk under the run dir
 
 Do not modify anything — status is read-only. If the manifest is missing or corrupt, say
-so and suggest `/ff-resume`, which can infer state from the artifacts present.
+so and suggest `/feature-flow:ff-resume`, which can infer state from the artifacts present.

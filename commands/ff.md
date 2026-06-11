@@ -3,7 +3,7 @@ description: "Entry point: classify the request (feature vs bugfix), set up a du
 argument-hint: "\"<feature request or bug report>\""
 ---
 
-# /ff — classify, set up a run, and start it
+# /feature-flow:ff — classify, set up a run, and start it
 
 `$ARGUMENTS` is the request. This command **classifies the request, initializes a durable
 run, and starts only the first phase**, then STOPS and hands you to the next phase. It does

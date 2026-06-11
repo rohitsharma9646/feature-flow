@@ -1,9 +1,9 @@
 ---
 description: "[bugfix] Reproduce + root-cause a bug (fan-out: ff-diagnostician), decide hotfix-vs-proper, write diagnosis.md."
-argument-hint: "<the bug report, or run after /ff on a bug>"
+argument-hint: "<the bug report, or run after /feature-flow:ff on a bug>"
 ---
 
-# /ff-diagnose — bugfix diagnose phase
+# /feature-flow:ff-diagnose — bugfix diagnose phase
 
 You are running the **diagnose** phase of the bugfix track. Output: a `diagnosis.md` with
 reproduction, root cause, a hotfix-vs-proper fix decision, and a tier/sign-off gate. This

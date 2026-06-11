@@ -1,9 +1,9 @@
 ---
 description: "[shared] Run the project's tests/build/lint via ff-test-runner and map the contract to pass/fail with evidence."
-argument-hint: "<run after /ff-implement (and /ff-review)>"
+argument-hint: "<run after /feature-flow:ff-implement (and /feature-flow:ff-review)>"
 ---
 
-# /ff-verify — verification phase
+# /feature-flow:ff-verify — verification phase
 
 Real, executed verification. Output: `verify.md` with evidence. This phase refuses to
 declare "done" on reasoning alone.
@@ -37,7 +37,7 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   `manual-unverified` (with a reason), each backed by evidence from the test runner.
 - **Bugfix track:** confirm the bug no longer reproduces, and that the regression test
   shows RED (pre-fix) → GREEN (post-fix). Cite the `bugfix.red` / `bugfix.green` evidence
-  captured by `/ff-implement` for the pre-fix failure, and the test runner's fresh run for
+  captured by `/feature-flow:ff-implement` for the pre-fix failure, and the test runner's fresh run for
   the post-fix pass. If the manifest has no `bugfix.red` evidence, the fix was not done
   test-first — report it **incomplete** (the RED state can no longer be reconstructed).
 

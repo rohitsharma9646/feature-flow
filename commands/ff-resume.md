@@ -3,7 +3,7 @@ description: "Re-enter an interrupted feature-flow run at the first incomplete p
 argument-hint: "[slug, if more than one run exists]"
 ---
 
-# /ff-resume — resume a run
+# /feature-flow:ff-resume — resume a run
 
 > **Precedence — read first.** You are executing the feature-flow workflow. Its phases
 > REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do

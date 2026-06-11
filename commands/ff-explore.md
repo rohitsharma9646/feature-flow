@@ -1,9 +1,9 @@
 ---
 description: "[feature] Explore the codebase to inform a feature: fan out read-only explorers, summarize findings into the run."
-argument-hint: "<feature request, or run after /ff sets up the manifest>"
+argument-hint: "<feature request, or run after /feature-flow:ff sets up the manifest>"
 ---
 
-# /ff-explore — feature exploration phase
+# /feature-flow:ff-explore — feature exploration phase
 
 You are running the **explore** phase of the feature track. This is the entry phase;
 no upstream artifact is required (cold-start safe).
@@ -24,7 +24,7 @@ no upstream artifact is required (cold-start safe).
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If `$ARGUMENTS` starts a new run,
    derive a short kebab `slug` from it, create the run dir, and write a manifest with
    `track: "feature"`, `tier: "full"`, empty `phases`, `signOff.required: true`.
-   If a manifest already exists (e.g. `/ff` created it), use it.
+   If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
 3. Set `phases.explore.status = "in_progress"`, bump `currentPhase = "explore"`.
 
 ## Do the work

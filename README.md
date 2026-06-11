@@ -16,7 +16,7 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 > feature-flow@feature-flow-dev` (drivable headlessly; this is what actually persisted).
 > The interactive slash-command pair above is NOT yet certified: one attempt narrated
 > "Installed" without persisting (the `marketplace add` step had not succeeded). Re-run both
-> cleanly and confirm `/ff` resolves before canonizing the slash-command path.
+> cleanly and confirm `/feature-flow:ff` resolves before canonizing the slash-command path.
 
 ## Smoke log
 
@@ -28,12 +28,12 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   restart**, `/help` lists all 11 commands + the `feature-flow` skill. Two operational facts:
   - **A full process restart is required** after install — plugins load at process startup,
     so a new conversation / `/clear` / new tab in an already-running process will NOT pick up
-    a freshly-installed plugin (`/ff` stays "Unknown command"). Confirmed by Anthropic's
+    a freshly-installed plugin (`/feature-flow:ff` stays "Unknown command"). Confirmed by Anthropic's
     `plugin-dev > command-development` skill ("Command not appearing → Restart Claude Code").
   - **Commands invoke under the namespace `/feature-flow:<cmd>`** (e.g. `/feature-flow:ff`),
-    not bare `/ff`. Run BOTH install steps first; a bare `/plugin install` without a succeeded
+    not bare `/feature-flow:ff`. Run BOTH install steps first; a bare `/plugin install` without a succeeded
     `/plugin marketplace add` does NOT persist (Claude may narrate "Installed" anyway).
-  - TODO (Task 16): audit doc/prompt references that say bare `/ff` — confirm whether the
+  - TODO (Task 16): audit doc/prompt references that say bare `/feature-flow:ff` — confirm whether the
     unqualified alias resolves, else update them to `/feature-flow:ff`.
 - **⚠️ Dev-loop refresh (verified):** the install **copies** source into
   `~/.claude/plugins/cache/feature-flow-dev/feature-flow/<version>/` (NOT a symlink). After
@@ -65,7 +65,7 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     user-chosen, revises the signed-off "chain end-to-end" behavior); (3) imperative Write
     + explicit STOP at each boundary; (4) `ff-resume` no longer chains.
   - **TODO (real follow-up):** feature-flow should handle plan mode explicitly (auto
-    `ExitPlanMode` in `/ff`, or an edge-case note "don't run in plan mode"). Hit immediately
+    `ExitPlanMode` in `/feature-flow:ff`, or an edge-case note "don't run in plan mode"). Hit immediately
     in practice → worth a spec edge case + Task 16 hardening.
 - **AC2 (standalone commands r/w manifest):** ✅ VERIFIED. `ff-clarify`, `ff-design`,
   `ff-plan`, and `ff-implement` each ran standalone, read the manifest + upstream artifacts
@@ -77,12 +77,12 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   no-tests run." Verdict DONE, nothing `manual-unverified`. Matches an independent
   `node --test` (6/6). **Feature spine verified end-to-end.**
 - **🔩 Task 16 hardening backlog (found during smoke):**
-  - **Plan mode:** `/ff` should auto-`ExitPlanMode` or document "don't run in plan mode."
+  - **Plan mode:** `/feature-flow:ff` should auto-`ExitPlanMode` or document "don't run in plan mode."
   - **Run resolution:** phase commands (`ff-verify`, `ff-design`, `ff-plan`, `ff-implement`,
     `ff-review`) say only "resolve the manifest" — standardize on `ff-resume`/`ff-status`'s
     rule (named slug → most-recently-updated → ask if ambiguous). Fine with one run; ambiguous
     with several. (Commands already accept a slug arg as the escape hatch.)
-  - **Slash namespace:** audit any doc/prompt references to bare `/ff*` → `/feature-flow:ff*`.
+  - **Slash namespace:** audit any doc/prompt references to bare `/feature-flow:ff*` → `/feature-flow:ff*`.
   - **Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
     (SKILL says implement-only; clarify's hand-off implies before design).
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
@@ -107,7 +107,7 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   honored "don't sign off" by holding `clarify: in_progress` with nothing downstream.
 ### Task 13 — bugfix track end to end (✅ COMPLETE, 2026-06-11)
 - **Smoked GREEN** against `/tmp/ff-sample` (planted bug `cli hi`→`hihi`, `cli.js:11`):
-  - **AC10** ✅ `/ff` classified bugfix → `manifest.track:bugfix`, `diagnosis.md`, **no** `design.md`.
+  - **AC10** ✅ `/feature-flow:ff` classified bugfix → `manifest.track:bugfix`, `diagnosis.md`, **no** `design.md`.
   - **AC11** ✅ test-first: `ff-implement` wrote the regression test first, captured RED
     (`bugfix.red` exit 1, `'hihi' !== 'hi'`, 6/7) then GREEN (`bugfix.green` exit 0, 7/7);
     `verify.md` maps RED→GREEN with real `node --test` output.
@@ -124,7 +124,7 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 ### Task 13 — staging notes (build + pre-smoke)
 - **Tasks 10–12 built:** `ff-diagnose` + `diagnosis.md` (hotfix-vs-proper, tiering);
   test-first bugfix mode in `ff-implement`/`ff-verify` (AC11 RED→GREEN via
-  `manifest.bugfix.red/green`); track classification + routing in `/ff` (feature vs bugfix,
+  `manifest.bugfix.red/green`); track classification + routing in `/feature-flow:ff` (feature vs bugfix,
   ask-once, split-if-both).
 - **🔧 Pre-smoke advisor review caught a coherence bug (fixed `5c11d68`):** the bugfix track
   is spec'd `diagnose→implement→verify→**review**` (review terminal), but the phase handoffs

@@ -1,13 +1,13 @@
 ---
 description: "[shared] Turn the contract (feature spec+design, or an escalated bug's diagnosis) into a phased plan.md with an Outcome gate."
-argument-hint: "<feature: after /ff-design | full-tier bug: after /ff-diagnose>"
+argument-hint: "<feature: after /feature-flow:ff-design | full-tier bug: after /feature-flow:ff-diagnose>"
 ---
 
-# /ff-plan — plan phase
+# /feature-flow:ff-plan — plan phase
 
 You are running the **plan** phase. Output: `plan.md` with a populated Outcome gate. This
 phase serves the **feature** track and **escalated (`tier: full`) bugfixes** — a trivial
-(`tier: lite`) bug skips planning and goes straight from `/ff-diagnose` to `/ff-implement`.
+(`tier: lite`) bug skips planning and goes straight from `/feature-flow:ff-diagnose` to `/feature-flow:ff-implement`.
 
 > **Precedence — read first.** You are executing the feature-flow workflow. Its phases
 > REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
@@ -18,10 +18,10 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 
 ## Manifest contract
 
-1. Resolve config + manifest (as in `/ff-explore`). Read `track`.
+1. Resolve config + manifest (as in `/feature-flow:ff-explore`). Read `track`.
 2. **Cold-start, by track:**
-   - **feature:** if no `design.md` exists, tell the user to run `/ff-design` first; if
-     `spec.md` is also missing, route back to `/ff-clarify`. Do not plan against nothing.
+   - **feature:** if no `design.md` exists, tell the user to run `/feature-flow:ff-design` first; if
+     `spec.md` is also missing, route back to `/feature-flow:ff-clarify`. Do not plan against nothing.
    - **bugfix:** if this is a `tier: lite` run, **STOP** — lite bugs skip planning; route
      the user to `/feature-flow:ff-implement` (the confirmed diagnosis is the gate). If no
      `diagnosis.md` exists, route to `/feature-flow:ff-diagnose`. Do not plan against nothing.
