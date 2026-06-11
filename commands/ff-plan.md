@@ -43,7 +43,9 @@ tasks, each with files-to-touch and a verification step:
 acceptance-criteria / "bug no longer reproduces" reference, and the current `signOff` state
 (`User signed off: <no | yes (date)>` — copy from the manifest, do not assume yes).
 
-Resolve the plan path: if `paths.plan` is set in config, write there; else `<run dir>/plan.md`.
+Resolve the plan path per the `artifacts` note in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if `paths.plan` is set it is a **directory**
+— write `<paths.plan>/<slug>.md` (create the dir if needed); else `<run dir>/plan.md`.
 Record it in `artifacts.plan`.
 
 ## Update manifest

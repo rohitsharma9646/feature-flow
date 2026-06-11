@@ -107,6 +107,11 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     8 phase commands (`ff-explore`/`ff-clarify`/`ff-design`/`ff-plan`/`ff-diagnose`/
     `ff-implement`/`ff-review`/`ff-verify`) now reference it with identical phrasing instead of
     each inventing its own. (Doc/prompt change — low risk, no fresh-session smoke required.)
+  - ~~**`paths.spec`/`paths.plan` dir-vs-file:** the override was "if set, write there" —
+    underspecified whether the value is a directory or a full file path.~~ ✅ DONE — canonically
+    specified in `docs/manifest-schema.md`: the value is **always a directory**, the file is
+    `<dir>/<slug>.md` (create the dir if missing); `ff-clarify`/`ff-plan` reference it with
+    identical phrasing. Matches the Task-15 smoke behavior (`paths.spec: "specs"` → `specs/<slug>.md`).
   - ~~**Slash namespace:** audit bare `/ff*` → `/feature-flow:ff*`.~~ ✅ DONE (`fbb3134`).
   - ~~**Self-executing skill (Option A):** make the `feature-flow` skill START a run when it
     auto-triggers from a natural-language request (not just point at `/feature-flow:ff`), for

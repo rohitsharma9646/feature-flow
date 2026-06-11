@@ -51,9 +51,16 @@ makes phases composable, standalone-runnable, and resumable from disk.
   `red` when the regression test fails pre-fix and `green` after the fix passes;
   `/ff-verify` cites both for the RED→GREEN contract (AC11). A run with no `bugfix.red`
   recorded was not done test-first and `/ff-verify` reports it incomplete.
-- **`artifacts`** maps logical names to file names. If a path is overridden via
-  `.feature-flow.json` (`paths.spec` / `paths.plan`), the value here is the resolved
-  path actually used, so resume and status read the real location.
+- **`artifacts`** maps logical names to the file path each phase wrote.
+  - **Default:** artifacts live in the run sandbox — `<base>/<slug>/<name>.md`.
+  - **`paths.spec` / `paths.plan`** (in `.feature-flow.json`) relocate the spec and plan out
+    of the sandbox. **Each value is a directory** (relative to the repo root), never a full
+    file path; the file written is **`<dir>/<slug>.md`** (e.g. `paths.spec: "specs"` + slug
+    `add-oauth` → `specs/add-oauth.md`). Create the directory if it doesn't exist. Only
+    `spec` and `plan` are relocatable; `design`/`diagnosis`/`review`/`verify` always stay in
+    the sandbox.
+  - Whichever location is used, record the **resolved actual path** in `artifacts.<name>` so
+    resume and status read the real file.
 
 ## Run resolution (how every command finds the run before reading the manifest)
 

@@ -34,9 +34,10 @@ what genuinely shapes the spec.
 
 When you have answers, write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`,
 filling Problem, Expected outcome, Assumptions, Constraints, Edge cases, Non-goals, and
-binary **Acceptance criteria**. Resolve the spec path: if `paths.spec` is set in config,
-write there; otherwise `<run dir>/spec.md`. Record the resolved path in the manifest's
-`artifacts.spec`.
+binary **Acceptance criteria**. Resolve the spec path per the `artifacts` note in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if `paths.spec` is set it is a **directory**
+— write `<paths.spec>/<slug>.md` (create the dir if needed); otherwise `<run dir>/spec.md`.
+Record the resolved path in the manifest's `artifacts.spec`.
 
 ## Sign-off gate (required)
 
