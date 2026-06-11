@@ -70,7 +70,12 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
 - **AC2 (standalone commands r/w manifest):** ✅ VERIFIED. `ff-clarify`, `ff-design`,
   `ff-plan`, and `ff-implement` each ran standalone, read the manifest + upstream artifacts
   on their own, updated state, and stopped — phase-by-phase continuity works.
-- **AC3 (ff-test-runner really executes):** _pending (ff-verify step)._
+- **AC3 (ff-test-runner really executes):** ✅ VERIFIED. `ff-verify` dispatched
+  `ff-test-runner`, which **executed** `npm test` (`node --test`) — real output `tests 6 /
+  pass 6 / fail 0`, exit 0 — and `verify.md` maps **each** AC1–AC7 → `pass` with per-test
+  evidence (name + `cli.test.js` line). build/lint `n/a` with reasons; explicit "not a
+  no-tests run." Verdict DONE, nothing `manual-unverified`. Matches an independent
+  `node --test` (6/6). **Feature spine verified end-to-end.**
 - **🔩 Task 16 hardening backlog (found during smoke):**
   - **Plan mode:** `/ff` should auto-`ExitPlanMode` or document "don't run in plan mode."
   - **Run resolution:** phase commands (`ff-verify`, `ff-design`, `ff-plan`, `ff-implement`,
