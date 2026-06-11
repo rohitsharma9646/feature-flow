@@ -16,11 +16,41 @@ on-disk artifacts, so work is resumable and a dropped session is recoverable.
 - **Bugfix** — restoring intended behavior in existing code. Phases (test-first):
   `diagnose → implement (write failing regression test → RED → fix → GREEN) → verify → review`.
 
-`/feature-flow:ff "<request>"` classifies the request and runs the matching track, pausing at human
-gates. If a request is genuinely both, split it: fix first, then feature — don't run a
-hybrid. Every phase is also runnable standalone (`/feature-flow:ff-explore`, `/feature-flow:ff-clarify`,
-`/feature-flow:ff-design`, `/feature-flow:ff-plan`, `/feature-flow:ff-diagnose`, `/feature-flow:ff-implement`, `/feature-flow:ff-review`, `/feature-flow:ff-verify`),
-plus `/feature-flow:ff-status` and `/feature-flow:ff-resume`.
+## Starting a run — you do NOT have to type a command
+
+This skill is **self-executing**. There are two ways a run begins, and in both you (the
+assistant) drive it — the user never has to know the command names:
+
+1. **Auto-trigger (the common path).** When this skill fires from a natural-language
+   request for non-trivial work — *"add a greeting flag"*, *"build a CSV exporter"*,
+   *"fix: clicking save throws"* — **do not just tell the user to run `/feature-flow:ff`.**
+   Start the run yourself, following the entry procedure below. Briefly announce which track
+   you detected ("This is a feature — starting a feature-flow run"), then proceed.
+2. **Explicit command.** `/feature-flow:ff "<request>"` does the exact same thing on demand.
+
+**Entry procedure (identical to `/feature-flow:ff`; the canonical steps live in
+`${CLAUDE_PLUGIN_ROOT}/commands/ff.md` — read and follow them):**
+1. **Classify** feature vs bugfix (soft judgment). Ambiguous → ask once. Genuinely both →
+   split (fix first, then feature), don't run a hybrid.
+2. **Read config** (`.feature-flow.json` → `config/defaults.json`) and **write the
+   `manifest.json`** with the resolved `track`.
+3. **Run the first phase only** — feature → `explore` inline; bugfix → hand off to the gated
+   `diagnose` phase — then **STOP** at the phase boundary. Do not chain forward.
+
+After the first phase, continue **phase by phase**: each later phase is its own command the
+user (or you) invokes next, so every human gate is honored and a dropped session is
+recoverable. Honor the STOPs — never run past a sign-off or diagnosis gate on your own.
+
+> **Proportional ceremony / don't over-fire.** This is for *non-trivial* work. A genuine
+> one-line typo fix or an obvious, reversible change does not need a full run — just do it
+> (the bugfix **lite** path already keeps trivial bugs cheap). Reserve the workflow for work
+> that benefits from gated, recoverable, evidence-backed development.
+
+**Manual controls (these DO require typing, no natural-language trigger exists):** the
+individual phases `/feature-flow:ff-explore`, `/feature-flow:ff-clarify`, `/feature-flow:ff-design`,
+`/feature-flow:ff-plan`, `/feature-flow:ff-diagnose`, `/feature-flow:ff-implement`,
+`/feature-flow:ff-review`, `/feature-flow:ff-verify`, plus `/feature-flow:ff-status` (inspect a
+run) and `/feature-flow:ff-resume` (re-enter an interrupted run).
 
 ## The manifest is the shared state
 
