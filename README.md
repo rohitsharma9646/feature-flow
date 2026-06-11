@@ -20,11 +20,11 @@ resumable and a dropped session is recoverable.
 ## Install (local dev)
 
 ```
-claude plugin marketplace add ~/feature-flow
-claude plugin install feature-flow@feature-flow-dev
+claude plugin marketplace add rohitsharma9646/feature-flow
+claude plugin install feature-flow@feature-flow
 ```
 
-> The install **copies** source into `~/.claude/plugins/cache/feature-flow-dev/feature-flow/<version>/`
+> The install **copies** source into `~/.claude/plugins/cache/feature-flow/feature-flow/<version>/`
 > (not a symlink). After editing the source, refresh the cache with **uninstall + reinstall**
 > (`claude plugin update` no-ops on an unchanged version), then **fully restart** your Claude
 > session — plugins load at process startup, so a new conversation/`/clear` won't pick up changes.

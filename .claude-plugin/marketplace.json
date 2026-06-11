@@ -1,7 +1,7 @@
 {
-  "name": "feature-flow-dev",
-  "owner": { "name": "vt-claude-6" },
+  "name": "feature-flow",
+  "owner": { "name": "Rohit Sharma" },
   "plugins": [
-    { "name": "feature-flow", "source": "./", "description": "feature-flow (local dev)" }
+    { "name": "feature-flow", "source": "./", "description": "feature-flow" }
   ]
 }
