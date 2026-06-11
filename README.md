@@ -81,6 +81,21 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   `node --test` (6/6). **Feature spine verified end-to-end.**
 - **🔩 Task 16 hardening backlog (found during smoke):**
   - **Plan mode:** `/feature-flow:ff` should auto-`ExitPlanMode` or document "don't run in plan mode."
+    Re-confirmed in the Task-15 smoke: a plan-mode session produced a native plan-mode plan
+    (`~/.claude/plans/…`) instead of a feature-flow run, because feature-flow's first action is
+    a manifest write that plan mode forbids.
+  - **Ambient/auto-trigger coexistence (Task-15 finding):** Option A's self-executing skill does
+    **not** reliably win the trigger slot against the user's global superpowers framework — in a
+    normal-mode session, `superpowers:test-driven-development` was selected instead of feature-flow
+    and no manifest was written. A *short* SessionStart pointer (AC9) and an auto-trigger robust
+    enough to beat superpowers are mutually exclusive (superpowers injects a full
+    `EXTREMELY_IMPORTANT` bootstrap; feature-flow deliberately stays light + portable).
+    **Decision (2026-06-11):** the **explicit `/feature-flow:ff` command is the contract** (proven
+    green in Tasks 9 & 13); Option A stays as *best-effort* auto-trigger (fires only when
+    superpowers isn't competing). NOT a `SKILL.md` bug — making the description more aggressive is
+    an un-winnable arms race. Robust ambient UX would require shadowing superpowers' skills in
+    `~/.claude/skills/` (the coexistence path in the locked doctrine) — a separate, larger task if
+    ever wanted.
   - **Run resolution:** phase commands (`ff-verify`, `ff-design`, `ff-plan`, `ff-implement`,
     `ff-review`) say only "resolve the manifest" — standardize on `ff-resume`/`ff-status`'s
     rule (named slug → most-recently-updated → ask if ambiguous). Fine with one run; ambiguous
@@ -88,9 +103,10 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
   - ~~**Slash namespace:** audit bare `/ff*` → `/feature-flow:ff*`.~~ ✅ DONE (`fbb3134`).
   - ~~**Self-executing skill (Option A):** make the `feature-flow` skill START a run when it
     auto-triggers from a natural-language request (not just point at `/feature-flow:ff`), for
-    a superpowers-style ambient UX while keeping the short-pointer hook (AC9).~~ ✅ DONE
-    (`a6c6b72`) — to be verified live in the Task-15 smoke (say "add a …" without typing the
-    command; confirm the run auto-starts).
+    a superpowers-style ambient UX while keeping the short-pointer hook (AC9).~~ ✅ BUILT
+    (`a6c6b72`); ⚠️ **auto-trigger does NOT fire reliably** — Task-15 smoke showed superpowers
+    out-pulls it (see "Ambient/auto-trigger coexistence" above). Kept as best-effort; the
+    explicit command is the real contract.
   - **Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
     (SKILL says implement-only; clarify's hand-off implies before design).
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
