@@ -119,8 +119,14 @@ Composable, durable, verifying Claude Code plugin for **feature development** an
     (`a6c6b72`); ⚠️ **auto-trigger does NOT fire reliably** — Task-15 smoke showed superpowers
     out-pulls it (see "Ambient/auto-trigger coexistence" above). Kept as best-effort; the
     explicit command is the real contract.
-  - **Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
-    (SKILL says implement-only; clarify's hand-off implies before design).
+  - ~~**Clarify ordering:** reconcile whether sign-off gates `ff-design` or only `ff-implement`
+    (SKILL says implement-only; clarify's hand-off implies before design).~~ ✅ DONE — user
+    decision 2026-06-11: **sign-off after clarify gates everything.** Sign-off is collected at
+    the end of `ff-clarify`; `ff-design`, `ff-plan`, and `ff-implement` each require a **signed**
+    `spec.md` and route back to `ff-clarify` if unsigned (`ff-implement` is the hard backstop,
+    AC4). Encoded in those 3 commands + `SKILL.md` + the spec template. **Recommend a quick
+    smoke** (run `ff-design` on an unsigned spec → should STOP + route to clarify) in the next
+    fresh-session batch; the implement gate (AC4) is already smoke-verified.
 - **🔧 Finding — advisor injected into every subagent (fixed in feature-flow):** during
   `ff-review`, the dispatched `ff-code-reviewer` agents each called the harness-native
   `advisor` tool (configured only by `settings.json > advisorModel`; injected into ALL

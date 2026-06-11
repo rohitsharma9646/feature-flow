@@ -24,6 +24,9 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 2. **Cold-start, by track:**
    - **feature:** if no `design.md` exists, tell the user to run `/feature-flow:ff-design` first; if
      `spec.md` is also missing, route back to `/feature-flow:ff-clarify`. Do not plan against nothing.
+     **Sign-off gate:** if `spec.md` is not signed off (`signOff.signed != true` / `User signed
+     off: no`), **STOP** and route to `/feature-flow:ff-clarify` for sign-off — the feature plan
+     requires a **signed** spec (design/plan/implement all do).
    - **bugfix:** if this is a `tier: lite` run, **STOP** — lite bugs skip planning; route
      the user to `/feature-flow:ff-implement` (the confirmed diagnosis is the gate). If no
      `diagnosis.md` exists, route to `/feature-flow:ff-diagnose`. Do not plan against nothing.

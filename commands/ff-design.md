@@ -20,9 +20,13 @@ the chosen approach and rejected alternatives.
 1. **Resolve the run** per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
-2. **Cold-start:** if no `spec.md` exists (per `artifacts.spec`), tell the user to run
-   `/feature-flow:ff-clarify` first to produce a spec — do not invent requirements. Stop unless they
-   explicitly ask you to design against an inline description in `$ARGUMENTS`.
+2. **Cold-start + sign-off gate:** if no `spec.md` exists (per `artifacts.spec`), tell the
+   user to run `/feature-flow:ff-clarify` first to produce a spec — do not invent requirements.
+   **If `spec.md` exists but is not signed off** (`signOff.signed != true` / the spec's
+   `User signed off:` line reads `no`), **STOP** and route to `/feature-flow:ff-clarify` for
+   sign-off: on the feature track, design, plan, and implement all require a **signed** spec
+   (the WHAT is locked before the HOW). Stop unless the user explicitly asks you to design
+   against an inline description in `$ARGUMENTS`.
 3. Read `spec.md`. Set `phases.design.status = "in_progress"`, bump `currentPhase`.
 
 ## Do the work

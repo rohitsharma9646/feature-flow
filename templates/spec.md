@@ -41,6 +41,7 @@ explicit "manual — unverified" line in `verify.md`.
 
 **User signed off:** no
 
-> A spec without sign-off does not proceed to planning or implementation. `/feature-flow:ff-implement`
-> stops if this reads `no`. A waived review is recorded explicitly:
-> "sign-off waived by user (date)" — never assumed.
+> A spec without sign-off does not proceed to **design, planning, or implementation** —
+> `/feature-flow:ff-design`, `/feature-flow:ff-plan`, and `/feature-flow:ff-implement` each stop and
+> route back to `/feature-flow:ff-clarify` if this reads `no` (implement is the hard backstop). A
+> waived review is recorded explicitly: "sign-off waived by user (date)" — never assumed.

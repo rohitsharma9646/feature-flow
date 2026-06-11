@@ -66,9 +66,12 @@ from which artifacts exist on disk.
 
 Nothing in the harness fails closed — the gates are prose you must respect:
 
-- **Sign-off gate:** on the feature track (and escalated bugfixes), `/feature-flow:ff-implement` does
-  **not** write code until `spec.md` is signed off. If it reads `Signed off: no`, stop and
-  route back to `/feature-flow:ff-clarify`.
+- **Sign-off gate:** on the feature track (and escalated bugfixes), sign-off is **collected
+  at the end of `/feature-flow:ff-clarify`** and gates **everything downstream** — `ff-design`,
+  `ff-plan`, and `ff-implement` each require a **signed** `spec.md` (lock the WHAT before
+  building the HOW). Any of them, on reading `Signed off: no` / `signOff.signed: false`, stops
+  and routes back to `/feature-flow:ff-clarify`. `/feature-flow:ff-implement` is the hard backstop:
+  it writes **no** code until sign-off (AC4).
 - **Diagnosis gate (bugfix):** `/feature-flow:ff-implement` requires a confirmed `diagnosis.md`
   (reproduced + root cause + chosen fix approach). An unreproduced bug never proceeds to a
   fix — guessing a fix for an unconfirmed bug is forbidden.
