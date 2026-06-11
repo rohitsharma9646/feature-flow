@@ -36,7 +36,10 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
 - **Feature track:** map **each acceptance criterion** from `spec.md` → `pass` / `fail` /
   `manual-unverified` (with a reason), each backed by evidence from the test runner.
 - **Bugfix track:** confirm the bug no longer reproduces, and that the regression test
-  shows RED (pre-fix) → GREEN (post-fix) using the captured evidence.
+  shows RED (pre-fix) → GREEN (post-fix). Cite the `bugfix.red` / `bugfix.green` evidence
+  captured by `/ff-implement` for the pre-fix failure, and the test runner's fresh run for
+  the post-fix pass. If the manifest has no `bugfix.red` evidence, the fix was not done
+  test-first — report it **incomplete** (the RED state can no longer be reconstructed).
 
 ## Refuse premature "done"
 
