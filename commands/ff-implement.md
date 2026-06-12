@@ -64,7 +64,7 @@ toggles:
 - `toggles.worktree` (default false): if true, do the work in an isolated git worktree.
 - `toggles.greenfield`: relaxes existing-codebase / `git diff` assumptions.
 
-## Do the work — bugfix track (TEST-FIRST, mandatory order — AC11)
+## Do the work — bugfix track (TEST-FIRST, mandatory RED→GREEN order)
 
 Read `diagnosis.md` (root cause + chosen fix approach + regression-test plan) and `plan.md`
 if the bug escalated to `tier: full`. Then, **in this exact order**:
@@ -80,7 +80,7 @@ if the bug escalated to `tier: full`. Then, **in this exact order**:
 5. Hand both the RED and GREEN evidence forward to `/feature-flow:ff-verify`.
 
 > **Never apply the fix before the test has been observed failing.** Once the fix is in
-> place the pre-fix RED state is unrecoverable and AC11 (RED→GREEN evidence) cannot be met.
+> place the pre-fix RED state is unrecoverable and the RED→GREEN evidence cannot be met.
 > If you cannot get the test to fail pre-fix, the test does not pin the bug — fix the test,
 > not the order.
 

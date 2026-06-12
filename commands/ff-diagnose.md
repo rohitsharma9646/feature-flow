@@ -101,8 +101,9 @@ needs no sign-off — its confirmed diagnosis is itself the gate.
   `/feature-flow:ff-plan` next, then `/feature-flow:ff-implement`. If it is not yet signed,
   STOP at the sign-off ask — do **not** route forward.
 
-End the message with the one-line progress strip (bugfix order, e.g. `diagnose[done] →
-implement[NEXT] → verify → review`) — see **Progress strip** in
+End the message with the one-line progress strip in the run's actual phase order — **full**
+tier includes plan: `diagnose[done] → plan[NEXT] → implement → verify → review`; **lite**
+skips it: `diagnose[done] → implement[NEXT] → verify → review` — see **Progress strip** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 End your turn here. Do not plan, implement, or fix now.

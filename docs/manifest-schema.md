@@ -59,7 +59,7 @@ makes phases composable, standalone-runnable, and resumable from disk.
   trust the manifest and offer to re-sync the document line.
 - **`bugfix`** (bugfix track only): the test-first evidence. `/ff-implement` writes
   `red` when the regression test fails pre-fix and `green` after the fix passes;
-  `/ff-verify` cites both for the RED→GREEN contract (AC11). A run with no `bugfix.red`
+  `/ff-verify` cites both for the RED→GREEN contract. A run with no `bugfix.red`
   recorded was not done test-first and `/ff-verify` reports it incomplete.
 - **`artifacts`** maps logical names to the file path each phase wrote.
   - **Default:** artifacts live in the run sandbox — `<base>/<slug>/<name>.md`.
@@ -81,8 +81,10 @@ commands reference it instead of restating their own:
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); use `paths.base` (default `.feature-flow`)
    as the sandbox root.
 2. **Named run wins.** If `$ARGUMENTS` names a slug (or a run dir), use `<base>/<slug>/` —
-   this works even for abandoned/closed runs. Unknown slug → error naming it and suggesting
-   `/feature-flow:ff-list`.
+   this works even for abandoned/closed runs (so inspection commands can reach them). Unknown
+   slug → error naming it and suggesting `/feature-flow:ff-list`. Re-entry commands
+   (`ff-resume` and the phase commands) still honor their own abandoned/closed guards even
+   when the slug is explicit.
 3. **Single eligible run.** Otherwise, **exclude runs with `currentPhase: "abandoned"` or a
    non-null `closedAt`** — they are never auto-selected. If exactly one eligible run remains
    under `<base>/`, use it (zero eligible → cold-start, even if abandoned/closed runs exist).
@@ -119,7 +121,8 @@ manifest that claims phases are complete:
    verify(`verify.md`) → review(`review.md`).
 2. For each phase marked `complete` (or, with no manifest, each phase in order): the declared
    artifact must **exist on disk** AND pass **minimal validity** — `spec.md` must contain a
-   `User signed off:` line; `diagnosis.md` must contain its `Tier:`/confirmation line; all
+   `User signed off:` line; `diagnosis.md` must contain a `**Status:**` line reading
+   `confirmed` or `signed-off` (a draft-status diagnosis fails validity); all
    other artifacts: existence suffices.
 3. The first phase whose artifact is missing or invalid is the true resume point. Announce
    why: "manifest claims complete but artifact missing: `<path>`" or "artifact failed validity
@@ -140,4 +143,8 @@ phase to run as `<phase>[NEXT]`, later phases as bare names, joined by ` → `. 
 
     explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify
 
-Abandoned runs render as `<slug>[abandoned]`; closed runs as `<slug>[closed]`.
+`[NEXT]` marks the next command to run, regardless of the phase's position in the canonical
+order (e.g. a bugfix where review ran before verify renders `verify[NEXT]`). The
+`<slug>[abandoned]` / `<slug>[closed]` rendering applies **only** to `ff-list`/`ff-status`
+output; abandoned/closed early-exit STOP messages emit no strip (those runs execute no
+phases).

@@ -19,8 +19,14 @@ reachable by explicit slug.
    Run `/feature-flow:ff-list` to see all runs."
 2. Resolve `paths.base` from config and locate `<base>/<slug>/`. If it does not exist: STOP
    with — "No run '<slug>' found. Run `/feature-flow:ff-list` to see all runs."
-3. Read `manifest.json`. If `currentPhase` is already `"abandoned"`: report — "Run '<slug>'
-   is already abandoned." — and exit without error, changing nothing.
+3. Read `manifest.json`. Then, in order:
+   - `currentPhase` already `"abandoned"` → report — "Run '<slug>' is already abandoned." —
+     and exit without error, changing nothing.
+   - `closedAt` non-null → **refuse**, changing nothing — "Cannot abandon '<slug>': the run
+     is already closed (closedAt: <date>). A closed run cannot be abandoned."
+   - `currentPhase == "done"` (and not closed) → ask before proceeding — "Run '<slug>' is
+     done. Did you mean `/feature-flow:ff-close <slug>`? Confirm to abandon it anyway (an
+     abandoned run can no longer be closed)." Only continue on explicit confirmation.
 4. Set `currentPhase = "abandoned"`, bump `updatedAt`, write the manifest.
-5. Confirm: "Run '<slug>' abandoned. It is now excluded from automatic run resolution; a new
-   `/feature-flow:ff` run will no longer be captured by it. Status: <slug>[abandoned]."
+5. Confirm: "Run '<slug>' abandoned. It is excluded from automatic run resolution —
+   subsequent commands will no longer auto-select it. Status: <slug>[abandoned]."

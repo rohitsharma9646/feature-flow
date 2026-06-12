@@ -16,17 +16,18 @@ argument-hint: "[slug, if more than one run exists]"
 1. Resolve `paths.base` from config. Find the run dir per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug in `$ARGUMENTS`, else the most
    recently updated *eligible* run — abandoned/closed runs are excluded).
-2. **Abandoned-run guard:** if the manifest's `currentPhase` is `"abandoned"`, STOP and
-   report — "Run '<slug>' is abandoned — nothing to resume. Use `/feature-flow:ff-list` to
-   see active runs." Do not infer or re-enter phases.
+2. **Abandoned/closed-run guard:** if the manifest's `currentPhase` is `"abandoned"`, STOP
+   and report — "Run '<slug>' is abandoned — nothing to resume. Use `/feature-flow:ff-list`
+   to see active runs." If `closedAt` is non-null, STOP and report — "Run '<slug>' is closed
+   (closedAt: <date>) — nothing to resume. Use `/feature-flow:ff-list` to see active runs."
+   In both cases do not infer or re-enter phases (these guards apply even when the slug was
+   named explicitly).
 3. **Read `manifest.json` and validate it against disk** — do not trust `status: "complete"`
-   on its own. Apply the **Disk inference procedure** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: for each phase marked `complete`, its
-   declared artifact must exist on disk AND pass minimal validity (`spec.md` contains a
-   `User signed off:` line; `diagnosis.md` contains its `Tier:` line; others: existence).
-   The first phase that is not complete, or whose artifact is missing/invalid, is the resume
-   point — announce "manifest claims complete but artifact missing: `<path>`" or "artifact
-   failed validity check: `<path>`" when that is why.
+   on its own: each complete phase's artifact must exist and pass minimal validity, per the
+   **Disk inference procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. The first
+   phase that is not complete, or whose artifact is missing/invalid, is the resume point —
+   announce the procedure's prescribed reason ("manifest claims complete but artifact
+   missing: `<path>`" / "artifact failed validity check: `<path>`") when that is why.
 4. **Missing or corrupt manifest (edge case):** do NOT fail. Apply the same **Disk inference
    procedure** from scratch (walk the track's phase order; first absent-or-invalid artifact
    is the resume point) and reconstruct a minimal manifest from what's on disk before

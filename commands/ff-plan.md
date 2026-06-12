@@ -54,7 +54,7 @@ files-to-touch and a verification step:
 - **feature:** decompose the chosen design.
 - **bugfix (full):** decompose the diagnosis's fix approach into tasks; the template already
   makes the **first task the test-first regression test** (write it, capture RED) before the
-  fix tasks — preserve that AC11 order.
+  fix tasks — preserve that RED→GREEN order.
 
 **Populate the Outcome gate** from the contract: contract path (`spec.md` or `diagnosis.md`),
 acceptance-criteria / "bug no longer reproduces" reference, and the current `signOff` state

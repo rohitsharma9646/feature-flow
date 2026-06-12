@@ -1,6 +1,6 @@
 ---
 description: "List all feature-flow runs: slug, track, tier, currentPhase, createdAt, updatedAt — including abandoned and closed runs."
-argument-hint: "(no arguments)"
+argument-hint: ""
 ---
 
 # /feature-flow:ff-list — list runs
