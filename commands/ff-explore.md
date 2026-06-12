@@ -25,10 +25,11 @@ no upstream artifact is required (cold-start safe).
    `$ARGUMENTS`).
 2. **Read or create the manifest** at `<base>/<slug>/manifest.json` (schema:
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If `$ARGUMENTS` starts a new run,
-   derive a short kebab `slug` from it, create the run dir, and write a manifest with
-   `track: "feature"`, `tier: "full"`, empty `phases`, `signOff.required: true`.
-   After creating a **new** manifest, apply the run-start procedure to record
-   `autopilot` — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+   derive a short kebab `slug` from it, create the run dir, **resolve `autopilot` first**
+   (run-start procedure — see **Autopilot** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; never choose the value yourself),
+   and write a manifest with `track: "feature"`, `tier: "full"`, the resolved
+   `autopilot`, empty `phases`, `signOff.required: true`.
    If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
 3. **Re-run guard:** if `phases.explore.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `explore.md` — see **Re-run guard** in

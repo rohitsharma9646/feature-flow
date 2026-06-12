@@ -34,14 +34,15 @@ assistant) drive it — the user never has to know the command names:
 `${CLAUDE_PLUGIN_ROOT}/commands/ff.md` — read and follow them):**
 1. **Classify** feature vs bugfix (soft judgment). Ambiguous → ask once. Genuinely both →
    split (fix first, then feature), don't run a hybrid.
-2. **Read config** (`.feature-flow.json` → `config/defaults.json`) and **write the
-   `manifest.json`** with the resolved `track`. **If you are in plan mode**, the manifest
-   write is blocked — call `ExitPlanMode` first (the feature-flow run IS the plan), or tell
-   the user to exit plan mode and re-run. See Step 2.0 in `commands/ff.md`.
-3. **Resolve autopilot** (run-start procedure in `docs/manifest-schema.md` §Autopilot):
-   config `toggles.autopilot` — `"ask"` (default) → ask the user once (autopilot vs
-   step-by-step) and record the boolean as `manifest.autopilot`; `true`/`false` → record
-   directly, no ask; never re-ask a run that already has the field.
+2. **Read config** (`.feature-flow.json` → `config/defaults.json`), then **resolve
+   `autopilot` first** (run-start procedure in `docs/manifest-schema.md` §Autopilot —
+   BEFORE the manifest write): config `toggles.autopilot` — `"ask"` (default) → ask the
+   user once (autopilot vs step-by-step); `true`/`false` → use directly, no ask; never
+   re-ask a run that already has the field, and never choose the value yourself.
+3. **Write the `manifest.json`** with the resolved `track` AND `autopilot`. **If you are
+   in plan mode**, the manifest write is blocked — call `ExitPlanMode` first (the
+   feature-flow run IS the plan), or tell the user to exit plan mode and re-run. See Step
+   2.0 in `commands/ff.md`.
 4. **Run the first phase only** — feature → `explore` inline; bugfix → hand off to the gated
    `diagnose` phase — then **STOP** at the phase boundary. In step-by-step mode, do not
    chain forward.
@@ -53,7 +54,9 @@ next, so every human gate is honored and a dropped session is recoverable. **Aut
 forward per **Autopilot** in `docs/manifest-schema.md`, pausing at every mandatory gate.
 
 **Unconditional in BOTH modes — these lines never bend:** never run past a spec or
-diagnosis sign-off gate on your own; never set `signOff.signed` yourself; never proceed
+diagnosis sign-off gate on your own; never set `signOff.signed` yourself;
+never choose `manifest.autopilot` yourself (config `"ask"` → the value comes only from
+the user's answer, asked **before** the manifest is written); never proceed
 past a not-reproduced diagnosis; never route forward past an unresolved Critical review
 block (autopilot gets exactly one fix-and-re-review cycle, then stops). Honor the STOPs.
 

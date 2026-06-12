@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.1] — 2026-06-12
+
+### Fixed
+- **Run-start autopilot ask was silently skippable** (first real-world v0.3.0 run locked
+  itself to step-by-step: the executor wrote `autopilot: false` without asking, and
+  "never re-ask" made it permanent). The ask is now structurally non-droppable: the value
+  is resolved **before** the manifest is written, `autopilot` is a required creation
+  field at all four manifest-creating entry points, the unconditional doctrine gains
+  "never choose `manifest.autopilot` yourself", and the mandatory-gate table gains the
+  in-session "Run-start mode ask" row. `ff-status` now prints the run's mode. Regression
+  guard: `scripts/checks/run-start-ask-guard.sh`.
+
 ## [0.3.0] — 2026-06-12
 
 Autopilot mode. No breaking changes; pre-v0.3.0 manifests (no `autopilot` field) behave as

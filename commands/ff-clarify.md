@@ -22,9 +22,10 @@ acceptance criteria and a sign-off block.
 1. **Resolve the run** per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
-2. **Cold-start:** if no manifest exists, create one (`track: "feature"`), then apply the
-   run-start procedure to record `autopilot` — see **Autopilot** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; if no
+2. **Cold-start:** if no manifest exists, **resolve `autopilot` first** (run-start
+   procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`;
+   never choose the value yourself),
+   then create one (`track: "feature"`, including the resolved `autopilot`); if no
    `explore.md` exists, tell the user `/feature-flow:ff-explore` usually runs first — offer to
    proceed using `$ARGUMENTS` as the request, or stop so they can explore.
 3. Read `explore.md` (if present) for context.

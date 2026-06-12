@@ -2,7 +2,7 @@
 
 Composable, durable, verifying Claude Code plugin for **feature development** and **bug fixing** — two tracks, one spine, real (executed) verification.
 
-> **Status:** v0.3.0.
+> **Status:** v0.3.1.
 
 ## What it is
 
@@ -81,6 +81,8 @@ chain automatically — the run above becomes just **three touches** instead of 
 Auto-completed phases render `[auto]` in the strip:
 `explore[done] → clarify[auto] → design[auto] → plan[NEXT] → …`. Sign-offs are never
 automated — autopilot never sets `signOff.signed` itself, and every gate still applies.
+The mode is resolved **before the run's manifest is written** — when config says `"ask"`,
+the assistant must ask; it may never pick the mode itself.
 Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the run-start
 question. A dropped mid-chain session recovers normally via `/feature-flow:ff-resume`
 (which continues the chain on autopilot runs). All phase commands are autopilot-aware;

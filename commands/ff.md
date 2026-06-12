@@ -53,23 +53,28 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
 1. **Read config:** a repo-root `.feature-flow.json` overrides
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`. Resolve `paths.base` (default
    `.feature-flow`), agent counts, models, `reviewThreshold`, and toggles.
-2. **Create the run:** derive a short kebab `slug` from `$ARGUMENTS`. **Use the Write tool
+2. **Resolve autopilot first (run-start procedure — BEFORE the manifest write):** if this
+   run's manifest already exists with an `autopilot` field, skip this entirely — never
+   re-ask. Otherwise read `toggles.autopilot` from config (`.feature-flow.json` →
+   `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; default `"ask"`):
+   `"ask"` → ask the user once (AskUserQuestion) — **autopilot** (phases chain
+   automatically, pausing only at sign-offs, the design choice, and Critical review
+   findings) vs **step-by-step** (each phase stops; current behavior); `true`/`false` →
+   use that value directly, no question. **Never choose the value yourself:** when config
+   is `"ask"`, the boolean may come ONLY from the user's in-conversation answer — if you
+   have no answer, you MUST ask before writing the manifest. Writing a manifest with a
+   self-chosen `autopilot` is a defect. See **Autopilot** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+3. **Create the run:** derive a short kebab `slug` from `$ARGUMENTS`. **Use the Write tool
    now** to create `<base>/<slug>/manifest.json` per the contract
    (`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`):
    - **feature:** `track: "feature"`, `tier: "full"`, `currentPhase: "explore"`,
      `signOff: { required: true, signed: false }`.
    - **bugfix:** `track: "bugfix"`, `currentPhase: "diagnose"`, `signOff: { required:
      false, signed: false }` (tier is decided during diagnose).
-   - Both: `createdAt`, empty `phases`. Confirm the file exists before continuing — if you
-     have not written a manifest to disk, you have not started a run.
-3. **Resolve autopilot (run-start procedure):** if `manifest.autopilot` already exists,
-   skip this entirely — never re-ask. Otherwise read `toggles.autopilot` from config
-   (`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; default `"ask"`):
-   `"ask"` → ask the user once (AskUserQuestion) — **autopilot** (phases chain
-   automatically, pausing only at sign-offs, the design choice, and Critical review
-   findings) vs **step-by-step** (each phase stops; current behavior) — and record the
-   boolean as `manifest.autopilot`; `true`/`false` → record that value directly, no
-   question. See **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+   - Both: `createdAt`, `autopilot` (the value resolved in step 2 — the manifest is
+     written **with** it), empty `phases`. Confirm the file exists before continuing — if
+     you have not written a manifest to disk, you have not started a run.
 
 ## Step 3 — Start the first phase, by track
 

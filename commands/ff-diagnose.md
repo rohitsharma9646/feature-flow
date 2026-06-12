@@ -25,9 +25,11 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous; cold-start derives a new slug from the bug
    report), then read its `manifest.json`.
-2. **Cold-start:** if no manifest exists, create one with `track: "bugfix"` (slug from the
-   bug report), then apply the run-start procedure to record `autopilot` — see **Autopilot**
-   in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If a manifest exists with
+2. **Cold-start:** if no manifest exists, **resolve `autopilot` first** (run-start
+   procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`;
+   never choose the value yourself),
+   then create one with `track: "bugfix"` (slug from the bug report) including the
+   resolved `autopilot`. If a manifest exists with
    `track: "feature"`, this is the wrong track — tell the user and stop.
 3. **Re-run guard:** if `phases.diagnose.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `diagnosis.md` (a full-tier re-run also resets

@@ -104,7 +104,8 @@ commands reference it instead of restating their own:
 ## Rules every command MUST follow
 
 1. **Read the manifest first.** If absent, create it (set `slug`, `track`, `tier`,
-   `createdAt`, empty `phases`, `signOff`).
+   `autopilot` — resolved via the **Run-start procedure** in §Autopilot *before* this
+   write, never self-chosen — `createdAt`, empty `phases`, `signOff`).
 2. **Check the gate** for this phase (e.g. `/ff-implement` requires `signOff.signed`
    on the feature/full track; a confirmed `diagnosis.md` on the lite bugfix track).
 3. **Do the phase work**, reading any required upstream artifacts.
@@ -213,6 +214,7 @@ or self-answers a gate:**
 | Not-reproduced stop (`ff-diagnose`) | cross-turn | ends the chain unconditionally — autopilot does not retry |
 | Critical review block (`ff-review`) | cross-turn | one fix-and-re-review cycle (below), then stop if Criticals remain |
 | Design option choice (`ff-design`) | in-session | ask (AskUserQuestion), then continue the chain in the same turn |
+| Run-start mode ask (every manifest-creating entry point, config `"ask"`) | in-session | resolve BEFORE the manifest write: ask (AskUserQuestion), then write the manifest including the answer — never choose `manifest.autopilot` yourself |
 | Clarify interrogation questions | in-session | ask, then continue |
 | Run disambiguation / re-run guard confirmations | in-session | ask, then continue |
 
@@ -229,15 +231,19 @@ and end the turn. `phases.review.status` stays `in_progress` until the review is
 Zero Critical findings → no cycle; chain proceeds.
 
 **Run-start procedure (every entry point that creates a manifest: `ff`, and the cold-start
-paths of `ff-explore` / `ff-clarify` / `ff-diagnose`).** After the manifest is written:
-1. If `manifest.autopilot` already exists (any value) → **skip; never re-ask** — not on
-   resume, re-run, or any later phase.
+paths of `ff-explore` / `ff-clarify` / `ff-diagnose`).** The value is resolved
+**before the manifest is written** — the creation Write includes `autopilot`; a manifest
+written with a self-chosen `autopilot` is a defect:
+1. If a manifest for this run already exists with an `autopilot` field (any value) →
+   **skip; never re-ask** — not on resume, re-run, or any later phase.
 2. Read `toggles.autopilot` from config (`.feature-flow.json` →
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; default `"ask"`).
 3. `"ask"` → ask the user once (AskUserQuestion): **autopilot** (phases chain automatically,
    pausing only at sign-offs, design choice, and Critical review findings) vs
-   **step-by-step** (each phase stops; current behavior). Record the boolean as
-   `manifest.autopilot`. `true` / `false` → record that value directly; no question.
+   **step-by-step** (each phase stops; current behavior). `true` / `false` → use that value
+   directly; no question. The boolean may come ONLY from config `true`/`false` or the
+   user's in-conversation answer — **never choose `manifest.autopilot` yourself**; include
+   it in the manifest creation Write.
 
 **Resume.** `ff-resume` on a run with `autopilot: true` re-enters the first incomplete
 phase and **continues the chain** to the next mandatory pause, honoring every gate exactly

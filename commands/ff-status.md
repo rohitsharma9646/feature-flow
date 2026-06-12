@@ -17,6 +17,7 @@ argument-hint: "[slug, if more than one run exists]"
    abandoned." — plus its per-phase status, and point at `/feature-flow:ff-list`.
 4. Read `manifest.json`. Print a concise status:
    - **slug**, **track**, **tier**
+   - **mode**: `autopilot` (`true` → autopilot, `false`/absent → step-by-step)
    - **currentPhase** (and `closedAt` if set)
    - **per-phase status** (pending / in_progress / complete) with each phase's artifact path
    - **sign-off** state (`required`, `signed`, `date`)
