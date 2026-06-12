@@ -13,14 +13,18 @@ acceptance criteria and a sign-off block.
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, create files with the
-> Write tool, run only this one phase, then STOP.
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract
 
 1. **Resolve the run** per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
-2. **Cold-start:** if no manifest exists, create one (`track: "feature"`); if no
+2. **Cold-start:** if no manifest exists, create one (`track: "feature"`), then apply the
+   run-start procedure to record `autopilot` — see **Autopilot** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; if no
    `explore.md` exists, tell the user `/feature-flow:ff-explore` usually runs first — offer to
    proceed using `$ARGUMENTS` as the request, or stop so they can explore.
 3. Read `explore.md` (if present) for context.
@@ -78,17 +82,25 @@ to the sign-off gate below.
 ## Sign-off gate (required)
 
 The spec must end with `User signed off: no`. Write `spec.md` with the Write tool, then
-**STOP: end your turn by explicitly asking the user to sign off.** The sign-off ask **must
-quote the spec's `## Acceptance criteria` section verbatim** in the message — the user
-reviews exactly what they are signing without opening the file; a summary is not a
-substitute. Do not design, plan, or implement, and do not mark sign-off yourself. When the user confirms (this or a later
-turn), set `signOff.signed = true` and `signOff.date`, and update the spec's Sign-off line
-to `yes (<date>)`.
+**STOP: end your turn by explicitly asking the user to sign off.** The sign-off ask
+presents the spec's `## Acceptance criteria` **verbatim, as a grouped checklist — never a
+blockquote wall** (theme headings, `- [ ] **AC<n> — <label>**: <verbatim text>` items) —
+see **Sign-off rendering** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is
+a hard turn-end **in both modes**: autopilot never bypasses it and never sets
+`signOff.signed` itself. Do not design, plan, or implement, and do not mark sign-off
+yourself. When the user confirms (this or a later turn), set `signOff.signed = true` and
+`signOff.date`, and update the spec's Sign-off line to `yes (<date>)` — then **re-read
+`manifest.autopilot` from the manifest on disk** (the confirmation arrives in a fresh turn;
+never assume the mode from memory) and continue per the Update-manifest section below.
 
 ## Update manifest (after sign-off)
 
 Once sign-off is recorded, set
 `phases.clarify = { status: "complete", artifact: "<resolved spec path>" }`,
-`signOff.required = true`, bump `updatedAt`. Then **STOP** and tell the user to run
+`signOff.required = true`, bump `updatedAt`. Then **STOP (step-by-step) / continue
+(autopilot):** if the re-read `manifest.autopilot` is `true`, emit the progress strip and
+proceed directly into the design phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-design.md` —
+see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — instead of the
+hand-off message. If `false` or absent, **STOP** and tell the user to run
 `/feature-flow:ff-design` next, ending the message with the one-line progress strip — see
 **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.

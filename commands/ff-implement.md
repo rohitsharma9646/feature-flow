@@ -14,7 +14,8 @@ Implements the planned work for **either track**. Branch on `manifest.track`:
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, run only this one phase,
-> then STOP.
+> then STOP. In autopilot mode, ceremonial phase-end STOPs become continuations — see
+> **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract
 
@@ -94,7 +95,12 @@ Set `phases.implement = { status: "complete", artifact: null }` (code lives in t
 not the sandbox), bump `updatedAt`, `currentPhase = "implement"`. On the bugfix track,
 ensure the captured `bugfix.red` / `bugfix.green` evidence is recorded.
 
-**STOP** and hand off by track (the two tracks end in opposite order — match the manifest):
+**STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
+the progress strip and proceed directly into the next phase by track — **feature:**
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-review.md`; **bugfix:**
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md` — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, **STOP** and hand
+off by track (the two tracks end in opposite order — match the manifest):
 - **feature:** run `/feature-flow:ff-review` next, then `/feature-flow:ff-verify` (verify is terminal).
 - **bugfix:** run `/feature-flow:ff-verify` next (to confirm RED→GREEN), then
   `/feature-flow:ff-review` (review is terminal).

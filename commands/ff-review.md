@@ -12,7 +12,9 @@ Static review of the implemented change. Output: `review.md`.
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, create files with the
-> Write tool, run only this one phase, then STOP.
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract
 
@@ -52,19 +54,35 @@ issues" summary — do not invent findings to look thorough.
 
 **Blocking findings block — both tracks.** If `review.md` contains ≥1 **Critical** finding,
 do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
-`currentPhase = "review"`, bump `updatedAt`, and **STOP**, telling the user to resolve the
-Critical findings (re-running `/feature-flow:ff-implement` or fixing directly) and then re-run
-`/feature-flow:ff-review` — do **not** route forward to verify or done.
+`currentPhase = "review"`, bump `updatedAt`.
+
+- **Autopilot fix-and-re-review cycle (`manifest.autopilot: true` only).** First check
+  `review.md` for an existing `## Resolution` section recording a prior autopilot fix cycle
+  — the review artifact is the durable cycle record. **No prior cycle:** apply fixes for the
+  Critical findings, append a `## Resolution` section to `review.md` (pre-fix findings,
+  fixes applied, outcome), and re-run the reviewer dispatch **exactly once**; if the
+  re-review is clear of Criticals, proceed below as a passing review. **A prior cycle
+  exists, or Criticals remain after the re-review:** stop with the standard block message
+  below — never a second cycle. Zero Critical findings → no cycle at all.
+- **Step-by-step (or cycle exhausted): STOP**, telling the user to resolve the
+  Critical findings (re-running `/feature-flow:ff-implement` or fixing directly) and then re-run
+  `/feature-flow:ff-review` — do **not** route forward to verify or done (in either mode).
 
 Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, bump
 `updatedAt`, and hand off by track:
 
-- **Feature track:** review runs **before** verify. Leave `currentPhase = "review"` and
-  **STOP**, telling the user to run `/feature-flow:ff-verify` next.
+- **Feature track:** review runs **before** verify. If `manifest.autopilot` is `true`,
+  emit the progress strip and proceed directly into the verify phase per
+  `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md` — see **Autopilot** in
+  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, leave
+  `currentPhase = "review"` and **STOP**, telling the user to run `/feature-flow:ff-verify` next.
 - **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
   already passed (`phases.verify.status == "complete"`), set `currentPhase = "done"`, **STOP**
-  and report the run complete. If verify has **not** run yet
-  (`phases.verify.status != "complete"`), leave `currentPhase = "review"` and **STOP**,
+  and report the run complete (both modes — run completion is always a full report). If
+  verify has **not** run yet (`phases.verify.status != "complete"`): if `manifest.autopilot`
+  is `true`, emit the progress strip and proceed directly into the verify phase per
+  `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md`; if `false` or absent, leave
+  `currentPhase = "review"` and **STOP**,
   telling the user to run `/feature-flow:ff-verify` to confirm RED→GREEN — the run is not done
   until both terminal phases are complete.
 

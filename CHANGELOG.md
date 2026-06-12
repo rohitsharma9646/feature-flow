@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.3.0] — 2026-06-12
+
+Autopilot mode. No breaking changes; pre-v0.3.0 manifests (no `autopilot` field) behave as
+step-by-step everywhere — no migration, no mid-run ask.
+
+### Added
+- **Autopilot mode**: per-run `manifest.autopilot` boolean — when `true`, ceremonial
+  phase-end STOPs become continuations (the assistant chains into the next phase in the
+  same turn), pausing only at human gates: spec/diagnosis sign-off, the design option
+  choice, an unreproduced bug, and an unresolved Critical review block. Step-by-step
+  behavior is unchanged.
+- Config `toggles.autopilot` (`"ask"` | `true` | `false`, default `"ask"`): `"ask"` asks
+  once at run start (every manifest-creating entry point); the answer is recorded per-run
+  and never re-asked.
+- Canonical sections in `docs/manifest-schema.md`: **Autopilot** (chaining rule,
+  mandatory-pause table, fix-cycle bound, run-start procedure, resume semantics) and
+  **Sign-off rendering** (verbatim rule + grouped-checklist format).
+- Autopilot Critical-review handling: exactly one fix-and-re-review cycle, recorded in
+  `review.md`'s `## Resolution` section (the durable cycle record); then stop if Criticals
+  remain.
+- Progress strip renders auto-completed phases as `<phase>[auto]`; the strip is emitted
+  after each chained phase.
+
+### Changed
+- Sign-off asks (`ff-clarify`, full-tier `ff-diagnose`) now render the contract as a
+  **grouped checklist** (theme headings, `**AC<n> — <label>**` items, text verbatim) —
+  never a blockquote wall.
+- A user sign-off on an autopilot run continues the chain in the same turn (the commands
+  re-read `manifest.autopilot` from disk when the confirmation arrives).
+- `ff-resume` on an autopilot run continues the chain from the resume point to the next
+  mandatory pause; step-by-step resume is unchanged (one phase, then stop).
+- All 8 phase commands + `ff`, `ff-resume`, and SKILL.md doctrine are mode-conditional;
+  the unconditional gate lines (never auto-sign, never pass a sign-off/not-reproduced/
+  exhausted-Critical gate) are explicit in both modes.
+
 ## [0.2.0] — 2026-06-12
 
 Pre-promotion hardening round. No breaking changes; v0.1.0 run manifests need no migration.

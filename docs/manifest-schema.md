@@ -15,6 +15,7 @@ makes phases composable, standalone-runnable, and resumable from disk.
   "createdAt": "<ISO8601>",
   "updatedAt": "<ISO8601>",
   "closedAt": null,
+  "autopilot": false,
   "currentPhase": "explore|clarify|design|plan|diagnose|implement|review|verify|done|abandoned",
   "phases": {
     "<phase>": { "status": "pending|in_progress|complete", "artifact": "<relative path or null>" }
@@ -50,6 +51,10 @@ makes phases composable, standalone-runnable, and resumable from disk.
 - **`closedAt`** (ISO8601 or `null`): set by `/feature-flow:ff-close` on a `done` run. A closed
   run is **excluded from automatic run resolution**. Absent/`null` in older (v0.1.0) manifests
   — treat as not closed; no migration needed.
+- **`autopilot`** (boolean): whether this run chains phases automatically — see **Autopilot**
+  below. Set **once** at run start by the run-start procedure, read-only afterwards. **Absent
+  field = `false`** (every pre-v0.3.0 manifest): treat as step-by-step everywhere — no error,
+  no mid-run ask, no migration.
 - **`phases.<phase>.artifact`** is the relative path (within the run dir) of the artifact that
   phase produced, or `null` if it writes no file (e.g. explore may summarize inline).
 - **`signOff`**: feature track and escalated (`full`) bugfixes require sign-off before
@@ -148,3 +153,92 @@ order (e.g. a bugfix where review ran before verify renders `verify[NEXT]`). The
 `<slug>[abandoned]` / `<slug>[closed]` rendering applies **only** to `ff-list`/`ff-status`
 output; abandoned/closed early-exit STOP messages emit no strip (those runs execute no
 phases).
+
+**In autopilot** (`manifest.autopilot: true`): phases completed automatically (chained,
+not user-invoked) render `<phase>[auto]` instead of `<phase>[done]` — derived at render
+time, no manifest field records it (in an autopilot run, only the entry phase and phases
+re-entered after a pause were user-invoked). Emit the strip after **each** auto-completed
+phase so the chain is followable as it runs; full STOP messaging appears only at mandatory
+pauses and at run completion. Example mid-chain:
+
+    explore[done] → clarify[auto] → design[auto] → plan[NEXT] → implement → review → verify
+
+## Sign-off rendering
+
+How `ff-clarify` (spec sign-off) and `ff-diagnose` (full-tier diagnosis sign-off) present
+the contract in the sign-off ask. Two rules, both mandatory:
+
+1. **Verbatim.** The ask quotes the contract items exactly as written in the artifact —
+   the spec's acceptance criteria / the diagnosis's fix approach, root cause, fix surface,
+   and regression-test plan. The user reviews exactly what they are signing without opening
+   the file; a summary is not a substitute.
+2. **Grouped checklist, never a blockquote wall.** Render the items as a plain-markdown
+   checklist grouped under short theme headings — **not** inside a `>` blockquote:
+   - 3–6 theme headings (`### <Theme>`), chosen by subject-matter clustering at ask time;
+     aim for ≤ ~5 items per group.
+   - Each item: `- [ ] **AC<n> — <short label>**: <criterion text verbatim>` (diagnosis
+     contracts use `**<item name>**` instead of an AC number).
+   - The label is additive; the criterion text after the colon stays verbatim (rule 1).
+
+Example shape:
+
+    ### Switch & defaults
+    - [ ] **AC1 — config key**: `config/defaults.json` contains `toggles.autopilot` …
+    - [ ] **AC2 — run-start ask**: When a new run starts and resolved `toggles.autopilot` …
+
+    ### Chaining behavior
+    - [ ] **AC6 — boundaries chain**: With `autopilot: true`, every ceremonial phase …
+
+## Autopilot
+
+`manifest.autopilot: true` makes ceremonial phase-end STOPs **continuations**: after
+completing a phase (artifact written, manifest updated — **never batched**, so a dropped
+session stays recoverable by `ff-resume` at the first incomplete phase), emit the progress
+strip, then read `${CLAUDE_PLUGIN_ROOT}/commands/ff-<next-phase>.md` and execute it in the
+same turn, exactly as written — no abbreviation, no improvisation. `false` **or absent** →
+step-by-step: every STOP ends the turn (v0.2.0 behavior, unchanged).
+
+**Ceremonial boundaries (chain through these):**
+- feature: explore → clarify; post-sign-off → design → plan → implement → review → verify
+- bugfix lite: diagnose → implement → verify → review
+- bugfix full: post-sign-off → plan → implement → verify → review
+
+**Mandatory pauses — gates are physics, not preference; autopilot never skips, overrides,
+or self-answers a gate:**
+
+| Gate | Type | Behavior in autopilot |
+|---|---|---|
+| Spec sign-off (`ff-clarify`) | cross-turn | end the turn with the sign-off ask (**Sign-off rendering** above); never set `signOff.signed` yourself; chain resumes on the user's confirmation or `ff-resume` |
+| Diagnosis sign-off, full tier (`ff-diagnose`) | cross-turn | same as spec sign-off |
+| Not-reproduced stop (`ff-diagnose`) | cross-turn | ends the chain unconditionally — autopilot does not retry |
+| Critical review block (`ff-review`) | cross-turn | one fix-and-re-review cycle (below), then stop if Criticals remain |
+| Design option choice (`ff-design`) | in-session | ask (AskUserQuestion), then continue the chain in the same turn |
+| Clarify interrogation questions | in-session | ask, then continue |
+| Run disambiguation / re-run guard confirmations | in-session | ask, then continue |
+
+Any **gate failure** mid-chain (missing artifact, unsigned contract, wrong track) stops the
+chain with that gate's existing prescribed message — routing back, never forward.
+
+**Fix-and-re-review cycle (Critical findings, autopilot only).** Before starting a cycle,
+check `review.md` for an existing `## Resolution` section recording a prior autopilot fix
+cycle — the review artifact is the durable cycle record (it survives session drops). No
+prior cycle → apply fixes for the Critical findings, append the Resolution record (pre-fix
+findings, fixes applied, outcome), and re-run the review dispatch **once**. A prior cycle
+exists, or Criticals remain after the re-review → emit the standard Critical-block message
+and end the turn. `phases.review.status` stays `in_progress` until the review is clear.
+Zero Critical findings → no cycle; chain proceeds.
+
+**Run-start procedure (every entry point that creates a manifest: `ff`, and the cold-start
+paths of `ff-explore` / `ff-clarify` / `ff-diagnose`).** After the manifest is written:
+1. If `manifest.autopilot` already exists (any value) → **skip; never re-ask** — not on
+   resume, re-run, or any later phase.
+2. Read `toggles.autopilot` from config (`.feature-flow.json` →
+   `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; default `"ask"`).
+3. `"ask"` → ask the user once (AskUserQuestion): **autopilot** (phases chain automatically,
+   pausing only at sign-offs, design choice, and Critical review findings) vs
+   **step-by-step** (each phase stops; current behavior). Record the boolean as
+   `manifest.autopilot`. `true` / `false` → record that value directly; no question.
+
+**Resume.** `ff-resume` on a run with `autopilot: true` re-enters the first incomplete
+phase and **continues the chain** to the next mandatory pause, honoring every gate exactly
+as a live run would. With `false`/absent: run exactly one phase and stop (unchanged).

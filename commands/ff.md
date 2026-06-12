@@ -6,9 +6,12 @@ argument-hint: "\"<feature request or bug report>\""
 # /feature-flow:ff — classify, set up a run, and start it
 
 `$ARGUMENTS` is the request. This command **classifies the request, initializes a durable
-run, and starts only the first phase**, then STOPS and hands you to the next phase. It does
-**not** chain the whole workflow — each later phase is its own command you invoke, so every
-human gate is honored and a dropped session is recoverable.
+run, and starts only the first phase**, then STOPS and hands you to the next phase. In
+**step-by-step mode** it does **not** chain the whole workflow — each later phase is its
+own command you invoke, so every human gate is honored and a dropped session is
+recoverable. In **autopilot mode** (`manifest.autopilot: true`), ceremonial phase-end
+STOPs become continuations — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; human gates pause in both modes.
 
 > **Precedence — read before doing anything.** You are executing the feature-flow
 > workflow. Its phases REPLACE any generic brainstorming / writing-plans / make-plan /
@@ -16,7 +19,9 @@ human gate is honored and a dropped session is recoverable.
 > write to `~/.claude/plans/`, `docs/plans/`, or a separate brainstorm doc. Every artifact
 > lives in the `.feature-flow/<slug>/` sandbox recorded by its `manifest.json`. Follow the
 > steps below literally and in order, creating files with the Write tool. When you reach
-> **STOP**, end your turn — do **not** run the next phase yourself.
+> **STOP**, end your turn — do **not** run the next phase yourself. In autopilot mode,
+> ceremonial STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Step 1 — Classify the track (feature vs bugfix)
 
@@ -57,6 +62,14 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
      false, signed: false }` (tier is decided during diagnose).
    - Both: `createdAt`, empty `phases`. Confirm the file exists before continuing — if you
      have not written a manifest to disk, you have not started a run.
+3. **Resolve autopilot (run-start procedure):** if `manifest.autopilot` already exists,
+   skip this entirely — never re-ask. Otherwise read `toggles.autopilot` from config
+   (`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; default `"ask"`):
+   `"ask"` → ask the user once (AskUserQuestion) — **autopilot** (phases chain
+   automatically, pausing only at sign-offs, the design choice, and Critical review
+   findings) vs **step-by-step** (each phase stops; current behavior) — and record the
+   boolean as `manifest.autopilot`; `true`/`false` → record that value directly, no
+   question. See **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Step 3 — Start the first phase, by track
 
@@ -67,7 +80,11 @@ The manifest is set up; now run the explore phase **exactly as specified in
 write-up of the explore procedure (read `models.explorer` from config, dispatch
 `explorerAgents` differentiated `ff-code-explorer` agents, synthesize, write
 `<run dir>/explore.md` from `${CLAUDE_PLUGIN_ROOT}/templates/explore.md`, update the
-manifest). Do not restate or improvise the procedure here. Then **STOP and hand off:**
+manifest). Do not restate or improvise the procedure here. Then **STOP (step-by-step) /
+continue (autopilot):** if `manifest.autopilot` is `true`, emit the progress strip and
+proceed directly into the clarify phase per
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-clarify.md` — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, **STOP and hand off:**
 
    > Explore complete — findings in `<run dir>/explore.md`. The next phase (**clarify**)
    > will ask a few clarifying questions and produce a `spec.md` for your **sign-off**. Run
@@ -79,8 +96,11 @@ manifest). Do not restate or improvise the procedure here. Then **STOP and hand 
 ### Bugfix → hand off to the diagnose phase (do NOT run it here)
 
 The bugfix track's first phase is **diagnose**, which is a *gated* analysis phase (it can
-STOP to ask for repro detail, and may require sign-off). It lives in its own command — do
-not run it inline here. The manifest is set up; **STOP and hand off:**
+STOP to ask for repro detail, and may require sign-off). It lives in its own command. The
+manifest is set up; if `manifest.autopilot` is `true`, emit the progress strip and proceed
+directly into the diagnose phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-diagnose.md` — see
+**Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (diagnose's own gates
+still apply). If `false` or absent, **STOP and hand off:**
 
 > This is a **bug fix** — run set up (`<run dir>/manifest.json`, `track: bugfix`). The next
 > phase (**diagnose**) will reproduce the bug, find the root cause, and decide the fix
@@ -88,4 +108,4 @@ not run it inline here. The manifest is set up; **STOP and hand off:**
 
 End the message with the one-line progress strip (bugfix order: `diagnose[NEXT] → implement
 → verify → review`) — see **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
-Then **end your turn.** The user drives the next phase.
+Then **end your turn.** In step-by-step mode the user drives the next phase.

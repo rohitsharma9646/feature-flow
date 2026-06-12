@@ -13,7 +13,9 @@ the chosen approach and rejected alternatives.
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, create files with the
-> Write tool, run only this one phase, then STOP.
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract
 
@@ -52,7 +54,9 @@ committed to a distinct focus so the options are genuinely different:
 - **pragmatic** — the balance the codebase's conventions actually favor.
 
 Present the trade-offs side by side with a clear **recommendation**. Ask the user to
-choose (or confirm your recommendation). Do not pick silently.
+choose (or confirm your recommendation). Do not pick silently. This choice is an
+**in-session pause in both modes** — in autopilot, ask (AskUserQuestion), then continue
+the phase and the chain in the same turn once the user answers.
 
 ## Write the artifact + update manifest
 
@@ -60,6 +64,10 @@ choose (or confirm your recommendation). Do not pick silently.
 chosen approach, rejected alternatives + why, component map, data flow, risks. Set
 `phases.design = { status: "complete", artifact: "design.md" }`, bump `updatedAt`.
 
-**STOP.** Do not plan or implement now. Tell the user to run `/feature-flow:ff-plan` next,
-ending the message with the one-line progress strip — see **Progress strip** in
+**STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
+the progress strip and proceed directly into the plan phase per
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-plan.md` — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: do not plan or
+implement now. Tell the user to run `/feature-flow:ff-plan` next, ending the message with
+the one-line progress strip — see **Progress strip** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your turn.

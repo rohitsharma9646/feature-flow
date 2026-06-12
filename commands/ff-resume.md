@@ -33,8 +33,12 @@ argument-hint: "[slug, if more than one run exists]"
    is the resume point) and reconstruct a minimal manifest from what's on disk before
    continuing.
 5. Announce the resume point and the reason (which artifact was missing/incomplete), then
-   run **only that one phase** to completion, honoring its gates (sign-off, design choice)
-   exactly as a fresh run would. **STOP** at the end and tell the user the next command,
+   run the resume-point phase to completion, honoring its gates (sign-off, design choice)
+   exactly as a fresh run would. Then branch on mode: if `manifest.autopilot` is `true`,
+   **continue the chain** from the resume point to the next mandatory pause — honoring
+   every gate exactly as a live autopilot run would — see **Autopilot** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, run **only that
+   one phase**: **STOP** at the end and tell the user the next command,
    ending the message with the one-line progress strip — see **Progress strip** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Do **not** chain forward through the
-   remaining phases yourself.
+   remaining phases yourself in step-by-step mode.

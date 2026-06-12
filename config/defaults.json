@@ -5,6 +5,6 @@
   "diagnosticianAgents": 1,
   "models": { "explorer": "sonnet", "architect": "sonnet", "reviewer": "sonnet", "diagnostician": "sonnet", "testRunner": "sonnet" },
   "reviewThreshold": 80,
-  "toggles": { "tdd": true, "worktree": false, "greenfield": false },
+  "toggles": { "tdd": true, "worktree": false, "greenfield": false, "autopilot": "ask" },
   "paths": { "base": ".feature-flow", "spec": null, "plan": null }
 }

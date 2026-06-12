@@ -38,12 +38,24 @@ assistant) drive it — the user never has to know the command names:
    `manifest.json`** with the resolved `track`. **If you are in plan mode**, the manifest
    write is blocked — call `ExitPlanMode` first (the feature-flow run IS the plan), or tell
    the user to exit plan mode and re-run. See Step 2.0 in `commands/ff.md`.
-3. **Run the first phase only** — feature → `explore` inline; bugfix → hand off to the gated
-   `diagnose` phase — then **STOP** at the phase boundary. Do not chain forward.
+3. **Resolve autopilot** (run-start procedure in `docs/manifest-schema.md` §Autopilot):
+   config `toggles.autopilot` — `"ask"` (default) → ask the user once (autopilot vs
+   step-by-step) and record the boolean as `manifest.autopilot`; `true`/`false` → record
+   directly, no ask; never re-ask a run that already has the field.
+4. **Run the first phase only** — feature → `explore` inline; bugfix → hand off to the gated
+   `diagnose` phase — then **STOP** at the phase boundary. In step-by-step mode, do not
+   chain forward.
 
-After the first phase, continue **phase by phase**: each later phase is its own command the
-user (or you) invokes next, so every human gate is honored and a dropped session is
-recoverable. Honor the STOPs — never run past a sign-off or diagnosis gate on your own.
+After the first phase, the modes diverge. **Step-by-step** (`autopilot: false` or absent):
+continue **phase by phase** — each later phase is its own command the user (or you) invokes
+next, so every human gate is honored and a dropped session is recoverable. **Autopilot**
+(`manifest.autopilot: true`): ceremonial phase-end STOPs become continuations — chain
+forward per **Autopilot** in `docs/manifest-schema.md`, pausing at every mandatory gate.
+
+**Unconditional in BOTH modes — these lines never bend:** never run past a spec or
+diagnosis sign-off gate on your own; never set `signOff.signed` yourself; never proceed
+past a not-reproduced diagnosis; never route forward past an unresolved Critical review
+block (autopilot gets exactly one fix-and-re-review cycle, then stops). Honor the STOPs.
 
 > **Proportional ceremony / don't over-fire.** This is for *non-trivial* work. A genuine
 > one-line typo fix or an obvious, reversible change does not need a full run — just do it

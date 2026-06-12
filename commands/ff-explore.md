@@ -13,7 +13,9 @@ no upstream artifact is required (cold-start safe).
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, create files with the
-> Write tool, run only this one phase, then STOP.
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract (follow exactly)
 
@@ -25,6 +27,8 @@ no upstream artifact is required (cold-start safe).
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If `$ARGUMENTS` starts a new run,
    derive a short kebab `slug` from it, create the run dir, and write a manifest with
    `track: "feature"`, `tier: "full"`, empty `phases`, `signOff.required: true`.
+   After creating a **new** manifest, apply the run-start procedure to record
+   `autopilot` — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
    If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
 3. **Re-run guard:** if `phases.explore.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `explore.md` — see **Re-run guard** in
@@ -50,8 +54,12 @@ feature will live, what to reuse, constraints discovered, and open questions for
 the structure in `${CLAUDE_PLUGIN_ROOT}/templates/explore.md`. Set
 `phases.explore = { status: "complete", artifact: "explore.md" }`, bump `updatedAt`.
 
-**STOP.** Explore is the only phase you run here. Tell the user: *"Explore complete —
-findings in `explore.md`. Run `/feature-flow:ff-clarify` next."* End the message with the
-one-line progress strip (e.g. `explore[done] → clarify[NEXT] → design → plan → implement →
-review → verify`) — see **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+**STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
+the progress strip and proceed directly into the clarify phase per
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-clarify.md` — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: explore is the only
+phase you run here. Tell the user: *"Explore complete — findings in `explore.md`. Run
+`/feature-flow:ff-clarify` next."* End the message with the one-line progress strip (e.g.
+`explore[done] → clarify[NEXT] → design → plan → implement → review → verify`) — see
+**Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 Then end your turn — do not begin clarify yourself.

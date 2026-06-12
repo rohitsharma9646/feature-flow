@@ -2,7 +2,7 @@
 
 Composable, durable, verifying Claude Code plugin for **feature development** and **bug fixing** — two tracks, one spine, real (executed) verification.
 
-> **Status:** v0.2.0.
+> **Status:** v0.3.0.
 
 ## What it is
 
@@ -65,6 +65,27 @@ A bug report (`/feature-flow:ff "fix: save throws TypeError"`) takes the bugfix 
 diagnose (reproduce + root cause + sign-off if escalated) → implement (failing regression test,
 RED, fix, GREEN) → verify → review.
 
+## Autopilot mode
+
+By default every new run asks once: **autopilot or step-by-step?** In autopilot the phases
+chain automatically — the run above becomes just **three touches** instead of seven commands:
+
+1. `/feature-flow:ff "add a --csv flag"` → answer **autopilot** → explore AND clarify run;
+   the clarify questions are asked in-session; the run pauses at **sign-off** (a grouped
+   checklist of the acceptance criteria — reply "signed off").
+2. Your sign-off resumes the chain: design runs (pauses in-session for **your pick** among
+   the architecture options), then plan → implement → review → verify chain automatically.
+3. If review finds Critical issues, autopilot fixes them and re-reviews **once** (recorded
+   in `review.md`); if Criticals remain it stops for you. Otherwise the run reports `done`.
+
+Auto-completed phases render `[auto]` in the strip:
+`explore[done] → clarify[auto] → design[auto] → plan[NEXT] → …`. Sign-offs are never
+automated — autopilot never sets `signOff.signed` itself, and every gate still applies.
+Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the run-start
+question. A dropped mid-chain session recovers normally via `/feature-flow:ff-resume`
+(which continues the chain on autopilot runs). All phase commands are autopilot-aware;
+the canonical rules live in `docs/manifest-schema.md` §Autopilot.
+
 ## Commands
 
 | Command | What it does |
@@ -103,6 +124,7 @@ A repo-root `.feature-flow.json` overrides `config/defaults.json`:
 | `toggles.tdd` | `true` | Test-first on the feature track (bugfix RED→GREEN is always mandatory) |
 | `toggles.worktree` | `false` | Implement in an isolated git worktree |
 | `toggles.greenfield` | `false` | Relax git-diff assumptions for new/non-git projects |
+| `toggles.autopilot` | `"ask"` | Tri-state (the only non-boolean toggle): `"ask"` asks once per new run; `true` = always autopilot; `false` = always step-by-step. Recorded per-run as `manifest.autopilot` |
 | `paths.base` | `".feature-flow"` | Run sandbox root |
 | `paths.spec` | `null` | Directory to relocate specs to (file becomes `<dir>/<slug>.md`) |
 | `paths.plan` | `null` | Directory to relocate plans to (file becomes `<dir>/<slug>.md`) |

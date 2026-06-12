@@ -13,7 +13,9 @@ declare "done" on reasoning alone.
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, create files with the
-> Write tool, run only this one phase, then STOP.
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract
 
@@ -68,8 +70,12 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
   converge on `done` only when **both** verify and review are complete:
   - If `phases.review.status == "complete"` (review already ran) and verify passed, both
     terminal phases are satisfied → set `currentPhase = "done"` and report the run complete.
-  - Otherwise review still has to run: leave `currentPhase = "verify"`, **STOP**, report the
-    RED→GREEN result, and tell the user to run `/feature-flow:ff-review` next.
+  - Otherwise review still has to run. If `manifest.autopilot` is `true`, emit the progress
+    strip and proceed directly into the review phase per
+    `${CLAUDE_PLUGIN_ROOT}/commands/ff-review.md` — see **Autopilot** in
+    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: leave
+    `currentPhase = "verify"`, **STOP**, report the RED→GREEN result, and tell the user to
+    run `/feature-flow:ff-review` next.
 
 Report the verification result (pass/fail per contract item, with evidence), end the message
 with the one-line progress strip — see **Progress strip** in

@@ -14,7 +14,9 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 > **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, create files with the
-> Write tool, run only this one phase, then STOP.
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Manifest contract
 
@@ -70,7 +72,11 @@ Record it in `artifacts.plan`.
 Set `phases.plan = { status: "complete", artifact: "<resolved plan path>" }`, bump
 `updatedAt`.
 
-**STOP.** Do not implement now. Tell the user to run `/feature-flow:ff-implement` next
-(which will refuse to write code until the contract is signed off), ending the message with
-the one-line progress strip — see **Progress strip** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your turn.
+**STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
+the progress strip and proceed directly into the implement phase per
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md` — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; implement's own sign-off gate still
+applies. If `false` or absent: do not implement now. Tell the user to run
+`/feature-flow:ff-implement` next (which will refuse to write code until the contract is
+signed off), ending the message with the one-line progress strip — see **Progress strip**
+in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your turn.
