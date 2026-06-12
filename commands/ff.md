@@ -62,21 +62,19 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
 
 ### Feature → run the explore phase now (only this phase)
 
-1. Set `phases.explore.status = "in_progress"` in the manifest.
-2. Dispatch `explorerAgents` (default 3) **`ff-code-explorer`** agents in parallel, each
-   with a distinct focus so coverage is genuinely different:
-   - **similar features** — existing features closest to the request and how they're built.
-   - **architecture** — the layers, entry points, and conventions the feature must fit.
-   - **patterns/abstractions** — reusable patterns, utilities, and extension points.
-3. Read the files the agents flag as essential. Synthesize: where the feature will live,
-   what to reuse, constraints discovered, and open questions for clarify.
-4. **Write the artifact:** use the Write tool to create `<run dir>/explore.md` with that
-   summary. Set `phases.explore = { status: "complete", artifact: "explore.md" }`, bump
-   `updatedAt`. Then **STOP and hand off:**
+The manifest is set up; now run the explore phase **exactly as specified in
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-explore.md`** — that file is the single canonical
+write-up of the explore procedure (read `models.explorer` from config, dispatch
+`explorerAgents` differentiated `ff-code-explorer` agents, synthesize, write
+`<run dir>/explore.md` from `${CLAUDE_PLUGIN_ROOT}/templates/explore.md`, update the
+manifest). Do not restate or improvise the procedure here. Then **STOP and hand off:**
 
    > Explore complete — findings in `<run dir>/explore.md`. The next phase (**clarify**)
    > will ask a few clarifying questions and produce a `spec.md` for your **sign-off**. Run
    > `/feature-flow:ff-clarify` to continue.
+
+   End the message with the one-line progress strip — see **Progress strip** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ### Bugfix → hand off to the diagnose phase (do NOT run it here)
 
@@ -88,4 +86,6 @@ not run it inline here. The manifest is set up; **STOP and hand off:**
 > phase (**diagnose**) will reproduce the bug, find the root cause, and decide the fix
 > approach (writing `diagnosis.md`). Run `/feature-flow:ff-diagnose` to continue.
 
+End the message with the one-line progress strip (bugfix order: `diagnose[NEXT] → implement
+→ verify → review`) — see **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 Then **end your turn.** The user drives the next phase.

@@ -53,8 +53,11 @@ recoverable. Honor the STOPs — never run past a sign-off or diagnosis gate on 
 **Manual controls (these DO require typing, no natural-language trigger exists):** the
 individual phases `/feature-flow:ff-explore`, `/feature-flow:ff-clarify`, `/feature-flow:ff-design`,
 `/feature-flow:ff-plan`, `/feature-flow:ff-diagnose`, `/feature-flow:ff-implement`,
-`/feature-flow:ff-review`, `/feature-flow:ff-verify`, plus `/feature-flow:ff-status` (inspect a
-run) and `/feature-flow:ff-resume` (re-enter an interrupted run).
+`/feature-flow:ff-review`, `/feature-flow:ff-verify`, plus the run-management commands:
+`/feature-flow:ff-status` (inspect a run), `/feature-flow:ff-resume` (re-enter an interrupted
+run), `/feature-flow:ff-list` (list all runs, including abandoned/closed),
+`/feature-flow:ff-abandon <slug>` (drop a run from automatic resolution), and
+`/feature-flow:ff-close <slug>` (close a `done` run).
 
 ## The manifest is the shared state
 

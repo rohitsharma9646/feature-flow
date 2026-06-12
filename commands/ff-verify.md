@@ -19,17 +19,24 @@ declare "done" on reasoning alone.
 
 1. **Resolve the run** per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
-   most-recently-updated run → ask if ambiguous), then read its `manifest.json`. Set
-   `phases.verify.status = "in_progress"`, bump `currentPhase`.
+   most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
+2. **Re-run guard:** if `phases.verify.status` is already `"complete"`, stop and ask for
+   explicit confirmation before overwriting `verify.md` — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+3. Set `phases.verify.status = "in_progress"`, bump `currentPhase`.
 
 ## Cold-start
 
-If there is no `spec.md` (feature) or `diagnosis.md` (bugfix), ask the user what contract
-to verify against before running anything.
+There is no contract to verify against without an upstream artifact — route, don't ask
+open-endedly: if there is no `spec.md` on the feature track, **STOP** and tell the user to
+run `/feature-flow:ff-clarify` first; if there is no `diagnosis.md` on the bugfix track,
+**STOP** and tell the user to run `/feature-flow:ff-diagnose` first.
 
 ## Do the work
 
-Dispatch the **`ff-test-runner`** agent. It detects and **actually runs** the project's
+Read `models.testRunner` from config (`.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for the dispatched
+agent. Dispatch the **`ff-test-runner`** agent. It detects and **actually runs** the project's
 test / build / lint commands and returns real output (command, exit status, failing
 excerpts). It never edits code.
 
@@ -64,4 +71,6 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
   - Otherwise review still has to run: leave `currentPhase = "verify"`, **STOP**, report the
     RED→GREEN result, and tell the user to run `/feature-flow:ff-review` next.
 
-Report the verification result (pass/fail per contract item, with evidence) and end your turn.
+Report the verification result (pass/fail per contract item, with evidence), end the message
+with the one-line progress strip — see **Progress strip** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — and end your turn.

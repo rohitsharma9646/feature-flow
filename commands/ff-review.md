@@ -20,7 +20,10 @@ Static review of the implemented change. Output: `review.md`.
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`. Read
    `reviewThreshold` (default 80) and `reviewerAgents` (default 3).
-2. Set `phases.review.status = "in_progress"`, bump `currentPhase`.
+2. **Re-run guard:** if `phases.review.status` is already `"complete"`, stop and ask for
+   explicit confirmation before overwriting `review.md` — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+3. Set `phases.review.status = "in_progress"`, bump `currentPhase`.
 
 ## Cold-start
 
@@ -29,7 +32,9 @@ explicitly that this is a pre-implementation / partial review.
 
 ## Do the work
 
-Dispatch `reviewerAgents` **`ff-code-reviewer`** agents in parallel with differentiated
+Read `models.reviewer` from config (`.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
+agent. Dispatch `reviewerAgents` **`ff-code-reviewer`** agents in parallel with differentiated
 focuses:
 - **simplicity** — unneeded complexity, duplication, simpler equivalents.
 - **bugs** — logic errors, null/edge handling, races, security.
@@ -45,13 +50,23 @@ issues" summary — do not invent findings to look thorough.
 
 ## Update manifest + hand off (order differs by track)
 
-Set `phases.review = { status: "complete", artifact: "review.md" }`, bump `updatedAt`.
+**Blocking findings block — both tracks.** If `review.md` contains ≥1 **Critical** finding,
+do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
+`currentPhase = "review"`, bump `updatedAt`, and **STOP**, telling the user to resolve the
+Critical findings (re-running `/feature-flow:ff-implement` or fixing directly) and then re-run
+`/feature-flow:ff-review` — do **not** route forward to verify or done.
+
+Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, bump
+`updatedAt`, and hand off by track:
 
 - **Feature track:** review runs **before** verify. Leave `currentPhase = "review"` and
   **STOP**, telling the user to run `/feature-flow:ff-verify` next.
 - **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
-  already passed (`phases.verify.status == "complete"`) and this review surfaced no blocking
-  issue, set `currentPhase = "done"`. **STOP** and report the run complete. If review found
-  a blocking issue, leave `currentPhase = "review"` and tell the user what to fix.
+  already passed (`phases.verify.status == "complete"`), set `currentPhase = "done"`, **STOP**
+  and report the run complete. If verify has **not** run yet
+  (`phases.verify.status != "complete"`), leave `currentPhase = "review"` and **STOP**,
+  telling the user to run `/feature-flow:ff-verify` to confirm RED→GREEN — the run is not done
+  until both terminal phases are complete.
 
-End your turn.
+End the message with the one-line progress strip — see **Progress strip** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. End your turn.

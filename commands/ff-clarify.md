@@ -24,7 +24,11 @@ acceptance criteria and a sign-off block.
    `explore.md` exists, tell the user `/feature-flow:ff-explore` usually runs first — offer to
    proceed using `$ARGUMENTS` as the request, or stop so they can explore.
 3. Read `explore.md` (if present) for context.
-4. Set `phases.clarify.status = "in_progress"`, bump `currentPhase`.
+4. **Re-run guard:** if `phases.clarify.status` is already `"complete"`, stop and ask for
+   explicit confirmation first — re-running clarify overwrites `spec.md` AND resets
+   `signOff.signed` to `false` — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+5. Set `phases.clarify.status = "in_progress"`, bump `currentPhase`.
 
 ## Do the work
 
@@ -56,8 +60,10 @@ request. Don't over-ask. The technique *how-to* for each beat lives in
    Deep risk / pre-mortem and quality dimensions are **not** clarify's job (see the router above).
 
 Then write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`, filling Problem, Expected
-outcome, **Solution approaches considered** (chosen + rejected, each justified), Scope, Edge
-cases, Non-goals, the WHAT-changing **Assumptions**, and binary **Acceptance criteria**. Resolve
+outcome, **Solution approaches considered** (chosen + rejected, each justified), Scope,
+**Constraints** (hard limits: compatibility, performance, security, deadlines — from the
+user's answers or `explore.md`), Edge cases, Non-goals, the WHAT-changing **Assumptions**,
+and binary **Acceptance criteria**. Resolve
 the spec path per the `artifacts` note in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if
 `paths.spec` is set it is a **directory** — write `<paths.spec>/<slug>.md` (create the dir if
 needed); otherwise `<run dir>/spec.md`. Record the resolved path in the manifest's
@@ -72,8 +78,10 @@ to the sign-off gate below.
 ## Sign-off gate (required)
 
 The spec must end with `User signed off: no`. Write `spec.md` with the Write tool, then
-**STOP: end your turn by explicitly asking the user to sign off.** Do not design, plan, or
-implement, and do not mark sign-off yourself. When the user confirms (this or a later
+**STOP: end your turn by explicitly asking the user to sign off.** The sign-off ask **must
+quote the spec's `## Acceptance criteria` section verbatim** in the message — the user
+reviews exactly what they are signing without opening the file; a summary is not a
+substitute. Do not design, plan, or implement, and do not mark sign-off yourself. When the user confirms (this or a later
 turn), set `signOff.signed = true` and `signOff.date`, and update the spec's Sign-off line
 to `yes (<date>)`.
 
@@ -82,4 +90,5 @@ to `yes (<date>)`.
 Once sign-off is recorded, set
 `phases.clarify = { status: "complete", artifact: "<resolved spec path>" }`,
 `signOff.required = true`, bump `updatedAt`. Then **STOP** and tell the user to run
-`/feature-flow:ff-design` next.
+`/feature-flow:ff-design` next, ending the message with the one-line progress strip — see
+**Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.

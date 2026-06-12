@@ -14,7 +14,8 @@ makes phases composable, standalone-runnable, and resumable from disk.
   "tier": "full | lite",
   "createdAt": "<ISO8601>",
   "updatedAt": "<ISO8601>",
-  "currentPhase": "explore|clarify|design|plan|diagnose|implement|review|verify|done",
+  "closedAt": null,
+  "currentPhase": "explore|clarify|design|plan|diagnose|implement|review|verify|done|abandoned",
   "phases": {
     "<phase>": { "status": "pending|in_progress|complete", "artifact": "<relative path or null>" }
   },
@@ -42,7 +43,13 @@ makes phases composable, standalone-runnable, and resumable from disk.
   - `track: bugfix` → phases: diagnose → implement (test-first) → verify → review.
 - **`tier`**: `full` (larger work; requires a signed-off `spec.md`/`diagnosis.md` and a `plan.md`)
   vs `lite` (trivial/obvious bug; a confirmed `diagnosis.md` is the gate, no separate signed spec).
-- **`currentPhase`** is the phase most recently entered; `done` when the run is complete.
+- **`currentPhase`** is the phase most recently entered; `done` when the run is complete;
+  `abandoned` when the run was cancelled via `/feature-flow:ff-abandon`. An abandoned run is
+  **excluded from automatic run resolution** (steps 3–4 below); its phases and artifacts are
+  left untouched, and it remains reachable by explicit slug.
+- **`closedAt`** (ISO8601 or `null`): set by `/feature-flow:ff-close` on a `done` run. A closed
+  run is **excluded from automatic run resolution**. Absent/`null` in older (v0.1.0) manifests
+  — treat as not closed; no migration needed.
 - **`phases.<phase>.artifact`** is the relative path (within the run dir) of the artifact that
   phase produced, or `null` if it writes no file (e.g. explore may summarize inline).
 - **`signOff`**: feature track and escalated (`full`) bugfixes require sign-off before
@@ -73,12 +80,17 @@ commands reference it instead of restating their own:
 1. **Resolve the base.** Read config (`.feature-flow.json` →
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); use `paths.base` (default `.feature-flow`)
    as the sandbox root.
-2. **Named run wins.** If `$ARGUMENTS` names a slug (or a run dir), use `<base>/<slug>/`.
-3. **Single run.** Otherwise, if exactly one run exists under `<base>/`, use it.
-4. **Several runs → most recent, but disambiguate when unclear.** If more than one run
-   exists, use the **most recently updated** (`updatedAt`). If that is genuinely ambiguous
+2. **Named run wins.** If `$ARGUMENTS` names a slug (or a run dir), use `<base>/<slug>/` —
+   this works even for abandoned/closed runs. Unknown slug → error naming it and suggesting
+   `/feature-flow:ff-list`.
+3. **Single eligible run.** Otherwise, **exclude runs with `currentPhase: "abandoned"` or a
+   non-null `closedAt`** — they are never auto-selected. If exactly one eligible run remains
+   under `<base>/`, use it (zero eligible → cold-start, even if abandoned/closed runs exist).
+4. **Several eligible runs → most recent, but disambiguate when unclear.** Use the **most
+   recently updated** (`updatedAt`) of the eligible runs. If that is genuinely ambiguous
    (e.g. two updated at nearly the same time, or the request clearly points at a different
-   run), **ask the user which run** rather than guessing.
+   run), **ask the user which run** — listing `slug | track | currentPhase | updatedAt` for
+   each candidate — rather than guessing.
 5. **Cold-start / new run.** An entry or first-phase command starting fresh work instead
    derives a new kebab `slug` from `$ARGUMENTS` and **creates** `<base>/<slug>/`.
 
@@ -94,4 +106,38 @@ commands reference it instead of restating their own:
    and `currentPhase`.
 
 Resume (`/ff-resume`) and status (`/ff-status`) read this file. If the manifest is
-missing or corrupt, resume infers the phase from which artifacts exist on disk.
+missing or corrupt, they apply the **Disk inference procedure** below.
+
+## Disk inference procedure
+
+Used by `/ff-resume` and `/ff-status` when the manifest is missing/corrupt, or to validate a
+manifest that claims phases are complete:
+
+1. Walk the track's phase order — feature: explore(`explore.md`) → clarify(`spec.md`) →
+   design(`design.md`) → plan(`plan.md`) → implement(no artifact) → review(`review.md`) →
+   verify(`verify.md`); bugfix: diagnose(`diagnosis.md`) → implement(no artifact) →
+   verify(`verify.md`) → review(`review.md`).
+2. For each phase marked `complete` (or, with no manifest, each phase in order): the declared
+   artifact must **exist on disk** AND pass **minimal validity** — `spec.md` must contain a
+   `User signed off:` line; `diagnosis.md` must contain its `Tier:`/confirmation line; all
+   other artifacts: existence suffices.
+3. The first phase whose artifact is missing or invalid is the true resume point. Announce
+   why: "manifest claims complete but artifact missing: `<path>`" or "artifact failed validity
+   check: `<path>`".
+
+## Re-run guard
+
+Before re-entering a phase whose `status` is already `"complete"`, a command **must ask for
+explicit user confirmation**, naming what will be overwritten (the artifact) and what will be
+reset (e.g. `signOff.signed` when re-running clarify). Without confirmation, stop and leave
+the phase unchanged. This protects a signed spec from a silent sign-off reset.
+
+## Progress strip
+
+Every phase command's STOP / hand-off message ends with a one-line strip generated from
+`manifest.phases`, in the track's phase order: completed phases as `<phase>[done]`, the next
+phase to run as `<phase>[NEXT]`, later phases as bare names, joined by ` → `. Example:
+
+    explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify
+
+Abandoned runs render as `<slug>[abandoned]`; closed runs as `<slug>[closed]`.

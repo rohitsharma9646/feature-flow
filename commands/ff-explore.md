@@ -26,11 +26,16 @@ no upstream artifact is required (cold-start safe).
    derive a short kebab `slug` from it, create the run dir, and write a manifest with
    `track: "feature"`, `tier: "full"`, empty `phases`, `signOff.required: true`.
    If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
-3. Set `phases.explore.status = "in_progress"`, bump `currentPhase = "explore"`.
+3. **Re-run guard:** if `phases.explore.status` is already `"complete"`, stop and ask for
+   explicit confirmation before overwriting `explore.md` — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+4. Set `phases.explore.status = "in_progress"`, bump `currentPhase = "explore"`.
 
 ## Do the work
 
-Dispatch `explorerAgents` (default 3) **`ff-code-explorer`** agents in parallel, each
+Read `models.explorer` from config (`.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
+agent. Dispatch `explorerAgents` (default 3) **`ff-code-explorer`** agents in parallel, each
 with a differentiated focus so the coverage is genuinely distinct:
 - **similar features** — find existing features closest to the request and how they're built.
 - **architecture** — map the layers, entry points, and conventions the feature must fit.
@@ -41,9 +46,12 @@ feature will live, what to reuse, constraints discovered, and open questions for
 
 ## Write the artifact + update manifest
 
-**Use the Write tool** to write the findings summary to `<run dir>/explore.md`. Set
+**Use the Write tool** to write the findings summary to `<run dir>/explore.md`, following
+the structure in `${CLAUDE_PLUGIN_ROOT}/templates/explore.md`. Set
 `phases.explore = { status: "complete", artifact: "explore.md" }`, bump `updatedAt`.
 
 **STOP.** Explore is the only phase you run here. Tell the user: *"Explore complete —
-findings in `explore.md`. Run `/feature-flow:ff-clarify` next."* Then end your turn — do
-not begin clarify yourself.
+findings in `explore.md`. Run `/feature-flow:ff-clarify` next."* End the message with the
+one-line progress strip (e.g. `explore[done] → clarify[NEXT] → design → plan → implement →
+review → verify`) — see **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+Then end your turn — do not begin clarify yourself.

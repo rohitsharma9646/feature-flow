@@ -26,18 +26,27 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
 2. **Cold-start:** if no manifest exists, create one with `track: "bugfix"` (slug from the
    bug report). If a manifest exists with `track: "feature"`, this is the wrong track —
    tell the user and stop.
-3. Set `phases.diagnose.status = "in_progress"`, bump `currentPhase = "diagnose"`.
+3. **Re-run guard:** if `phases.diagnose.status` is already `"complete"`, stop and ask for
+   explicit confirmation before overwriting `diagnosis.md` (a full-tier re-run also resets
+   `signOff.signed`) — see **Re-run guard** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+4. Set `phases.diagnose.status = "in_progress"`, bump `currentPhase = "diagnose"`.
 
 ## Do the work — reproduce + root-cause
 
-Dispatch a **`ff-diagnostician`** agent (read-only) to: reproduce the bug, isolate the
-fault to the smallest responsible code region, and identify the **root cause** (not the
+Read `diagnosticianAgents` (default 1) and `models.diagnostician` from config
+(`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); dispatch that many
+**`ff-diagnostician`** agents (read-only), passing the model, to: reproduce the bug, isolate
+the fault to the smallest responsible code region, and identify the **root cause** (not the
 symptom) with `file:line` evidence and the failing path traced from trigger to fault.
 
 > **Not reproduced → STOP (edge case).** If the bug cannot be reproduced, record
-> "not reproduced" in `diagnosis.md` along with what was tried and the specific detail
-> still needed, **ask the user for that detail, and STOP — do not proceed to a fix.**
-> Guessing a fix for an unconfirmed bug is forbidden. End your turn here.
+> "not reproduced" in `diagnosis.md` along with what was tried, and tell the user exactly:
+>
+> > Diagnosis cannot proceed: the bug was not reproduced. Provide <the specific missing
+> > detail>, then re-run `/feature-flow:ff-diagnose`. Guessing a fix for an unconfirmed bug
+> > is forbidden.
+>
+> Then STOP — do not proceed to a fix. End your turn here.
 
 ## Decide the fix approach (hotfix-vs-proper — required, AC12)
 
@@ -75,7 +84,10 @@ Update the manifest: set `track: "bugfix"`, `tier`, `artifacts.diagnosis`, bump 
 
 A **full**-tier diagnosis is the bug's signed contract, exactly like a feature `spec.md`.
 After writing `diagnosis.md`, **STOP: end your turn by explicitly asking the user to sign off
-on the fix approach.** Do **not** plan, implement, or mark sign-off yourself. When the user
+on the fix approach.** The sign-off ask **must quote the diagnosis's chosen fix approach and
+contract items (root cause, fix surface, regression-test plan) verbatim** in the message —
+the user reviews exactly what they are signing without opening the file. Do **not** plan,
+implement, or mark sign-off yourself. When the user
 confirms (this or a later turn), set `signOff.signed = true` and `signOff.date`, update the
 diagnosis `User signed off:` line to `yes (<date>)`, and set
 `phases.diagnose = { status: "complete", artifact: "diagnosis.md" }`. A **lite** diagnosis
@@ -88,5 +100,9 @@ needs no sign-off — its confirmed diagnosis is itself the gate.
 - **full:** **only once the diagnosis is signed off** (above), tell the user to run
   `/feature-flow:ff-plan` next, then `/feature-flow:ff-implement`. If it is not yet signed,
   STOP at the sign-off ask — do **not** route forward.
+
+End the message with the one-line progress strip (bugfix order, e.g. `diagnose[done] →
+implement[NEXT] → verify → review`) — see **Progress strip** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 End your turn here. Do not plan, implement, or fix now.

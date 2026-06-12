@@ -21,7 +21,10 @@ Implements the planned work for **either track**. Branch on `manifest.track`:
 1. **Resolve the run** per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
-2. Set `phases.implement.status = "in_progress"` only **after** the gate passes.
+2. **Re-run guard:** if `phases.implement.status` is already `"complete"`, stop and ask for
+   explicit confirmation before redoing the implementation — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+3. Set `phases.implement.status = "in_progress"` only **after** the gate passes.
 
 ## Gate — STOP if the contract is not satisfied
 
@@ -46,8 +49,10 @@ implement/plan workflow.
 
 ## Cold-start
 
-- **Feature:** if there is no `plan.md` (or no `spec.md`), route to the prior phase
-  (`/feature-flow:ff-plan` → `/feature-flow:ff-design` → `/feature-flow:ff-clarify`) rather than implementing against nothing.
+- **Feature:** if there is no `plan.md`, no `design.md`, or no `spec.md`, route to the first
+  missing artifact's phase (`/feature-flow:ff-plan` → `/feature-flow:ff-design` →
+  `/feature-flow:ff-clarify`) rather than implementing against nothing — a missing `design.md`
+  routes to `/feature-flow:ff-design` even when `plan.md` exists.
 - **Bugfix:** if there is no `diagnosis.md`, route to `/feature-flow:ff-diagnose`.
 
 ## Do the work — feature track
@@ -79,7 +84,9 @@ if the bug escalated to `tier: full`. Then, **in this exact order**:
 > If you cannot get the test to fail pre-fix, the test does not pin the bug — fix the test,
 > not the order.
 
-`toggles.worktree` / `toggles.greenfield` apply here too.
+`toggles.worktree` / `toggles.greenfield` apply here too. **`toggles.tdd` does NOT apply to
+the bugfix track** — the RED→GREEN order above is mandatory regardless of config; `tdd:
+false` only relaxes test-first on the feature track.
 
 ## Update manifest
 
@@ -92,4 +99,5 @@ ensure the captured `bugfix.red` / `bugfix.green` evidence is recorded.
 - **bugfix:** run `/feature-flow:ff-verify` next (to confirm RED→GREEN), then
   `/feature-flow:ff-review` (review is terminal).
 
-End your turn.
+End the message with the one-line progress strip — see **Progress strip** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. End your turn.

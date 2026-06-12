@@ -20,14 +20,20 @@ the chosen approach and rejected alternatives.
 1. **Resolve the run** per **Run resolution** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
-2. **Cold-start + sign-off gate:** if no `spec.md` exists (per `artifacts.spec`), tell the
-   user to run `/feature-flow:ff-clarify` first to produce a spec — do not invent requirements.
-   **If `spec.md` exists but is not signed off** (`signOff.signed != true` / the spec's
-   `User signed off:` line reads `no`), **STOP** and route to `/feature-flow:ff-clarify` for
-   sign-off: on the feature track, design, plan, and implement all require a **signed** spec
-   (the WHAT is locked before the HOW). Stop unless the user explicitly asks you to design
-   against an inline description in `$ARGUMENTS`.
-3. Read `spec.md`. Set `phases.design.status = "in_progress"`, bump `currentPhase`.
+2. **Cold-start + sign-off gate:** if no `spec.md` exists (per `artifacts.spec`), or it
+   exists but is not signed off (`signOff.signed != true` / the spec's `User signed off:`
+   line reads `no`), **STOP** and tell the user exactly:
+
+   > Design requires a **signed** spec — the WHAT is locked before the HOW (design, plan,
+   > and implement all gate on it). Run `/feature-flow:ff-clarify` to produce and/or sign off
+   > the spec, then re-run `/feature-flow:ff-design`.
+
+   Do not invent requirements. Stop unless the user explicitly asks you to design against
+   an inline description in `$ARGUMENTS`.
+3. **Re-run guard:** if `phases.design.status` is already `"complete"`, stop and ask for
+   explicit confirmation before overwriting `design.md` — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+4. Read `spec.md`. Set `phases.design.status = "in_progress"`, bump `currentPhase`.
 
 ## Do the work
 
@@ -37,7 +43,9 @@ the chosen approach and rejected alternatives.
 > Do **not** re-open the solution choice; if the chosen approach itself looks wrong, STOP and send
 > the user back to `/feature-flow:ff-clarify` rather than silently substituting a different *what*.
 
-Dispatch `architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each
+Read `models.architect` from config (`.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
+agent. Dispatch `architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each
 committed to a distinct focus so the options are genuinely different:
 - **minimal** — smallest change that satisfies the spec.
 - **clean** — best long-term structure, even if more work.
@@ -53,4 +61,5 @@ chosen approach, rejected alternatives + why, component map, data flow, risks. S
 `phases.design = { status: "complete", artifact: "design.md" }`, bump `updatedAt`.
 
 **STOP.** Do not plan or implement now. Tell the user to run `/feature-flow:ff-plan` next,
-then end your turn.
+ending the message with the one-line progress strip — see **Progress strip** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your turn.

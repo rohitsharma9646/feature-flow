@@ -13,18 +13,27 @@ argument-hint: "[slug, if more than one run exists]"
 
 ## Do the work
 
-1. Resolve `paths.base` from config. Find the run dir (named slug in `$ARGUMENTS`, else the
-   most recently updated run under `<base>/`).
-2. **Read `manifest.json`.** Determine the first phase whose `status != "complete"` (or
-   whose declared artifact is missing on disk). That is the resume point.
-3. **Missing or corrupt manifest (edge case):** do NOT fail. Infer the phase from which
-   artifacts exist on disk, using the track's phase order:
-   - **feature:** explore → clarify(`spec.md`) → design(`design.md`) → plan(`plan.md`) →
-     implement → review(`review.md`) → verify(`verify.md`).
-   - **bugfix:** diagnose(`diagnosis.md`) → implement → verify(`verify.md`) → review(`review.md`).
-   Re-enter at the first phase whose artifact is absent. If you must, reconstruct a minimal
-   manifest from what's on disk before continuing.
-4. Announce the resume point and the reason (which artifact was missing/incomplete), then
+1. Resolve `paths.base` from config. Find the run dir per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug in `$ARGUMENTS`, else the most
+   recently updated *eligible* run — abandoned/closed runs are excluded).
+2. **Abandoned-run guard:** if the manifest's `currentPhase` is `"abandoned"`, STOP and
+   report — "Run '<slug>' is abandoned — nothing to resume. Use `/feature-flow:ff-list` to
+   see active runs." Do not infer or re-enter phases.
+3. **Read `manifest.json` and validate it against disk** — do not trust `status: "complete"`
+   on its own. Apply the **Disk inference procedure** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: for each phase marked `complete`, its
+   declared artifact must exist on disk AND pass minimal validity (`spec.md` contains a
+   `User signed off:` line; `diagnosis.md` contains its `Tier:` line; others: existence).
+   The first phase that is not complete, or whose artifact is missing/invalid, is the resume
+   point — announce "manifest claims complete but artifact missing: `<path>`" or "artifact
+   failed validity check: `<path>`" when that is why.
+4. **Missing or corrupt manifest (edge case):** do NOT fail. Apply the same **Disk inference
+   procedure** from scratch (walk the track's phase order; first absent-or-invalid artifact
+   is the resume point) and reconstruct a minimal manifest from what's on disk before
+   continuing.
+5. Announce the resume point and the reason (which artifact was missing/incomplete), then
    run **only that one phase** to completion, honoring its gates (sign-off, design choice)
-   exactly as a fresh run would. **STOP** at the end and tell the user the next command —
-   do **not** chain forward through the remaining phases yourself.
+   exactly as a fresh run would. **STOP** at the end and tell the user the next command,
+   ending the message with the one-line progress strip — see **Progress strip** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Do **not** chain forward through the
+   remaining phases yourself.
