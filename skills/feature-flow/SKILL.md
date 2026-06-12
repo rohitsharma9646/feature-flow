@@ -1,6 +1,6 @@
 ---
 name: feature-flow
-description: Use when developing a non-trivial feature or fixing a bug and you want a durable, resumable, verified workflow. Runs two tracks (feature: explore→clarify→design→plan→implement→review→verify; bugfix test-first: diagnose→failing-regression-test→fix→verify→review) over on-disk artifacts with real executed verification. Triggers on "build a feature", "add X", "fix this bug", "/feature-flow:ff", or any request that benefits from gated, recoverable, evidence-backed development.
+description: 'Use when developing a non-trivial feature or fixing a bug and you want a durable, resumable, verified workflow. Runs two tracks (feature: explore→clarify→design→plan→implement→review→verify; bugfix test-first: diagnose→failing-regression-test→fix→verify→review) over on-disk artifacts with real executed verification. Triggers on "build a feature", "add X", "fix this bug", "/feature-flow:ff", or any request that benefits from gated, recoverable, evidence-backed development.'
 ---
 
 # feature-flow
