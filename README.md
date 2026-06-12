@@ -90,7 +90,7 @@ the canonical rules live in `docs/manifest-schema.md` §Autopilot.
 
 | Command | What it does |
 |---|---|
-| `/feature-flow:ff "<request>"` | Entry point: classify feature vs bugfix, create the run, start the first phase |
+| `/feature-flow:ff "<request>"` | Entry point: classify feature vs bugfix, create the run, ask autopilot vs step-by-step (once), start the first phase |
 | `/feature-flow:ff-explore` | [feature] Fan out read-only explorers, write `explore.md` |
 | `/feature-flow:ff-clarify` | [feature] Grill requirements, write `spec.md`, collect sign-off |
 | `/feature-flow:ff-design` | [feature] Architect fan-out, record the chosen design in `design.md` |
@@ -100,10 +100,13 @@ the canonical rules live in `docs/manifest-schema.md` §Autopilot.
 | `/feature-flow:ff-review` | [shared] Reviewer fan-out into `review.md`; Critical findings block |
 | `/feature-flow:ff-verify` | [shared] Really execute tests/build/lint; map the contract to pass/fail |
 | `/feature-flow:ff-status` | Print a run's track, tier, phase statuses, sign-off, artifacts |
-| `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete (or invalid) phase |
+| `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete (or invalid) phase; on autopilot runs, continues the chain to the next gate |
 | `/feature-flow:ff-list` | List ALL runs — slug, track, tier, phase, dates — incl. abandoned/closed |
 | `/feature-flow:ff-abandon <slug>` | Mark a run abandoned (excluded from automatic run resolution) |
 | `/feature-flow:ff-close <slug>` | Close a `done` run (excluded from automatic run resolution) |
+
+All phase commands are **autopilot-aware**: on an autopilot run they chain into the next
+phase instead of stopping (pausing only at the gates listed in the Autopilot section above).
 
 ## Configuration
 

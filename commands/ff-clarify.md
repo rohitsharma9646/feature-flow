@@ -63,6 +63,10 @@ request. Don't over-ask. The technique *how-to* for each beat lives in
 4. **Assumptions that change the WHAT** — surface only assumptions that would alter the spec.
    Deep risk / pre-mortem and quality dimensions are **not** clarify's job (see the router above).
 
+The interrogation is an **in-session pause in both modes** — in autopilot, ask the
+questions (AskUserQuestion), then continue writing the spec and proceed to the sign-off
+gate in the same turn once the user answers.
+
 Then write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`, filling Problem, Expected
 outcome, **Solution approaches considered** (chosen + rejected, each justified), Scope,
 **Constraints** (hard limits: compatibility, performance, security, deadlines — from the
@@ -84,8 +88,8 @@ to the sign-off gate below.
 The spec must end with `User signed off: no`. Write `spec.md` with the Write tool, then
 **STOP: end your turn by explicitly asking the user to sign off.** The sign-off ask
 presents the spec's `## Acceptance criteria` **verbatim, as a grouped checklist — never a
-blockquote wall** (theme headings, `- [ ] **AC<n> — <label>**: <verbatim text>` items) —
-see **Sign-off rendering** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is
+blockquote wall** — see **Sign-off rendering** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is
 a hard turn-end **in both modes**: autopilot never bypasses it and never sets
 `signOff.signed` itself. Do not design, plan, or implement, and do not mark sign-off
 yourself. When the user confirms (this or a later turn), set `signOff.signed = true` and

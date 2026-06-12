@@ -106,8 +106,7 @@ needs no sign-off — its confirmed diagnosis is itself the gate.
 - **lite:** if `manifest.autopilot` is `true`, emit the progress strip and proceed directly
   into the implement phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md` — see
   **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent,
-  tell the user to run `/feature-flow:ff-implement` next (the confirmed diagnosis
-  is the gate; the fix is **test-first** — failing regression test → RED → fix → GREEN).
+  tell the user to run `/feature-flow:ff-implement` next.
 - **full:** **only once the diagnosis is signed off** (above): if the re-read
   `manifest.autopilot` is `true`, emit the progress strip and proceed directly into the
   plan phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-plan.md`; if `false` or absent, tell
@@ -119,4 +118,5 @@ tier includes plan: `diagnose[done] → plan[NEXT] → implement → verify → 
 skips it: `diagnose[done] → implement[NEXT] → verify → review` — see **Progress strip** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
-End your turn here. Do not plan, implement, or fix now.
+In step-by-step mode, end your turn here — do not plan, implement, or fix now. The routing
+instructions above govern autopilot continuation.

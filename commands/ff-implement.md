@@ -106,4 +106,5 @@ off by track (the two tracks end in opposite order — match the manifest):
   `/feature-flow:ff-review` (review is terminal).
 
 End the message with the one-line progress strip — see **Progress strip** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. End your turn.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. In step-by-step mode, end your turn (the
+autopilot branch above continues instead).

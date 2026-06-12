@@ -87,4 +87,5 @@ Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, b
   until both terminal phases are complete.
 
 End the message with the one-line progress strip — see **Progress strip** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. End your turn.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. In step-by-step mode, end your turn (the
+autopilot branches above continue instead).

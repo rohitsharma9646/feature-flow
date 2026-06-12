@@ -18,9 +18,9 @@ STOPs become continuations — see **Autopilot** in
 > docs-first planning in your environment: do **not** invoke those skills, and do **not**
 > write to `~/.claude/plans/`, `docs/plans/`, or a separate brainstorm doc. Every artifact
 > lives in the `.feature-flow/<slug>/` sandbox recorded by its `manifest.json`. Follow the
-> steps below literally and in order, creating files with the Write tool. When you reach
-> **STOP**, end your turn — do **not** run the next phase yourself. In autopilot mode,
-> ceremonial STOPs become continuations — see **Autopilot** in
+> steps below literally and in order, creating files with the Write tool. Run only the
+> current phase, then STOP. In autopilot mode, ceremonial phase-end STOPs become
+> continuations — see **Autopilot** in
 > `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
 ## Step 1 — Classify the track (feature vs bugfix)

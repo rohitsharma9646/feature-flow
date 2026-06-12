@@ -77,6 +77,6 @@ the progress strip and proceed directly into the implement phase per
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md` — see **Autopilot** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; implement's own sign-off gate still
 applies. If `false` or absent: do not implement now. Tell the user to run
-`/feature-flow:ff-implement` next (which will refuse to write code until the contract is
-signed off), ending the message with the one-line progress strip — see **Progress strip**
-in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your turn.
+`/feature-flow:ff-implement` next, ending the message with the one-line progress strip —
+see **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your
+turn.
