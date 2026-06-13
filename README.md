@@ -37,6 +37,21 @@ The install **copies** source into `~/.claude/plugins/cache/feature-flow/feature
 (not a symlink). After editing the source, refresh the cache with **uninstall + reinstall**
 (`claude plugin update` no-ops on an unchanged version), then fully restart the session.
 
+### Codex local install
+
+This repo also includes Codex plugin metadata at `.codex-plugin/plugin.json`. For local
+Codex use, build a clean package and expose that package through the personal marketplace:
+
+```
+scripts/package-codex-plugin.sh --install-link
+codex plugin add feature-flow@personal
+```
+
+The personal marketplace file is `~/.agents/plugins/marketplace.json` and points at
+`./plugins/feature-flow`; the package script updates that symlink to
+`dist/codex/feature-flow`. Re-run the package script after source edits, then reinstall
+and start a new Codex thread so newly loaded skills are available.
+
 ## Quick start — a worked feature run
 
 ```

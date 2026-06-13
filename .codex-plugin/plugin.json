@@ -1,0 +1,35 @@
+{
+  "name": "feature-flow",
+  "version": "0.3.1+codex.20260613150048",
+  "description": "Durable, resumable workflow for feature development and bug fixing with real verification.",
+  "author": {
+    "name": "Rohit Sharma",
+    "email": "rohitsharma9646@gmail.com"
+  },
+  "repository": "https://github.com/rohitsharma9646/feature-flow",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "feature-development",
+    "bugfix",
+    "verification"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Feature Flow",
+    "shortDescription": "Run gated, resumable feature and bugfix workflows.",
+    "longDescription": "Feature Flow guides non-trivial feature work and test-first bug fixes through durable on-disk run state, explicit gates, reviews, and executed verification.",
+    "developerName": "Rohit Sharma",
+    "category": "Productivity",
+    "capabilities": [
+      "Workflow",
+      "Write",
+      "Verification"
+    ],
+    "defaultPrompt": [
+      "Start feature-flow for this change.",
+      "Use feature-flow to fix this bug.",
+      "Resume my feature-flow run."
+    ]
+  }
+}

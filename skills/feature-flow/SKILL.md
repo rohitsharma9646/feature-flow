@@ -9,6 +9,12 @@ A composable, durable, verifying workflow for **feature development** and **bug 
 Two tracks share one spine; each phase is a standalone command that reads and writes
 on-disk artifacts, so work is resumable and a dropped session is recoverable.
 
+## Platform adaptation
+
+Claude Code exposes the files under `commands/` as slash commands. Other agent
+platforms should preserve the same workflow contract with their native tools. In
+Codex, read `references/codex-tools.md` before following a phase procedure.
+
 ## When to use which track
 
 - **Feature** — adding new behavior. Phases:

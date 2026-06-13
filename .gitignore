@@ -4,6 +4,9 @@
 # Dependencies
 node_modules/
 
+# Generated local Codex package
+dist/
+
 # Logs / OS cruft
 *.log
 .DS_Store
