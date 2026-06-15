@@ -6,6 +6,9 @@
 .feature-flow.json
 docs/feature-flow/
 
+# Author-local KB store (dogfood smoke). Plugin CODE ships; KB ENTRIES do not.
+.feature-flow-kb/
+
 # Dependencies
 node_modules/
 
