@@ -103,6 +103,30 @@ question. A dropped mid-chain session recovers normally via `/feature-flow:ff-re
 (which continues the chain on autopilot runs). All phase commands are autopilot-aware;
 the canonical rules live in `docs/manifest-schema.md` §Autopilot.
 
+## Knowledge base
+
+feature-flow can **remember** what each run decided and **recall** it in later runs — so a new run
+doesn't re-derive a settled decision or silently contradict it. It is **off by default**; activate
+it per-project in `.feature-flow.json`:
+
+```json
+{ "toggles": { "kb": true }, "paths": { "kb": "docs/kb" } }
+```
+
+- **Capture** happens at run close, **confirm-gated**: feature-flow proposes 1–3 candidate entries
+  distilled from the run's decisions; you accept / edit / reject. Accepted entries are written as
+  project-local, committed markdown carrying provenance (capture date, git commit SHA, referenced
+  files, topic tags) — feature-flow never `git add`/`commit`s them for you (you commit).
+- **Recall** runs at the start of `explore` and `design`: entries whose tags match the request are
+  surfaced to the agents as context (up to `kb.maxRecallEntries`, recency-ordered).
+- **Staleness:** an entry is flagged `[STALE]` if a referenced file is gone/moved or it is older
+  than `kb.freshnessWindowDays` — flagged and still shown, never silently dropped or presented as
+  current truth.
+- **v1 non-goals (deferred to a fast-follow):** **dedup** of near-duplicate entries and
+  **supersession** (a newer entry marking an older obsolete) are not in v1 — duplicates persist
+  (surfaced, not dropped). Distinct from claude-mem: project-local, git-committed, team-shared,
+  project-scoped.
+
 ## Commands
 
 | Command | What it does |
@@ -149,6 +173,10 @@ A repo-root `.feature-flow.json` overrides `config/defaults.json`:
 | `paths.durable` | `null` | Directory for **committed** decision docs (spec/design/plan/diagnosis). Each run's docs are promoted to `<dir>/<createdAt-date>-<slug>/` as their phase completes. Unset (default) = every artifact stays in the gitignored sandbox, byte-for-byte as before |
 | `paths.spec` | `null` | **Legacy per-artifact override** — relocates only the spec to `<dir>/<slug>.md`. Takes **precedence over `paths.durable`** for the spec |
 | `paths.plan` | `null` | **Legacy per-artifact override** — relocates only the plan to `<dir>/<slug>.md`. Takes **precedence over `paths.durable`** for the plan |
+| `toggles.kb` | `false` | Master switch for the Knowledge base (capture at run close + recall in explore/design). Off (default) = byte-identical to today |
+| `paths.kb` | `null` | Knowledge base store directory (repo-relative). The KB is active only when `toggles.kb: true` **and** this is set |
+| `kb.freshnessWindowDays` | `90` | Age (days from capture date) past which a recalled entry is flagged stale |
+| `kb.maxRecallEntries` | `5` | Max KB entries surfaced to the fan-out agents at recall (recency-ordered) |
 
 ## Troubleshooting
 

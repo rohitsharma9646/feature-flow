@@ -38,7 +38,30 @@ the chosen approach and rejected alternatives.
 4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved).
    Set `phases.design.status = "in_progress"`, bump `currentPhase`.
 
+## KB recall (when enabled)
+
+Run this **after the sign-off gate, before the architect fan-out**. It is a **no-op unless the KB is
+active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and dispatch the architects
+exactly as today (byte-identical behavior).
+
+When active, follow the **Knowledge base** recall rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
+
+1. `Glob <paths.kb>/*.md`. **Empty store** → print a one-line note ("KB empty — no recall") and
+   proceed to the fan-out (no error).
+2. Extract topic keywords from `$ARGUMENTS` **and the spec's `## Problem`** (read the spec via
+   `manifest.artifacts.spec` — pointer form, never a bare filename), then **tag-match** them against
+   each entry's `tags` frontmatter.
+3. For each match, run the staleness check: **stale** if any `referencedFiles` path is missing/moved
+   OR the entry is older than `kb.freshnessWindowDays` (default 90, from `captureDate`).
+4. Surface up to `kb.maxRecallEntries` (default 5) matches (recency-ordered) to the architect agents
+   as appended context — fresh entries plain, **stale** entries decorated `[STALE — <reason>]` and
+   **never dropped**. **No match** → one-line note, proceed.
+
 ## Do the work
+
+First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op unless the KB is active.
 
 > **Boundary with clarify.** `ff-clarify` already locked the *what* — the underlying need, the
 > chosen problem-level approach, and the acceptance criteria. Your job is the *how*: the
