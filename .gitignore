@@ -1,6 +1,11 @@
 # Runtime run state (sandbox + manifests)
 .feature-flow/
 
+# Author-local dogfood: per-project config + promoted decision docs.
+# Not shipped to plugin users — these are this repo dogfooding itself.
+.feature-flow.json
+docs/feature-flow/
+
 # Dependencies
 node_modules/
 
