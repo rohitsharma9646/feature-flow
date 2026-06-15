@@ -2,7 +2,7 @@
 
 Composable, durable, verifying Claude Code plugin for **feature development** and **bug fixing** — two tracks, one spine, real (executed) verification.
 
-> **Status:** v0.3.1.
+> **Status:** v0.4.0.
 
 ## What it is
 

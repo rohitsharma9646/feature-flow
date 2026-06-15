@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.4.0] — 2026-06-15
+
+Knowledge base. **Off by default** — with `toggles.kb` false or `paths.kb` null, every phase
+behaves byte-identically to v0.3.1 (no migration, no new prompts).
+
+### Added
+- **Knowledge base (opt-in)**: a finished run can **capture** its architectural decisions /
+  project conventions as project-local markdown entries (confirm-gated, fired exactly once at the
+  run's done-transition across both tracks), and later runs **recall** tag-matching entries into
+  the `explore` and `design` fan-outs. Stale entries (referent missing/moved, or older than
+  `kb.freshnessWindowDays`) are flagged `[STALE — …]`, never silently dropped or shown as fresh.
+- Config: `toggles.kb` (default `false`), `paths.kb` (default `null`), `kb.freshnessWindowDays`
+  (default `90`), `kb.maxRecallEntries` (default `5`).
+- Canonical `## Knowledge base` contract in `docs/manifest-schema.md` (store layout, entry schema,
+  capture/recall/staleness rules, Codex degrade table); entry template `templates/kb-entry.md`;
+  regression guard `scripts/checks/kb-guard.sh`.
+- v1 non-goals (deferred to a fast-follow, stated not silent): dedup, supersession, an index
+  query surface, content-similarity relevance, mid-run capture, auto-committing, and a global KB.
+
+### Note
+- The KB's **structural** wiring is guard-pinned (RED→GREEN). Its **behavioral** path
+  (live capture/recall/staleness) is verified by a manual smoke in a KB-enabled session; treat the
+  opt-in feature as **beta** until that smoke is run.
+
 ## [0.3.1] — 2026-06-12
 
 ### Fixed

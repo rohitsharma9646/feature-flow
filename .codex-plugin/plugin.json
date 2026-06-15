@@ -1,6 +1,6 @@
 {
   "name": "feature-flow",
-  "version": "0.3.1+codex.20260613150048",
+  "version": "0.4.0+codex.20260615123013",
   "description": "Durable, resumable workflow for feature development and bug fixing with real verification.",
   "author": {
     "name": "Rohit Sharma",
