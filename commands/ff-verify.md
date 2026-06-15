@@ -68,12 +68,15 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
 **Use the Write tool** to write `verify.md`. Set
 `phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`.
 
-- **Feature track:** verify is the **terminal** phase. If all contract items pass, set
-  `currentPhase = "done"`. **STOP** and report the run complete.
+- **Feature track:** verify is the **terminal** phase. If all contract items pass, first run
+  **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is active),
+  then set `currentPhase = "done"`. **STOP** and report the run complete.
 - **Bugfix track:** review is the terminal phase, so the two can be run in either order —
   converge on `done` only when **both** verify and review are complete:
   - If `phases.review.status == "complete"` (review already ran) and verify passed, both
-    terminal phases are satisfied → set `currentPhase = "done"` and report the run complete.
+    terminal phases are satisfied → this command is the one reaching the done-transition, so
+    first run **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is
+    active), then set `currentPhase = "done"` and report the run complete.
   - Otherwise review still has to run. If `manifest.autopilot` is `true`, emit the progress
     strip and proceed directly into the review phase per
     `${CLAUDE_PLUGIN_ROOT}/commands/ff-review.md` — see **Autopilot** in
@@ -84,3 +87,38 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
 Report the verification result (pass/fail per contract item, with evidence), end the message
 with the one-line progress strip — see **Progress strip** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — and end your turn.
+
+## KB capture (when enabled)
+
+Runs whenever **this command transitions the run to `currentPhase = "done"`** — i.e. the
+**feature-track terminal** (verify is always feature-terminal) **and** the **bugfix convergence**
+branch above where review already completed and verify now passes. Sequenced **after** `verify.md` +
+the manifest update but **before** `currentPhase = "done"`, so a dropped session re-runs verify and
+re-fires the gate. **Skip** when this command is *not* the one reaching `done` — on the bugfix track
+when review has not run yet (verify hands off to `/feature-flow:ff-review`, which fires capture at
+its own done-transition). Capture fires at **exactly one** command — whichever sets `done` — so the
+bugfix track never double-captures.
+
+It is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non-null, read from
+`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`). When inactive, do nothing and
+proceed to `currentPhase = "done"` — behavior is byte-identical to today.
+
+When active, follow the **Knowledge base** capture rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
+
+1. Read this run's artifacts via `manifest.artifacts.<name>` pointers — **feature track:** the spec
+   from `artifacts.spec`, the design from `artifacts.design` (if present); **bugfix track:** the
+   diagnosis from `artifacts.diagnosis`, the plan from `artifacts.plan` (if escalated) — plus this
+   `verify.md` and the review from `artifacts.review`. **Never** bare filenames (keeps
+   `durable-paths-guard.sh` GREEN).
+2. Capture `git rev-parse HEAD` inline → `captureCommitSha`, or `null` on failure (never blocks).
+3. Distill **1–3 candidate entries**, biased to architectural decisions + project conventions,
+   auto-proposing `tags` + `referencedFiles`.
+4. **Confirm gate (cross-turn, mandatory in both modes):** present the candidates; the user accepts
+   / edits / rejects each. Write **nothing** until the user confirms — in autopilot this is a
+   mandatory pause (see **Autopilot** §KB capture confirm-gate row); the chain resumes to
+   `currentPhase = "done"` on the user's answer or on `/feature-flow:ff-resume`.
+5. For each accepted entry: `mkdir -p <paths.kb>` and **Write** it from
+   `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md` to
+   `<paths.kb>/<captureDate>-<runSlug>-<short-title>.md`. Perform **no** `git add` / `git commit`.
+6. Reject-all / none proposed → write nothing. Either way, proceed to `currentPhase = "done"`.

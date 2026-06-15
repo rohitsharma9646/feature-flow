@@ -137,3 +137,24 @@ Verification means the `ff-test-runner` agent (which has `Bash`) actually ran th
 build, and lint and returned real output. The analysis agents (`ff-code-explorer`,
 `ff-code-architect`, `ff-code-reviewer`, `ff-diagnostician`) are strictly read-only.
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.
+
+## Knowledge base
+
+**Opt-in, off by default.** Set `toggles.kb: true` and `paths.kb: "<dir>"` in `.feature-flow.json`
+to activate; unset (the default) leaves every run **byte-identical to today**. The canonical
+contract is `docs/manifest-schema.md` §Knowledge base — the commands reference it by name.
+
+- **Capture** (confirm-gated, at the terminal phase — `ff-verify` feature / `ff-review` bugfix, with
+  a feature-track guard on `ff-review` so feature runs don't double-capture): feature-flow distills
+  1–3 candidate entries from the run's artifacts (architectural decisions + project conventions),
+  records provenance (capture date, git commit SHA or `null`, referenced files, topic tags), and
+  writes only the entries you accept — **no `git add`/`commit`** (write-only; you commit).
+- **Recall** (wired into BOTH `ff-explore` and `ff-design`, before the fan-out): tag-matches the
+  request against stored entries and surfaces up to `kb.maxRecallEntries` to the agents as context.
+- **Staleness:** an entry is flagged stale if a referenced file is missing/moved OR it is older than
+  `kb.freshnessWindowDays` (default 90). Stale entries are **decorated, never dropped and never shown
+  as fresh** — a KB serving knowledge written against since-changed code is worse than none.
+- **v1 non-goals (deferred to a fast-follow run):** **dedup** of near-duplicate entries and
+  **supersession** (a newer entry marking an older one obsolete) are NOT in v1 — duplicates persist
+  and are surfaced, not silently dropped. Also deferred: an `index.json`, a standalone `ff-learn`
+  command, content-similarity relevance, mid-run capture, auto-commit, and a cross-project KB.

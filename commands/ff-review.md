@@ -77,8 +77,10 @@ Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, b
   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, leave
   `currentPhase = "review"` and **STOP**, telling the user to run `/feature-flow:ff-verify` next.
 - **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
-  already passed (`phases.verify.status == "complete"`), set `currentPhase = "done"`, **STOP**
-  and report the run complete (both modes — run completion is always a full report). If
+  already passed (`phases.verify.status == "complete"`), first run **KB capture** (see
+  `## KB capture (when enabled)` below — a no-op unless the KB is active), then set
+  `currentPhase = "done"`, **STOP** and report the run complete (both modes — run completion is
+  always a full report). If
   verify has **not** run yet (`phases.verify.status != "complete"`): if `manifest.autopilot`
   is `true`, emit the progress strip and proceed directly into the verify phase per
   `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md`; if `false` or absent, leave
@@ -89,3 +91,34 @@ Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, b
 End the message with the one-line progress strip — see **Progress strip** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. In step-by-step mode, end your turn (the
 autopilot branches above continue instead).
+
+## KB capture (when enabled)
+
+Runs **only on the bugfix track** (review is the bugfix-terminal phase). **Feature-track guard:**
+on the **feature track** review precedes verify, so capture happens at `/feature-flow:ff-verify` —
+**skip this step entirely on the feature track** to avoid double-capture. It is also skipped while a
+Critical-review block is unresolved (the run is not yet at terminal convergence).
+
+Sequenced **after** `review.md` + the manifest update but **before** `currentPhase = "done"`, and a
+**no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non-null, read from
+`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`). When inactive (or on the
+feature track), do nothing — behavior is byte-identical to today.
+
+When active on the bugfix terminal, follow the **Knowledge base** capture rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
+
+1. Read this run's artifacts via `manifest.artifacts.<name>` pointers — the diagnosis from
+   `artifacts.diagnosis`, the plan from `artifacts.plan` (if the bug escalated), plus this
+   `review.md` and the verify from `artifacts.verify` — **never** bare filenames (keeps
+   `durable-paths-guard.sh` GREEN).
+2. Capture `git rev-parse HEAD` inline → `captureCommitSha`, or `null` on failure (never blocks).
+3. Distill **1–3 candidate entries**, biased to architectural decisions + project conventions,
+   auto-proposing `tags` + `referencedFiles`.
+4. **Confirm gate (cross-turn, mandatory in both modes):** the user accepts / edits / rejects each;
+   write **nothing** until confirmed — autopilot mandatory pause (see **Autopilot** §KB capture
+   confirm-gate row); the chain resumes to `currentPhase = "done"` on the answer or
+   `/feature-flow:ff-resume`.
+5. For each accepted entry: `mkdir -p <paths.kb>` and **Write** it from
+   `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md` to
+   `<paths.kb>/<captureDate>-<runSlug>-<short-title>.md`. Perform **no** `git add` / `git commit`.
+6. Reject-all / none proposed → write nothing. Either way, proceed to `currentPhase = "done"`.

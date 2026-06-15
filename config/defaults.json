@@ -5,6 +5,7 @@
   "diagnosticianAgents": 1,
   "models": { "explorer": "sonnet", "architect": "sonnet", "reviewer": "sonnet", "diagnostician": "sonnet", "testRunner": "sonnet" },
   "reviewThreshold": 80,
-  "toggles": { "tdd": true, "worktree": false, "greenfield": false, "autopilot": "ask" },
-  "paths": { "base": ".feature-flow", "spec": null, "plan": null, "durable": null }
+  "toggles": { "tdd": true, "worktree": false, "greenfield": false, "autopilot": "ask", "kb": false },
+  "paths": { "base": ".feature-flow", "spec": null, "plan": null, "durable": null, "kb": null },
+  "kb": { "freshnessWindowDays": 90, "maxRecallEntries": 5 }
 }
