@@ -146,8 +146,9 @@ A repo-root `.feature-flow.json` overrides `config/defaults.json`:
 | `toggles.greenfield` | `false` | Relax git-diff assumptions for new/non-git projects |
 | `toggles.autopilot` | `"ask"` | Tri-state (the only non-boolean toggle): `"ask"` asks once per new run; `true` = always autopilot; `false` = always step-by-step. Recorded per-run as `manifest.autopilot` |
 | `paths.base` | `".feature-flow"` | Run sandbox root |
-| `paths.spec` | `null` | Directory to relocate specs to (file becomes `<dir>/<slug>.md`) |
-| `paths.plan` | `null` | Directory to relocate plans to (file becomes `<dir>/<slug>.md`) |
+| `paths.durable` | `null` | Directory for **committed** decision docs (spec/design/plan/diagnosis). Each run's docs are promoted to `<dir>/<createdAt-date>-<slug>/` as their phase completes. Unset (default) = every artifact stays in the gitignored sandbox, byte-for-byte as before |
+| `paths.spec` | `null` | **Legacy per-artifact override** — relocates only the spec to `<dir>/<slug>.md`. Takes **precedence over `paths.durable`** for the spec |
+| `paths.plan` | `null` | **Legacy per-artifact override** — relocates only the plan to `<dir>/<slug>.md`. Takes **precedence over `paths.durable`** for the plan |
 
 ## Troubleshooting
 

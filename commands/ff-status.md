@@ -21,7 +21,10 @@ argument-hint: "[slug, if more than one run exists]"
    - **currentPhase** (and `closedAt` if set)
    - **per-phase status** (pending / in_progress / complete) with each phase's artifact path
    - **sign-off** state (`required`, `signed`, `date`)
-   - which artifacts exist on disk under the run dir
+   - which artifacts exist on disk — resolve each one's location via
+     `manifest.artifacts.<name>` (the sole locating authority; fall back to the run dir only
+     when the manifest is absent) and print the **real resolved path**, so a doc promoted to
+     `<paths.durable>/<date>-<slug>/` shows as present at that path rather than “missing”
    - the one-line progress strip — see **Progress strip** in
      `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 5. **Missing or corrupt manifest:** do NOT just defer to resume. Apply the **Disk inference

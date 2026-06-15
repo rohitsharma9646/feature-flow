@@ -45,7 +45,7 @@ the fault to the smallest responsible code region, and identify the **root cause
 symptom) with `file:line` evidence and the failing path traced from trigger to fault.
 
 > **Not reproduced → STOP (edge case).** If the bug cannot be reproduced, record
-> "not reproduced" in `diagnosis.md` along with what was tried, and tell the user exactly:
+> "not reproduced" in the diagnosis along with what was tried, and tell the user exactly:
 >
 > > Diagnosis cannot proceed: the bug was not reproduced. Provide <the specific missing
 > > detail>, then re-run `/feature-flow:ff-diagnose`. Guessing a fix for an unconfirmed bug
@@ -67,7 +67,7 @@ the answer is "proper fix only". If a hotfix is recommended, record what the pro
 - **lite** — trivial/obvious bug (clear one-spot fix, low blast radius): a *confirmed*
   diagnosis is itself the gate; no separate sign-off. The Sign-off line reads `n/a (lite)`.
 - **full** — non-trivial bug (ambiguous root cause, broad surface, risky change): escalates
-  to a `plan.md` + sign-off, exactly like the feature track. The Sign-off line reads `no`
+  to a plan + sign-off, exactly like the feature track. The Sign-off line reads `no`
   until the user signs off.
 
 Record `tier` in the manifest. **Full** → set `signOff.required = true` (the diagnosis is the
@@ -76,19 +76,22 @@ When in doubt between lite and full, choose **full**.
 
 ## Write the artifact + update manifest
 
-**Use the Write tool** to write `diagnosis.md` from
-`${CLAUDE_PLUGIN_ROOT}/templates/diagnosis.md`: bug report, reproduction, root cause,
-fix approach (hotfix-vs-proper + recommendation), fix surface, regression-test plan, the
-`Tier:` line, and the Sign-off line (`no` for full / `n/a (lite)` for lite). Record the
-path in `artifacts.diagnosis`.
+Resolve the diagnosis's path per the **Durable artifact resolution** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (`paths.durable` → sandbox `<run
+dir>/diagnosis.md`; **create the target directory if absent**). **Use the Write tool** to
+write the diagnosis from `${CLAUDE_PLUGIN_ROOT}/templates/diagnosis.md`: bug report,
+reproduction, root cause, fix approach (hotfix-vs-proper + recommendation), fix surface,
+regression-test plan, the `Tier:` line, and the Sign-off line (`no` for full / `n/a (lite)`
+for lite). Record the resolved path in **both** `artifacts.diagnosis` and
+`phases.diagnose.artifact`.
 
 Update the manifest: set `track: "bugfix"`, `tier`, `artifacts.diagnosis`, bump `updatedAt`.
-- **lite:** set `phases.diagnose = { status: "complete", artifact: "diagnosis.md" }` now.
+- **lite:** set `phases.diagnose = { status: "complete", artifact: "<resolved diagnosis path>" }` now.
 - **full:** leave `phases.diagnose.status = "in_progress"` until sign-off (next section).
 
 ## Sign-off gate — full tier only (mirrors `/feature-flow:ff-clarify`)
 
-A **full**-tier diagnosis is the bug's signed contract, exactly like a feature `spec.md`.
+A **full**-tier diagnosis is the bug's signed contract, exactly like a feature spec.
 After writing `diagnosis.md`, **STOP: end your turn by explicitly asking the user to sign off
 on the fix approach.** The sign-off ask presents the diagnosis's chosen fix approach and
 contract items (root cause, fix surface, regression-test plan) **verbatim, as a grouped
@@ -98,7 +101,7 @@ modes**: autopilot never bypasses it and never sets `signOff.signed` itself. Do 
 plan, implement, or mark sign-off yourself. When the user
 confirms (this or a later turn), set `signOff.signed = true` and `signOff.date`, update the
 diagnosis `User signed off:` line to `yes (<date>)`, and set
-`phases.diagnose = { status: "complete", artifact: "diagnosis.md" }` — then **re-read
+`phases.diagnose = { status: "complete", artifact: "<resolved diagnosis path>" }` — then **re-read
 `manifest.autopilot` from the manifest on disk** (the confirmation arrives in a fresh turn;
 never assume the mode from memory) and route per the STOP section below. A **lite** diagnosis
 needs no sign-off — its confirmed diagnosis is itself the gate.

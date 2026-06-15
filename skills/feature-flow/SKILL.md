@@ -83,10 +83,16 @@ run), `/feature-flow:ff-list` (list all runs, including abandoned/closed),
 ## The manifest is the shared state
 
 Each run lives in `.feature-flow/<slug>/` with a `manifest.json` recording `track`,
-`tier`, `currentPhase`, per-phase status + artifact paths, and sign-off. Every command:
-**read the manifest → check the gate → do the phase → write the artifact → update the
-manifest.** Resume and status read this file; if it's missing, resume infers the phase
-from which artifacts exist on disk.
+`tier`, `currentPhase`, per-phase status + artifact paths, and sign-off.
+**`manifest.artifacts.<name>` is the sole authority for locating an artifact**
+(`phases.<phase>.artifact` is a human-readable display mirror, never used to find a file).
+With `paths.durable` set, the durable decision docs (spec/design/plan/diagnosis) are
+**promoted** — as each producing phase completes — to a committed
+`<paths.durable>/<createdAt-date>-<slug>/` directory instead of the gitignored sandbox, so a
+teammate reviewing the PR sees the reasoning; see **Durable artifact resolution** in
+`docs/manifest-schema.md`. Every command: **read the manifest → check the gate → do the phase
+→ write the artifact → update the manifest.** Resume and status read this file; if it's
+missing, resume infers the phase from which artifacts exist on disk.
 
 ## Soft gates (honor them)
 

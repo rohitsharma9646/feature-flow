@@ -24,10 +24,12 @@ argument-hint: "[slug, if more than one run exists]"
    named explicitly).
 3. **Read `manifest.json` and validate it against disk** — do not trust `status: "complete"`
    on its own: each complete phase's artifact must exist and pass minimal validity, per the
-   **Disk inference procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. The first
-   phase that is not complete, or whose artifact is missing/invalid, is the resume point —
-   announce the procedure's prescribed reason ("manifest claims complete but artifact
-   missing: `<path>`" / "artifact failed validity check: `<path>`") when that is why.
+   **Disk inference procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Resolve
+   each phase's artifact path via `manifest.artifacts.<name>` (the sole locating authority —
+   so a doc promoted to `<paths.durable>/<date>-<slug>/` is checked at its real path, not the
+   sandbox). The first phase that is not complete, or whose artifact is missing/invalid, is
+   the resume point — announce the procedure's prescribed reason ("manifest claims complete
+   but artifact missing: `<path>`" / "artifact failed validity check: `<path>`") when that is why.
 4. **Missing or corrupt manifest (edge case):** do NOT fail. Apply the same **Disk inference
    procedure** from scratch (walk the track's phase order; first absent-or-invalid artifact
    is the resume point) and reconstruct a minimal manifest from what's on disk before

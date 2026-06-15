@@ -92,7 +92,7 @@ proceed directly into the clarify phase per
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, **STOP and hand off:**
 
    > Explore complete — findings in `<run dir>/explore.md`. The next phase (**clarify**)
-   > will ask a few clarifying questions and produce a `spec.md` for your **sign-off**. Run
+   > will ask a few clarifying questions and produce a spec for your **sign-off**. Run
    > `/feature-flow:ff-clarify` to continue.
 
    End the message with the one-line progress strip — see **Progress strip** in

@@ -73,10 +73,10 @@ outcome, **Solution approaches considered** (chosen + rejected, each justified),
 **Constraints** (hard limits: compatibility, performance, security, deadlines — from the
 user's answers or `explore.md`), Edge cases, Non-goals, the WHAT-changing **Assumptions**,
 and binary **Acceptance criteria**. Resolve
-the spec path per the `artifacts` note in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if
-`paths.spec` is set it is a **directory** — write `<paths.spec>/<slug>.md` (create the dir if
-needed); otherwise `<run dir>/spec.md`. Record the resolved path in the manifest's
-`artifacts.spec`.
+the spec's path per the **Durable artifact resolution** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (legacy `paths.spec` → `paths.durable` →
+sandbox `<run dir>/spec.md`; **create the target directory if absent**). Record the resolved
+path in **both** `artifacts.spec` and `phases.clarify.artifact`.
 
 **Red-team your own draft before sign-off** (one discipline, not a checklist): re-read the spec
 against the invariant — is the problem the real need? is the chosen approach the best of the

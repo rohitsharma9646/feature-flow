@@ -24,18 +24,23 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`. Read `track`.
 2. **Cold-start, by track:**
-   - **feature:** if no `design.md` exists, tell the user to run `/feature-flow:ff-design` first; if
-     `spec.md` is also missing, route back to `/feature-flow:ff-clarify`. Do not plan against nothing.
-     **Sign-off gate:** if `spec.md` is not signed off (`signOff.signed != true` / `User signed
+   - **feature:** resolve the design and spec via `manifest.artifacts.design` /
+     `manifest.artifacts.spec` (manifest-first; sandbox fallback only when the manifest is
+     absent). If the resolved design does not exist, tell the user to run
+     `/feature-flow:ff-design` first; if the resolved spec is also missing, route back to
+     `/feature-flow:ff-clarify`. Do not plan against nothing.
+     **Sign-off gate:** if the spec is not signed off (`signOff.signed != true` / `User signed
      off: no`), **STOP** and tell the user exactly:
 
      > The plan requires a **signed** spec (design/plan/implement all do). Run
      > `/feature-flow:ff-clarify` to sign off, then re-run `/feature-flow:ff-plan`.
 
    - **bugfix:** if this is a `tier: lite` run, **STOP** — lite bugs skip planning; route
-     the user to `/feature-flow:ff-implement` (the confirmed diagnosis is the gate). If no
-     `diagnosis.md` exists, route to `/feature-flow:ff-diagnose`. Do not plan against nothing.
-     **Sign-off gate (full tier):** if `diagnosis.md` is not signed off (`signOff.signed !=
+     the user to `/feature-flow:ff-implement` (the confirmed diagnosis is the gate). Resolve
+     the diagnosis via `manifest.artifacts.diagnosis` (manifest-first; sandbox fallback when
+     the manifest is absent); if it does not exist, route to `/feature-flow:ff-diagnose`. Do
+     not plan against nothing.
+     **Sign-off gate (full tier):** if the diagnosis is not signed off (`signOff.signed !=
      true` / `User signed off: no`), **STOP** and tell the user exactly:
 
      > A full-tier fix requires a **signed** diagnosis (sign-off is collected there). Run
@@ -44,7 +49,8 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 3. **Re-run guard:** if `phases.plan.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `plan.md` — see **Re-run guard** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
-4. Read the contract: **feature** → `spec.md` + `design.md`; **bugfix** → `diagnosis.md`.
+4. Read the contract at the paths resolved in step 2 via `manifest.artifacts.<name>`:
+   **feature** → `artifacts.spec` + `artifacts.design`; **bugfix** → `artifacts.diagnosis`.
    Set `phases.plan.status = "in_progress"`, bump `currentPhase`.
 
 ## Do the work
@@ -58,14 +64,15 @@ files-to-touch and a verification step:
   makes the **first task the test-first regression test** (write it, capture RED) before the
   fix tasks — preserve that RED→GREEN order.
 
-**Populate the Outcome gate** from the contract: contract path (`spec.md` or `diagnosis.md`),
-acceptance-criteria / "bug no longer reproduces" reference, and the current `signOff` state
+**Populate the Outcome gate** from the contract: the resolved contract path (from
+`artifacts.spec` or `artifacts.diagnosis`), acceptance-criteria / "bug no longer reproduces"
+reference, and the current `signOff` state
 (`User signed off: <no | yes (date)>` — copy from the manifest, do not assume yes).
 
-Resolve the plan path per the `artifacts` note in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`: if `paths.plan` is set it is a **directory**
-— write `<paths.plan>/<slug>.md` (create the dir if needed); else `<run dir>/plan.md`.
-Record it in `artifacts.plan`.
+Resolve the plan's path per the **Durable artifact resolution** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (legacy `paths.plan` → `paths.durable` →
+sandbox `<run dir>/plan.md`; **create the target directory if absent**). Record the resolved
+path in **both** `artifacts.plan` and `phases.plan.artifact`.
 
 ## Update manifest
 

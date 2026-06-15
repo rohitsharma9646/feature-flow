@@ -41,25 +41,40 @@ work, and write **no** code until it passes.
   > bug's diagnosis), then re-run `/feature-flow:ff-implement`.
 
 - **Bugfix `tier: lite` (AC13):** there is no separate sign-off; the gate is a **confirmed**
-  `diagnosis.md` — reproduced + root cause + chosen fix approach. **If `diagnosis.md` is
-  missing, or the bug is "not reproduced", STOP** and route to `/feature-flow:ff-diagnose`.
-  Never fix an unconfirmed bug.
+  diagnosis (reproduced + root cause + chosen fix approach), resolved via
+  `manifest.artifacts.diagnosis` (manifest-first; sandbox fallback when the manifest is
+  absent). **If the resolved diagnosis is missing, or the bug is "not reproduced", STOP** and
+  route to `/feature-flow:ff-diagnose`. Never fix an unconfirmed bug.
 
 **End your turn here when gated** — do not write code, and do not fall back to a generic
 implement/plan workflow.
 
 ## Cold-start
 
-- **Feature:** if there is no `plan.md`, no `design.md`, or no `spec.md`, route to the first
+**Resolve every contract artifact through the manifest pointer, in this exact order:**
+
+1. **Read the manifest first** and take each artifact's path from `manifest.artifacts.<name>`
+   (the sole locating authority) — the plan from `artifacts.plan`, the design from
+   `artifacts.design`, the spec from `artifacts.spec`.
+2. **Only when the manifest is absent**, use the sandbox fallback `<base>/<slug>/<name>.md`.
+
+A promoted plan lives outside the sandbox (`<paths.durable>/<date>-<slug>/plan.md`), so
+**never gate on a bare `plan.md` filename** — that bare-name check is exactly what would
+false-fire "no `plan.md`" on a run whose plan was promoted out of the sandbox.
+
+- **Feature:** with the resolved paths in hand, if `artifacts.plan`, `artifacts.design`, or
+  `artifacts.spec` points at a file that does **not** exist on disk, route to the first
   missing artifact's phase (`/feature-flow:ff-plan` → `/feature-flow:ff-design` →
-  `/feature-flow:ff-clarify`) rather than implementing against nothing — a missing `design.md`
-  routes to `/feature-flow:ff-design` even when `plan.md` exists.
-- **Bugfix:** if there is no `diagnosis.md`, route to `/feature-flow:ff-diagnose`.
+  `/feature-flow:ff-clarify`) rather than implementing against nothing — a missing design
+  routes to `/feature-flow:ff-design` even when the plan exists.
+- **Bugfix:** resolve `artifacts.diagnosis`; if it does not exist, route to
+  `/feature-flow:ff-diagnose`.
 
 ## Do the work — feature track
 
-Read `plan.md`, `spec.md`, and `design.md`. Implement the plan task by task. Honor config
-toggles:
+Read the plan, spec, and design — resolving each path via `manifest.artifacts.<name>`
+(manifest-first; sandbox fallback only when the manifest is absent, exactly as in Cold-start).
+Implement the plan task by task. Honor config toggles:
 - `toggles.tdd` (default true): write the test before the implementation for each unit
   with a clear contract; watch it fail, then make it pass.
 - `toggles.worktree` (default false): if true, do the work in an isolated git worktree.
@@ -67,15 +82,17 @@ toggles:
 
 ## Do the work — bugfix track (TEST-FIRST, mandatory RED→GREEN order)
 
-Read `diagnosis.md` (root cause + chosen fix approach + regression-test plan) and `plan.md`
-if the bug escalated to `tier: full`. Then, **in this exact order**:
+Read the diagnosis via `manifest.artifacts.diagnosis` (root cause + chosen fix approach +
+regression-test plan) and, if the bug escalated to `tier: full`, the plan via
+`manifest.artifacts.plan` — manifest-first, sandbox fallback when the manifest is absent, as
+in Cold-start. Then, **in this exact order**:
 
 1. **Write the regression test** targeting the reproduced bug (per the diagnosis's
    regression-test plan).
 2. **Run it and capture RED** — it MUST fail against the current, pre-fix code. Record the
    real failing output (command, exit status, failing assertion) into the manifest under
    `bugfix.red` so `/feature-flow:ff-verify` can cite it.
-3. **Apply the minimal fix** per `diagnosis.md`'s chosen approach (root-cause unless a
+3. **Apply the minimal fix** per the diagnosis's chosen approach (root-cause unless a
    hotfix was explicitly chosen) — touching only the fix surface named in the diagnosis.
 4. **Run the test again and capture GREEN** — record the passing output under `bugfix.green`.
 5. Hand both the RED and GREEN evidence forward to `/feature-flow:ff-verify`.

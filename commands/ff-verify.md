@@ -29,10 +29,13 @@ declare "done" on reasoning alone.
 
 ## Cold-start
 
-There is no contract to verify against without an upstream artifact — route, don't ask
-open-endedly: if there is no `spec.md` on the feature track, **STOP** and tell the user to
-run `/feature-flow:ff-clarify` first; if there is no `diagnosis.md` on the bugfix track,
-**STOP** and tell the user to run `/feature-flow:ff-diagnose` first.
+**Resolve the contract artifact through the manifest pointer first:** take the spec from
+`manifest.artifacts.spec` (feature) or the diagnosis from `manifest.artifacts.diagnosis`
+(bugfix) — manifest-first, sandbox fallback `<base>/<slug>/<name>.md` only when the manifest
+is absent. There is no contract to verify against without an upstream artifact — route, don't
+ask open-endedly: if the resolved spec is missing on the feature track, **STOP** and tell the
+user to run `/feature-flow:ff-clarify` first; if the resolved diagnosis is missing on the
+bugfix track, **STOP** and tell the user to run `/feature-flow:ff-diagnose` first.
 
 ## Do the work
 
@@ -44,8 +47,9 @@ excerpts). It never edits code.
 
 Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/verify.md`:
 
-- **Feature track:** map **each acceptance criterion** from `spec.md` → `pass` / `fail` /
-  `manual-unverified` (with a reason), each backed by evidence from the test runner.
+- **Feature track:** map **each acceptance criterion** from the spec (at `artifacts.spec`, as
+  resolved in Cold-start) → `pass` / `fail` / `manual-unverified` (with a reason), each backed
+  by evidence from the test runner.
 - **Bugfix track:** confirm the bug no longer reproduces, and that the regression test
   shows RED (pre-fix) → GREEN (post-fix). Cite the `bugfix.red` / `bugfix.green` evidence
   captured by `/feature-flow:ff-implement` for the pre-fix failure, and the test runner's fresh run for

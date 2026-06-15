@@ -35,7 +35,8 @@ the chosen approach and rejected alternatives.
 3. **Re-run guard:** if `phases.design.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `design.md` — see **Re-run guard** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
-4. Read `spec.md`. Set `phases.design.status = "in_progress"`, bump `currentPhase`.
+4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved).
+   Set `phases.design.status = "in_progress"`, bump `currentPhase`.
 
 ## Do the work
 
@@ -60,9 +61,13 @@ the phase and the chain in the same turn once the user answers.
 
 ## Write the artifact + update manifest
 
-**Use the Write tool** to write `design.md` from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`:
-chosen approach, rejected alternatives + why, component map, data flow, risks. Set
-`phases.design = { status: "complete", artifact: "design.md" }`, bump `updatedAt`.
+Resolve the design's path per the **Durable artifact resolution** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (`paths.durable` → sandbox `<run
+dir>/design.md`; **create the target directory if absent**). **Use the Write tool** to write
+the design from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`: chosen approach, rejected
+alternatives + why, component map, data flow, risks. Record the resolved path in **both**
+`artifacts.design` and `phases.design.artifact`: set `phases.design = { status: "complete",
+artifact: "<resolved design path>" }`, bump `updatedAt`.
 
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the plan phase per

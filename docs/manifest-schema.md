@@ -55,8 +55,11 @@ makes phases composable, standalone-runnable, and resumable from disk.
   below. Set **once** at run start by the run-start procedure, read-only afterwards. **Absent
   field = `false`** (every pre-v0.3.0 manifest): treat as step-by-step everywhere — no error,
   no mid-run ask, no migration.
-- **`phases.<phase>.artifact`** is the relative path (within the run dir) of the artifact that
-  phase produced, or `null` if it writes no file (e.g. explore may summarize inline).
+- **`phases.<phase>.artifact`** holds the resolved path of the artifact that phase produced
+  (or `null` if it writes no file, e.g. explore may summarize inline). It is a
+  **human-readable display mirror only — no command uses it to locate a file**;
+  `manifest.artifacts.<name>` (below) is the sole locating authority. The two are kept in
+  sync, but reads trust `artifacts.<name>`.
 - **`signOff`**: feature track and escalated (`full`) bugfixes require sign-off before
   `/ff-implement` may write code. Lite bugfixes set `required: false`. The manifest's
   `signOff.signed` is **authoritative**; the `User signed off:` line in `spec.md`/`diagnosis.md`
@@ -66,16 +69,34 @@ makes phases composable, standalone-runnable, and resumable from disk.
   `red` when the regression test fails pre-fix and `green` after the fix passes;
   `/ff-verify` cites both for the RED→GREEN contract. A run with no `bugfix.red`
   recorded was not done test-first and `/ff-verify` reports it incomplete.
-- **`artifacts`** maps logical names to the file path each phase wrote.
-  - **Default:** artifacts live in the run sandbox — `<base>/<slug>/<name>.md`.
-  - **`paths.spec` / `paths.plan`** (in `.feature-flow.json`) relocate the spec and plan out
-    of the sandbox. **Each value is a directory** (relative to the repo root), never a full
-    file path; the file written is **`<dir>/<slug>.md`** (e.g. `paths.spec: "specs"` + slug
-    `add-oauth` → `specs/add-oauth.md`). Create the directory if it doesn't exist. Only
-    `spec` and `plan` are relocatable; `design`/`diagnosis`/`review`/`verify` always stay in
-    the sandbox.
-  - Whichever location is used, record the **resolved actual path** in `artifacts.<name>` so
-    resume and status read the real file.
+- **`artifacts`** maps logical names to the file path each phase wrote. `artifacts.<name>` is
+  the **sole authority** for locating an artifact — every read (implement, status, resume,
+  disk-inference) resolves through it.
+
+  **Durable artifact resolution.** Each producing phase resolves where to write its artifact
+  (and records the result) by this rule. Given artifact name `N`, slug `S`, and the run's
+  `createdAt` UTC date `D` (`createdAt.split("T")[0]`):
+
+  1. **Legacy per-artifact key wins** (back-compat, never silently changes an existing config):
+     - `N = spec` & `paths.spec` set → `<paths.spec>/<S>.md`
+     - `N = plan` & `paths.plan` set → `<paths.plan>/<S>.md`
+  2. **else `paths.durable` set** → `<paths.durable>/<D>-<S>/<N>.md` — **you MUST create the
+     `<paths.durable>/<D>-<S>/` directory before writing** if it does not yet exist.
+  3. **else (sandbox default)** → `<base>/<S>/<N>.md`.
+
+  Then record the **resolved actual path** in **both** `manifest.artifacts.<N>` *and*
+  `phases.<phase>.artifact` (reads trust `artifacts.<N>`; the phase field is the display
+  mirror). `paths.spec` / `paths.plan` values are each a **directory** (relative to the repo
+  root), never a full file path — e.g. `paths.spec: "specs"` + slug `add-oauth` →
+  `specs/add-oauth.md`.
+
+  - **Durable artifacts** (resolution-eligible — promote when a durable location is configured):
+    `spec`, `design`, `plan`, `diagnosis`. They co-locate in one `<D>-<S>/` directory even when
+    produced on different calendar days, because `D` derives from `createdAt`.
+  - **Ephemeral artifacts** (always step 3 — never promoted): `explore`, `review`, `verify`,
+    `smoke-checklist`, and `manifest.json` itself stay in `<base>/<S>/`.
+  - Promotion is **write-only**: Feature Flow writes the doc into the working tree but never
+    runs `git add`/`commit`; the user commits it through their normal flow.
 
 ## Run resolution (how every command finds the run before reading the manifest)
 
@@ -121,16 +142,26 @@ missing or corrupt, they apply the **Disk inference procedure** below.
 Used by `/ff-resume` and `/ff-status` when the manifest is missing/corrupt, or to validate a
 manifest that claims phases are complete:
 
-1. Walk the track's phase order — feature: explore(`explore.md`) → clarify(`spec.md`) →
-   design(`design.md`) → plan(`plan.md`) → implement(no artifact) → review(`review.md`) →
-   verify(`verify.md`); bugfix: diagnose(`diagnosis.md`) → implement(no artifact) →
-   verify(`verify.md`) → review(`review.md`).
-2. For each phase marked `complete` (or, with no manifest, each phase in order): the declared
+1. Walk the track's phase order — feature: explore(`explore`) → clarify(`spec`) →
+   design(`design`) → plan(`plan`) → implement(no artifact) → review(`review`) →
+   verify(`verify`); bugfix: diagnose(`diagnosis`) → implement(no artifact) →
+   verify(`verify`) → review(`review`).
+2. **Resolve each phase's artifact path before checking existence.** When the manifest is
+   present, take the path from `manifest.artifacts.<name>` (the sole locating authority) — so a
+   doc promoted to `<paths.durable>/<D>-<slug>/` is checked at its real path, never mis-marked
+   missing because it left the sandbox. When the manifest is **lost**, resolve by applying the
+   **Durable artifact resolution** rule to config: infer the slug from the run-dir name, then
+   for each durable artifact use `<paths.durable>/<D>-<slug>/<name>.md` (or the legacy
+   `paths.spec`/`paths.plan` location); if `createdAt` — hence `<D>` — is unrecoverable, do a
+   **bounded glob `<paths.durable>/*-<slug>/`** (most-recently-modified on ties), scoped to
+   `paths.durable` only — never a repo-wide scan. Ephemeral artifacts always resolve to
+   `<base>/<slug>/<name>.md`.
+3. For each phase marked `complete` (or, with no manifest, each phase in order): the resolved
    artifact must **exist on disk** AND pass **minimal validity** — `spec.md` must contain a
    `User signed off:` line; `diagnosis.md` must contain a `**Status:**` line reading
    `confirmed` or `signed-off` (a draft-status diagnosis fails validity); all
    other artifacts: existence suffices.
-3. The first phase whose artifact is missing or invalid is the true resume point. Announce
+4. The first phase whose artifact is missing or invalid is the true resume point. Announce
    why: "manifest claims complete but artifact missing: `<path>`" or "artifact failed validity
    check: `<path>`".
 
