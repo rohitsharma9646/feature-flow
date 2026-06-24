@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.5.0] — 2026-06-24
+
+Evidence over assumptions. Three additive guardrails folded into existing templates and phase
+prompts — no new artifacts, no new workflow phase, no migration. Runs authored against the v0.4.0
+templates still validate.
+
+### Added
+- **AC traceability (feature track)**: the `plan.md` task template gains a `**Covers:**` field,
+  and the Outcome gate now requires every spec acceptance criterion to map to ≥1 task — an
+  uncovered AC is flagged as an explicit gap, never left silent. `ff-plan` enforces this, scoped
+  to the feature track (a full-tier bugfix has no spec/ACs; its contract is the diagnosis).
+- **Regression risk in verification**: `verify.md` gains a `## Regression risk` section
+  (`Low | Medium | High` + reason; no numeric score), filled by `ff-verify` from the surface the
+  change touched.
+- **Root-cause candidate ranking (full-tier bugfix)**: `diagnosis.md` separates
+  `## Root cause candidates` (≥2 hypotheses with evidence for/against) from
+  `## Confirmed root cause`. `ff-diagnose` requires candidate enumeration on the full tier and
+  leaves lite (trivial) bugs single-cause — no ceremony on a one-spot fix.
+
+### Deferred (stated, not silent)
+- New `test-design.md` / `investigation.md` artifacts and a completion-proof framework (they
+  duplicate the existing design / diagnosis / verify artifacts); numeric confidence/readiness
+  scores (unfalsifiable LLM output); and the verify→review reorder (entangled with the KB
+  single-fire invariant and `kb-guard` assertions — warrants its own guard-tested change).
+
 ## [0.4.0] — 2026-06-15
 
 Knowledge base. **Off by default** — with `toggles.kb` false or `paths.kb` null, every phase
