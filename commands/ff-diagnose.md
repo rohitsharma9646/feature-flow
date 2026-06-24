@@ -44,6 +44,11 @@ Read `diagnosticianAgents` (default 1) and `models.diagnostician` from config
 the fault to the smallest responsible code region, and identify the **root cause** (not the
 symptom) with `file:line` evidence and the failing path traced from trigger to fault.
 
+On the **full** tier, enumerate **≥2 root-cause candidates** with evidence for/against in
+`diagnosis.md` §Root cause candidates, then record the **Confirmed root cause** (which
+candidate the evidence decides, with `file:line`). On the **lite** tier a single Confirmed
+root cause is enough — skip candidate enumeration (no ceremony on a one-spot bug).
+
 > **Not reproduced → STOP (edge case).** If the bug cannot be reproduced, record
 > "not reproduced" in the diagnosis along with what was tried, and tell the user exactly:
 >
@@ -80,7 +85,8 @@ Resolve the diagnosis's path per the **Durable artifact resolution** rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (`paths.durable` → sandbox `<run
 dir>/diagnosis.md`; **create the target directory if absent**). **Use the Write tool** to
 write the diagnosis from `${CLAUDE_PLUGIN_ROOT}/templates/diagnosis.md`: bug report,
-reproduction, root cause, fix approach (hotfix-vs-proper + recommendation), fix surface,
+reproduction, root cause candidates (full tier) + confirmed root cause, fix approach
+(hotfix-vs-proper + recommendation), fix surface,
 regression-test plan, the `Tier:` line, and the Sign-off line (`no` for full / `n/a (lite)`
 for lite). Record the resolved path in **both** `artifacts.diagnosis` and
 `phases.diagnose.artifact`.

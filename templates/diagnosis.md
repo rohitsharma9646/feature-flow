@@ -25,10 +25,28 @@ Pick ONE:
 > A bug that is **not reproduced does not proceed to a fix.** Record "not reproduced",
 > ask for the missing detail, and STOP. Guessing a fix for an unconfirmed bug is forbidden.
 
-## Root cause
+## Root cause candidates
 
-<The underlying defect — not the symptom — with `file:line` evidence and the failing
-path traced from trigger to fault. Explain *why* this code produces the observed behavior.>
+> **Full tier only.** A trivial (`lite`) bug skips this — go straight to **Confirmed root
+> cause**. On the **full** tier, weigh **≥2** candidate explanations against the evidence
+> before committing; the first plausible hypothesis is not automatically the cause.
+
+### Candidate A — <one-line hypothesis>
+
+- **Evidence for:** <`file:line` / output that supports it>
+- **Evidence against:** <what doesn't fit, or "none found">
+
+### Candidate B — <one-line hypothesis>
+
+- **Evidence for:** …
+- **Evidence against:** …
+
+## Confirmed root cause
+
+<The underlying defect — not the symptom — with `file:line` evidence and the failing path
+traced from trigger to fault. Explain *why* this code produces the observed behavior, state
+which candidate the evidence confirms, and what decided it. On the lite tier this is simply
+the single root cause; the candidates above may be omitted.>
 
 ## Fix approach (hotfix-vs-proper — required)
 

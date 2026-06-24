@@ -32,6 +32,13 @@
 | Regression test: RED before fix | observed / missing | <pre-fix failing output> |
 | Regression test: GREEN after fix | observed / missing | <post-fix passing output> |
 
+## Regression risk
+
+**Level:** Low | Medium | High
+**Reason:** <what nearby behavior this change could affect, and why this level — e.g.
+"touched only the new module, no shared code → Low", or "modified the shared session helper
+used by checkout + wishlist → Medium">.
+
 ## Verdict
 
 > Not "done" unless every contract item has a `pass` or an explicit

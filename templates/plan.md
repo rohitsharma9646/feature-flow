@@ -11,6 +11,10 @@ to specific ACs; the final task verifies all of them.
 
 > No task executes while sign-off is "no". At completion, `/feature-flow:ff-verify` checks the
 > result against the spec's acceptance criteria — not just the task list.
+>
+> Every spec AC maps to ≥1 task's `**Covers:**` line. An AC with no task (e.g. already
+> satisfied by an existing test) is listed here as an explicit gap with a one-line reason —
+> never silently uncovered.
 
 ## Tasks
 
@@ -18,6 +22,8 @@ to specific ACs; the final task verifies all of them.
 
 **Files:**
 - Create / Modify: `<path>`
+
+**Covers:** AC1, AC2   <!-- acceptance criteria from spec.md this task satisfies -->
 
 - [ ] **Step 1:** <bite-sized action>
 - [ ] **Step 2: Verify** — <command + expected output>

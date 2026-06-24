@@ -63,6 +63,11 @@ files-to-touch and a verification step:
 - **bugfix (full):** decompose the diagnosis's fix approach into tasks; the template already
   makes the **first task the test-first regression test** (write it, capture RED) before the
   fix tasks — preserve that RED→GREEN order.
+- **Map every AC (feature track):** each task names the acceptance criteria it covers
+  (`**Covers:** AC1, …`); every AC in the spec must be covered by ≥1 task. If an AC has no
+  task (e.g. satisfied by an existing test), record it as an explicit gap in the Outcome gate
+  with a one-line reason — never leave an AC silently uncovered. (A full-tier **bugfix** has
+  no spec/ACs — its contract is the diagnosis — so this mapping does not apply there.)
 
 **Populate the Outcome gate** from the contract: the resolved contract path (from
 `artifacts.spec` or `artifacts.diagnosis`), acceptance-criteria / "bug no longer reproduces"

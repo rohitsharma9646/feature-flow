@@ -55,6 +55,9 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   captured by `/feature-flow:ff-implement` for the pre-fix failure, and the test runner's fresh run for
   the post-fix pass. If the manifest has no `bugfix.red` evidence, the fix was not done
   test-first — report it **incomplete** (the RED state can no longer be reconstructed).
+- Assess **regression risk** (`Low | Medium | High` + reason) from the surface the change
+  touched — shared / central code raises it, isolated new code lowers it — and record it in
+  `verify.md` §Regression risk. No numeric score.
 
 ## Refuse premature "done"
 
