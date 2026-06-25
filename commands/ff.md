@@ -52,7 +52,11 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
    mode — shift+tab — then re-run `/feature-flow:ff`.)
 1. **Read config:** a repo-root `.feature-flow.json` overrides
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`. Resolve `paths.base` (default
-   `.feature-flow`), agent counts, models, `reviewThreshold`, and toggles.
+   `.feature-flow`), agent counts, models, `reviewThreshold`, and toggles. **Validate the
+   resolved config** and surface any problem per **Config resolution & validation** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — warn on an unknown/typo'd key or a
+   half-configuration (e.g. `toggles.kb` true with `paths.kb` unset), then fall back to the
+   safe default. Never silently no-op a misconfiguration.
 2. **Resolve autopilot first (run-start procedure — BEFORE the manifest write):** if this
    run's manifest already exists with an `autopilot` field, skip this entirely — never
    re-ask. Otherwise read `toggles.autopilot` from config (`.feature-flow.json` →

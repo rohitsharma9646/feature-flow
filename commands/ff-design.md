@@ -35,8 +35,10 @@ the chosen approach and rejected alternatives.
 3. **Re-run guard:** if `phases.design.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `design.md` — see **Re-run guard** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
-4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved).
-   Set `phases.design.status = "in_progress"`, bump `currentPhase`.
+4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved),
+   **and the explore findings** (`explore.md` in the run dir — resolve via
+   `phases.explore.artifact`, else `<run dir>/explore.md`; it is ephemeral, always in the
+   sandbox). Set `phases.design.status = "in_progress"`, bump `currentPhase`.
 
 ## KB recall (when enabled)
 
@@ -46,18 +48,12 @@ active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flo
 exactly as today (byte-identical behavior).
 
 When active, follow the **Knowledge base** recall rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
-
-1. `Glob <paths.kb>/*.md`. **Empty store** → print a one-line note ("KB empty — no recall") and
-   proceed to the fan-out (no error).
-2. Extract topic keywords from `$ARGUMENTS` **and the spec's `## Problem`** (read the spec via
-   `manifest.artifacts.spec` — pointer form, never a bare filename), then **tag-match** them against
-   each entry's `tags` frontmatter.
-3. For each match, run the staleness check: **stale** if any `referencedFiles` path is missing/moved
-   OR the entry is older than `kb.freshnessWindowDays` (default 90, from `captureDate`).
-4. Surface up to `kb.maxRecallEntries` (default 5) matches (recency-ordered) to the architect agents
-   as appended context — fresh entries plain, **stale** entries decorated `[STALE — <reason>]` and
-   **never dropped**. **No match** → one-line note, proceed.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+(glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
+steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
+and the spec's `## Problem`** (read the spec via `manifest.artifacts.spec` — pointer form, never a
+bare filename), and surface matches to the **architect agents** as context — **stale** entries
+flagged `[STALE — <reason>]`, never dropped. Empty store / no match → one-line note, proceed.
 
 ## Do the work
 
@@ -71,8 +67,11 @@ First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op un
 
 Read `models.architect` from config (`.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
-agent. Dispatch `architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each
-committed to a distinct focus so the options are genuinely different:
+agent. **Pass each architect the explore findings (step 4) as context** — the explore phase
+already mapped the codebase (where the feature lives, what to reuse, the conventions in play),
+so the architects build on that instead of cold re-scanning the repo three times over. Dispatch
+`architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each committed to a
+distinct focus so the options are genuinely different:
 - **minimal** — smallest change that satisfies the spec.
 - **clean** — best long-term structure, even if more work.
 - **pragmatic** — the balance the codebase's conventions actually favor.

@@ -44,6 +44,18 @@ Read `diagnosticianAgents` (default 1) and `models.diagnostician` from config
 the fault to the smallest responsible code region, and identify the **root cause** (not the
 symptom) with `file:line` evidence and the failing path traced from trigger to fault.
 
+The diagnostician is **read-only and cannot execute the program** — its "reproduced" verdict
+is a **static hypothesis** (trigger + failing path established from source), not an executed
+run. Diagnose's job is to confirm the bug is *understood* and locate it; the **binding
+executed evidence** is the RED regression test captured in `/feature-flow:ff-implement`
+(`bugfix.red`). Treat a confirmed diagnosis as "we know what's wrong and where," never as
+"we ran it and watched it fail" — that proof comes at implement.
+
+When you search the repo yourself during reproduction, use the **Grep**/**Glob** tools —
+never Bash `grep -r`/`find` over the root (they ignore `.gitignore` and walk ignored
+dependency/build trees; see **Searching the repo** in
+`${CLAUDE_PLUGIN_ROOT}/skills/feature-flow/SKILL.md`).
+
 On the **full** tier, enumerate **≥2 root-cause candidates** with evidence for/against in
 `diagnosis.md` §Root cause candidates, then record the **Confirmed root cause** (which
 candidate the evidence decides, with `file:line`). On the **lite** tier a single Confirmed

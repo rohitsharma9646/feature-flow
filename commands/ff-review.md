@@ -69,7 +69,9 @@ do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
   `/feature-flow:ff-review` — do **not** route forward to verify or done (in either mode).
 
 Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, bump
-`updatedAt`, and hand off by track:
+`updatedAt`, and hand off by track. (Which command marks the run `done` is the canonical
+**Terminal convergence** rule in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the routing
+below implements it.)
 
 - **Feature track:** review runs **before** verify. If `manifest.autopilot` is `true`,
   emit the progress strip and proceed directly into the verify phase per
@@ -105,20 +107,10 @@ Sequenced **after** `review.md` + the manifest update but **before** `currentPha
 feature track), do nothing — behavior is byte-identical to today.
 
 When active on the bugfix terminal, follow the **Knowledge base** capture rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
-
-1. Read this run's artifacts via `manifest.artifacts.<name>` pointers — the diagnosis from
-   `artifacts.diagnosis`, the plan from `artifacts.plan` (if the bug escalated), plus this
-   `review.md` and the verify from `artifacts.verify` — **never** bare filenames (keeps
-   `durable-paths-guard.sh` GREEN).
-2. Capture `git rev-parse HEAD` inline → `captureCommitSha`, or `null` on failure (never blocks).
-3. Distill **1–3 candidate entries**, biased to architectural decisions + project conventions,
-   auto-proposing `tags` + `referencedFiles`.
-4. **Confirm gate (cross-turn, mandatory in both modes):** the user accepts / edits / rejects each;
-   write **nothing** until confirmed — autopilot mandatory pause (see **Autopilot** §KB capture
-   confirm-gate row); the chain resumes to `currentPhase = "done"` on the answer or
-   `/feature-flow:ff-resume`.
-5. For each accepted entry: `mkdir -p <paths.kb>` and **Write** it from
-   `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md` to
-   `<paths.kb>/<captureDate>-<runSlug>-<short-title>.md`. Perform **no** `git add` / `git commit`.
-6. Reject-all / none proposed → write nothing. Either way, proceed to `currentPhase = "done"`.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA
+→ provenance, distill 1–3 candidates, the cross-turn confirm gate, write accepted entries from
+`${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md`, **no** `git add`/`commit`, reject-all writes
+nothing); **do not restate its steps here.** The only command-specific input: read this run's
+artifacts **only** via `manifest.artifacts.<name>` pointers (never bare filenames) — the diagnosis
+(`artifacts.diagnosis`), the plan (`artifacts.plan`, if the bug escalated), plus this `review.md`
+and the verify (`artifacts.verify`).

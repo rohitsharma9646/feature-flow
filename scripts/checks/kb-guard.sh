@@ -61,6 +61,14 @@ printf '%s\n' "$kb" | grep -qiE 'dedup' && printf '%s\n' "$kb" | grep -qiE 'supe
 section "$SCHEMA" '^## Autopilot' | grep -qiE 'KB capture' \
   && ok "$SCHEMA §Autopilot: has the KB capture confirm-gate row" \
   || err "$SCHEMA §Autopilot: mandatory-pause table must have a KB capture confirm-gate row"
+# terminal-convergence single-source (Q6): the done-transition rule lives in its own
+# section, and the capture rule references it rather than keeping its own 'By track' copy.
+grep -q '^## Terminal convergence' "$SCHEMA" \
+  && ok "$SCHEMA: '## Terminal convergence' section present (canonical done-transition rule)" \
+  || err "$SCHEMA: must define a '## Terminal convergence' section (the done-transition rule)"
+printf '%s\n' "$kb" | grep -qi 'Terminal convergence' \
+  && ok "$SCHEMA §Knowledge base: capture rule references Terminal convergence (single-source)" \
+  || err "$SCHEMA §Knowledge base: capture rule must reference '## Terminal convergence', not restate the done-transition"
 
 # --- (c) entry-template provenance (AC3) ------------------------------------
 for f in title captureDate captureCommitSha runSlug tags referencedFiles; do

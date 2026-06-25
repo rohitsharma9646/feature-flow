@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased] — reliability hardening (Phase 0–1)
+
+Foundation-safety fixes from the v0.5.0 architecture review (`docs/feature-flow/architecture-review-2026-06-25.md`). All **non-breaking**: additive frontmatter, additive schema rules, prose clarifications, one optional manifest field (`lock`, absent = unlocked), and new dev/CI tooling. Manifests authored before this change still validate; no migration.
+
+### Added
+- **Manifest write safety** (`manifest-schema.md` §Manifest write safety, wired via Run resolution step 7): mandates whole-object atomic writes (never partial line-edits that can leave torn JSON) — closing the highest-probability corruption path — and adds an **advisory `lock`** field, a soft staleness-self-healing concurrency guard (15-minute stale-takeover) so two sessions touching one run warn rather than silently clobber. The lock is advisory prose, not an enforced mutex (C1).
+- **Universal corrupt-manifest handling** (`manifest-schema.md` Run resolution step 6): the "on a corrupt manifest, fall back to Disk inference — never improvise or blind-overwrite" rule, previously honored only by `ff-resume`/`ff-status`, now applies to **every** command. Phase commands inherit it via their existing `Run resolution` reference (C3).
+- **Least-privilege `allowed-tools`** on the inspect/management commands: `ff-status`/`ff-list` → `Read, Glob, Grep`; `ff-abandon`/`ff-close` → `Read, Glob, Write`. The read-only/scoped claims are now tool-enforced, not prose-only (C4).
+- **Config validation at run start** (`manifest-schema.md` §Config resolution & validation, wired from `ff`): `/feature-flow:ff` now validates the resolved config and **warns** on an unknown/typo'd key (e.g. `explorerAgent` vs `explorerAgents`), a half-configuration (`toggles.kb` true with `paths.kb` unset), or a type/domain mismatch — then falls back to the safe default. Misconfigurations are surfaced instead of silently no-op'ing (Q2).
+- **Comprehensive dist-parity guard** (`scripts/checks/dist-parity-guard.sh`): checks **every** packaged file is byte-identical to source, not the ~half the other guards spot-checked — so a future edit to any packaged file that isn't re-packaged is caught (Q4).
+- **CI workflow** (`.github/workflows/ci.yml`): builds the Codex package (fixing the fresh-clone landmine where the gitignored `dist/` left parity checks with nothing to diff), JSON-parses every config/manifest, then runs all guard scripts on every push and PR. Previously nothing ran the guards (Q5).
+
+### Changed
+- **Single-sourced the KB recall/capture procedures** (Q3): `ff-explore`/`ff-design` (recall) and `ff-verify`/`ff-review` (capture) inlined the full numbered procedure that the schema's §Knowledge base already owns — a triple. Each command now keeps only its gating sentence, a by-name reference to the canonical rule, and its command-specific input (recall keyword source / capture artifact list); the procedure guts live only in the schema. Behavior byte-identical. Also enriched the schema capture rule to name `plan` (previously omitted there while both commands relied on it).
+- **Single-sourced the terminal-convergence rule** (Q6): which command marks a run `done` (feature → `ff-verify`; bugfix → whichever of verify/review runs second) is a core-workflow invariant that governs even KB-off runs, but its only statement was buried inside the §KB capture rule. Extracted to a canonical `manifest-schema.md` §Terminal convergence section; §KB capture and both terminal commands now reference it. The two commands' status-check routing is intentionally left in place (it is irreducibly two-sided); `kb-guard` gained checks pinning the new single-source structure and still counts the `**KB capture**` invocations.
+- **Design fan-out builds on exploration** (`ff-design`): architects are now passed the `explore.md` findings as context instead of cold re-scanning the repo, eliminating ~3× redundant codebase scans per design phase (Q7).
+- **Verification authority moved off read-only agents** (C2, minimal prose): `ff-diagnostician` now labels its reproduction a **static hypothesis** (it is read-only and cannot execute); `ff-diagnose` states the binding executed evidence is the RED regression test in `ff-implement`; `ff-verify` records the test runner's literal exit evidence and may mark `pass` only when backed by a captured success exit code (no narration-only or reasoning-only passes); `ff-test-runner` derives each status from the **actual exit code** and has an explicit no-write-to-tracked-files constraint.
+
 ## [0.5.0] — 2026-06-24
 
 Evidence over assumptions. Three additive guardrails folded into existing templates and phase

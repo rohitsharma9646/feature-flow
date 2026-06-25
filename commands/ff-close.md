@@ -1,6 +1,7 @@
 ---
 description: "Close a completed run: record closedAt so it is excluded from automatic run resolution. Only done runs can close. Non-destructive."
 argument-hint: "<slug — from /feature-flow:ff-list>"
+allowed-tools: Read, Glob, Write
 ---
 
 # /feature-flow:ff-close — close a completed run

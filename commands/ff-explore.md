@@ -44,17 +44,11 @@ active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flo
 exactly as today (byte-identical behavior).
 
 When active, follow the **Knowledge base** recall rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
-
-1. `Glob <paths.kb>/*.md`. **Empty store** → print a one-line note ("KB empty — no recall") and
-   proceed to the fan-out (no error).
-2. Extract topic keywords from `$ARGUMENTS` (the feature request) and **tag-match** them against
-   each entry's `tags` frontmatter.
-3. For each match, run the staleness check: **stale** if any `referencedFiles` path is missing/moved
-   OR the entry is older than `kb.freshnessWindowDays` (default 90, from `captureDate`).
-4. Surface up to `kb.maxRecallEntries` (default 5) matches (recency-ordered) to the explorer agents
-   as appended context — fresh entries plain, **stale** entries decorated `[STALE — <reason>]` and
-   **never dropped**. **No match** → one-line note, proceed.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+(glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
+steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
+(the feature request)**, and surface matches to the **explorer agents** as context — **stale**
+entries flagged `[STALE — <reason>]`, never dropped. Empty store / no match → one-line note, proceed.
 
 ## Do the work
 
@@ -69,6 +63,10 @@ with a differentiated focus so the coverage is genuinely distinct:
 
 Read the files the agents flag as essential. Synthesize a findings summary: where the
 feature will live, what to reuse, constraints discovered, and open questions for clarify.
+
+When you search the repo yourself, use the **Grep**/**Glob** tools — never Bash
+`grep -r`/`find` over the root (they ignore `.gitignore` and walk ignored dependency/build
+trees; see **Searching the repo** in `${CLAUDE_PLUGIN_ROOT}/skills/feature-flow/SKILL.md`).
 
 ## Write the artifact + update manifest
 

@@ -1,6 +1,7 @@
 ---
 description: "Print the current feature-flow run: track, tier, phase, per-phase status, artifacts, sign-off."
 argument-hint: "[slug, if more than one run exists]"
+allowed-tools: Read, Glob, Grep
 ---
 
 # /feature-flow:ff-status — run status

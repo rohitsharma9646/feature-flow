@@ -45,6 +45,15 @@ agent. Dispatch the **`ff-test-runner`** agent. It detects and **actually runs**
 test / build / lint commands and returns real output (command, exit status, failing
 excerpts). It never edits code.
 
+**Evidence authority — record, never paraphrase.** The test runner's returned per-command
+`{command, exit status, excerpt}` is the evidence of record; transcribe it into `verify.md`
+literally. A contract item may be marked `pass` **only** when it is backed by a captured
+command with a success exit status — never on the runner's narration alone, never on your own
+reasoning, and never inferred from "it looks right." If a returned result lacks an exit
+status (the runner described a pass without a captured exit code), treat it as
+`manual-unverified`, not `pass`, and say why. Do not re-author or upgrade the runner's
+verdict; you only map its real output to the contract.
+
 Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/verify.md`:
 
 - **Feature track:** map **each acceptance criterion** from the spec (at `artifacts.spec`, as
@@ -67,6 +76,10 @@ run build/lint/smoke instead and never call a no-tests run a pass. On the bugfix
 fix without a regression test (RED→GREEN evidence) is reported **incomplete**, not done.
 
 ## Update manifest + hand off (order differs by track)
+
+Which command marks the run `done` is the canonical **Terminal convergence** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the per-track routing below implements it (it
+does not re-derive it).
 
 **Use the Write tool** to write `verify.md`. Set
 `phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`.
@@ -107,21 +120,11 @@ It is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` 
 proceed to `currentPhase = "done"` — behavior is byte-identical to today.
 
 When active, follow the **Knowledge base** capture rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
-
-1. Read this run's artifacts via `manifest.artifacts.<name>` pointers — **feature track:** the spec
-   from `artifacts.spec`, the design from `artifacts.design` (if present); **bugfix track:** the
-   diagnosis from `artifacts.diagnosis`, the plan from `artifacts.plan` (if escalated) — plus this
-   `verify.md` and the review from `artifacts.review`. **Never** bare filenames (keeps
-   `durable-paths-guard.sh` GREEN).
-2. Capture `git rev-parse HEAD` inline → `captureCommitSha`, or `null` on failure (never blocks).
-3. Distill **1–3 candidate entries**, biased to architectural decisions + project conventions,
-   auto-proposing `tags` + `referencedFiles`.
-4. **Confirm gate (cross-turn, mandatory in both modes):** present the candidates; the user accepts
-   / edits / rejects each. Write **nothing** until the user confirms — in autopilot this is a
-   mandatory pause (see **Autopilot** §KB capture confirm-gate row); the chain resumes to
-   `currentPhase = "done"` on the user's answer or on `/feature-flow:ff-resume`.
-5. For each accepted entry: `mkdir -p <paths.kb>` and **Write** it from
-   `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md` to
-   `<paths.kb>/<captureDate>-<runSlug>-<short-title>.md`. Perform **no** `git add` / `git commit`.
-6. Reject-all / none proposed → write nothing. Either way, proceed to `currentPhase = "done"`.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA
+→ provenance, distill 1–3 candidates, the cross-turn confirm gate, write accepted entries from
+`${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md`, **no** `git add`/`commit`, reject-all writes
+nothing); **do not restate its steps here.** The only command-specific input: read this run's
+artifacts **only** via `manifest.artifacts.<name>` pointers (never bare filenames) — **feature
+track:** the spec (`artifacts.spec`) + design (`artifacts.design`, if present); **bugfix track:**
+the diagnosis (`artifacts.diagnosis`) + plan (`artifacts.plan`, if escalated); both tracks: plus
+this `verify.md` and the review (`artifacts.review`).

@@ -1,6 +1,7 @@
 ---
 description: "List all feature-flow runs: slug, track, tier, currentPhase, createdAt, updatedAt — including abandoned and closed runs."
 argument-hint: ""
+allowed-tools: Read, Glob, Grep
 ---
 
 # /feature-flow:ff-list — list runs
