@@ -103,6 +103,15 @@ question. A dropped mid-chain session recovers normally via `/feature-flow:ff-re
 (which continues the chain on autopilot runs). All phase commands are autopilot-aware;
 the canonical rules live in `docs/manifest-schema.md` §Autopilot.
 
+## Enforcement
+
+On Claude Code, two gates are **machine-enforced** by a PreToolUse hook (`hooks/enforce-gate`),
+on by default: no run may enter **implement** without sign-off, and none may reach **done**
+without valid verify (and, on the bugfix track, review) evidence on disk. The hook **fails
+open** — it blocks only a provably-illegal `manifest.json` write and otherwise stays out of the
+way — and requires `jq`. Disable with `toggles.enforce: false` in `.feature-flow.json`. On Codex
+(no hook mechanism) these gates remain prose.
+
 ## Knowledge base
 
 feature-flow can **remember** what each run decided and **recall** it in later runs — so a new run

@@ -176,6 +176,9 @@ commands reference it instead of restating their own:
    write, never self-chosen — `createdAt`, empty `phases`, `signOff`).
 2. **Check the gate** for this phase (e.g. `/ff-implement` requires `signOff.signed`
    on the feature/full track; a confirmed `diagnosis.md` on the lite bugfix track).
+   On Claude Code these two gates are additionally **machine-enforced** by the `enforce-gate`
+   PreToolUse hook (see **Enforcement** below); on Codex (no hooks) and when `toggles.enforce`
+   is `false`, the prose gate is the sole control.
 3. **Do the phase work**, reading any required upstream artifacts.
 4. **Write the artifact** to the run dir (or the configured override path).
 5. **Update the manifest**: set this phase's `status` + `artifact`, bump `updatedAt`
@@ -214,6 +217,27 @@ command that mutates it:
      staleness rule reclaims it automatically, so a crash never wedges a run.
    - `lock` is **advisory and back-compatible**: a manifest without the field is simply
      unlocked. Never block a run solely because the field is missing.
+
+## Enforcement (Claude Code)
+
+Two manifest transitions are **machine-enforced** by a `PreToolUse` hook
+(`hooks/enforce-gate`), on by default (`toggles.enforce: true`):
+
+- **Gate A** — a write that enters `implement` (`currentPhase: "implement"`, or
+  `phases.implement.status` advanced) is **denied** unless the track's sign-off precondition
+  holds: `signOff.signed == true` (feature / bugfix-full) or `phases.diagnose.status == "complete"`
+  (bugfix-lite).
+- **Gate B** — a write that sets `currentPhase: "done"` is **denied** unless the proposed
+  terminal phase(s) are `complete` AND the artifact(s) named by `artifacts.verify` (feature) or
+  `artifacts.verify` + `artifacts.review` (bugfix) exist on disk, are non-empty, and contain a
+  markdown heading.
+
+The hook is **fail-open**: it denies only a determinate-illegal transition and otherwise allows
+(no manifest write · `jq` absent · unparseable proposed manifest · missing `track`/`currentPhase`
+· `toggles.enforce: false`). It is **Claude-Code-only** — the Codex package excludes `hooks/`, so
+Codex runs the same workflow under the **prose** gates (the hook backstops the prose; it does not
+replace it). Kill switch: set `toggles.enforce: false` in `.feature-flow.json`. Behavioral test:
+`scripts/checks/enforce-gate-guard.sh`.
 
 ## Disk inference procedure
 
