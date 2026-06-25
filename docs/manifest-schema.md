@@ -364,7 +364,7 @@ gate). By track:
 When active, the command reaching the done-transition:
 
 1. Reads the run's artifacts via **`manifest.artifacts.<name>`** pointers (`spec`/`diagnosis`,
-   `design` if present, `verify`, `review`) — never bare filenames.
+   `design` and `plan` if present, `verify`, `review`) — never bare filenames.
 2. Captures `git rev-parse HEAD` inline → `captureCommitSha` or `null` on failure (never blocks).
 3. Distills **1–3 candidate entries**, biased to architectural decisions + project conventions
    (lessons/pitfalls are opt-in), auto-proposing `tags` + `referencedFiles`.

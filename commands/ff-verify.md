@@ -116,21 +116,11 @@ It is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` 
 proceed to `currentPhase = "done"` — behavior is byte-identical to today.
 
 When active, follow the **Knowledge base** capture rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly:
-
-1. Read this run's artifacts via `manifest.artifacts.<name>` pointers — **feature track:** the spec
-   from `artifacts.spec`, the design from `artifacts.design` (if present); **bugfix track:** the
-   diagnosis from `artifacts.diagnosis`, the plan from `artifacts.plan` (if escalated) — plus this
-   `verify.md` and the review from `artifacts.review`. **Never** bare filenames (keeps
-   `durable-paths-guard.sh` GREEN).
-2. Capture `git rev-parse HEAD` inline → `captureCommitSha`, or `null` on failure (never blocks).
-3. Distill **1–3 candidate entries**, biased to architectural decisions + project conventions,
-   auto-proposing `tags` + `referencedFiles`.
-4. **Confirm gate (cross-turn, mandatory in both modes):** present the candidates; the user accepts
-   / edits / rejects each. Write **nothing** until the user confirms — in autopilot this is a
-   mandatory pause (see **Autopilot** §KB capture confirm-gate row); the chain resumes to
-   `currentPhase = "done"` on the user's answer or on `/feature-flow:ff-resume`.
-5. For each accepted entry: `mkdir -p <paths.kb>` and **Write** it from
-   `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md` to
-   `<paths.kb>/<captureDate>-<runSlug>-<short-title>.md`. Perform **no** `git add` / `git commit`.
-6. Reject-all / none proposed → write nothing. Either way, proceed to `currentPhase = "done"`.
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA
+→ provenance, distill 1–3 candidates, the cross-turn confirm gate, write accepted entries from
+`${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md`, **no** `git add`/`commit`, reject-all writes
+nothing); **do not restate its steps here.** The only command-specific input: read this run's
+artifacts **only** via `manifest.artifacts.<name>` pointers (never bare filenames) — **feature
+track:** the spec (`artifacts.spec`) + design (`artifacts.design`, if present); **bugfix track:**
+the diagnosis (`artifacts.diagnosis`) + plan (`artifacts.plan`, if escalated); both tracks: plus
+this `verify.md` and the review (`artifacts.review`).
