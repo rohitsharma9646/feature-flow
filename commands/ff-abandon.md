@@ -1,6 +1,7 @@
 ---
 description: "Abandon a run: set currentPhase to \"abandoned\" so it is excluded from automatic run resolution. Non-destructive."
 argument-hint: "<slug — from /feature-flow:ff-list>"
+allowed-tools: Read, Glob, Write
 ---
 
 # /feature-flow:ff-abandon — abandon a run

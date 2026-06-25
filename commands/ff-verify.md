@@ -45,6 +45,15 @@ agent. Dispatch the **`ff-test-runner`** agent. It detects and **actually runs**
 test / build / lint commands and returns real output (command, exit status, failing
 excerpts). It never edits code.
 
+**Evidence authority — record, never paraphrase.** The test runner's returned per-command
+`{command, exit status, excerpt}` is the evidence of record; transcribe it into `verify.md`
+literally. A contract item may be marked `pass` **only** when it is backed by a captured
+command with a success exit status — never on the runner's narration alone, never on your own
+reasoning, and never inferred from "it looks right." If a returned result lacks an exit
+status (the runner described a pass without a captured exit code), treat it as
+`manual-unverified`, not `pass`, and say why. Do not re-author or upgrade the runner's
+verdict; you only map its real output to the contract.
+
 Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/verify.md`:
 
 - **Feature track:** map **each acceptance criterion** from the spec (at `artifacts.spec`, as

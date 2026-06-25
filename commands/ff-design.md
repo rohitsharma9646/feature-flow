@@ -35,8 +35,10 @@ the chosen approach and rejected alternatives.
 3. **Re-run guard:** if `phases.design.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `design.md` — see **Re-run guard** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
-4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved).
-   Set `phases.design.status = "in_progress"`, bump `currentPhase`.
+4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved),
+   **and the explore findings** (`explore.md` in the run dir — resolve via
+   `phases.explore.artifact`, else `<run dir>/explore.md`; it is ephemeral, always in the
+   sandbox). Set `phases.design.status = "in_progress"`, bump `currentPhase`.
 
 ## KB recall (when enabled)
 
@@ -71,8 +73,11 @@ First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op un
 
 Read `models.architect` from config (`.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
-agent. Dispatch `architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each
-committed to a distinct focus so the options are genuinely different:
+agent. **Pass each architect the explore findings (step 4) as context** — the explore phase
+already mapped the codebase (where the feature lives, what to reuse, the conventions in play),
+so the architects build on that instead of cold re-scanning the repo three times over. Dispatch
+`architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each committed to a
+distinct focus so the options are genuinely different:
 - **minimal** — smallest change that satisfies the spec.
 - **clean** — best long-term structure, even if more work.
 - **pragmatic** — the balance the codebase's conventions actually favor.

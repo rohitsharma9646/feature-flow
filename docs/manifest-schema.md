@@ -21,6 +21,7 @@ makes phases composable, standalone-runnable, and resumable from disk.
     "<phase>": { "status": "pending|in_progress|complete", "artifact": "<relative path or null>" }
   },
   "signOff": { "required": true, "signed": false, "date": null },
+  "lock": null,
   "bugfix": {
     "red":   { "command": "<test cmd>", "exit": 1, "evidence": "<failing output, pre-fix>" },
     "green": { "command": "<test cmd>", "exit": 0, "evidence": "<passing output, post-fix>" }
@@ -65,6 +66,11 @@ makes phases composable, standalone-runnable, and resumable from disk.
   `signOff.signed` is **authoritative**; the `User signed off:` line in `spec.md`/`diagnosis.md`
   is a human-readable **mirror**. If the two ever disagree (a hand-edit or partial resume),
   trust the manifest and offer to re-sync the document line.
+- **`lock`** (advisory; `null`/absent = unlocked — any manifest written before this field
+  existed): a soft
+  concurrency guard, `{ "owner": "<short session/run label>", "acquiredAt": "<ISO8601>" }`
+  when held. It is **advisory, not a kernel lock** — see **Manifest write safety** below for
+  the acquire / release / stale-takeover rules. Absent field = unlocked; no migration.
 - **`bugfix`** (bugfix track only): the test-first evidence. `/ff-implement` writes
   `red` when the regression test fails pre-fix and `green` after the fix passes;
   `/ff-verify` cites both for the RED→GREEN contract. A run with no `bugfix.red`
@@ -98,6 +104,34 @@ makes phases composable, standalone-runnable, and resumable from disk.
   - Promotion is **write-only**: Feature Flow writes the doc into the working tree but never
     runs `git add`/`commit`; the user commits it through their normal flow.
 
+## Config resolution & validation
+
+Every command resolves config the same way: a repo-root `.feature-flow.json` shallow-merges
+over `${CLAUDE_PLUGIN_ROOT}/config/defaults.json` (user keys win; unset keys fall through to
+the default). **`/feature-flow:ff` — and any cold-start phase command that creates a manifest —
+MUST validate the resolved config and surface problems; never silently no-op.** A
+misconfiguration that fails silent is the worst outcome for a tool that promises durability.
+
+Validation is advisory: **warn and fall back to the safe default — never hard-fail a run.**
+
+1. **Unknown key.** A top-level or nested key not in the known set below → warn
+   `config: unknown key '<key>' in .feature-flow.json — ignored (did you mean '<nearest>'?)`
+   and proceed with defaults. Catches the silent-typo footgun: `explorerAgent` (vs
+   `explorerAgents`) would otherwise fall through to the default with no signal at all.
+2. **Half-configuration.** `toggles.kb: true` with `paths.kb` null/unset → warn
+   `config: toggles.kb is true but paths.kb is unset — the knowledge base stays OFF`, then run
+   with the KB inactive (the documented defense-in-depth, now surfaced rather than silent).
+   Same shape for any feature whose activation needs two coordinated keys.
+3. **Type / domain mismatch.** `toggles.autopilot` not one of `"ask" | true | false`; an agent
+   count that is not a positive integer; `reviewThreshold` outside 0–100 → warn and fall back
+   to that key's default.
+
+**Known keys** (the schema of `defaults.json` — keep in sync when adding a config key):
+`explorerAgents`, `architectAgents`, `reviewerAgents`, `diagnosticianAgents`;
+`models.{explorer,architect,reviewer,diagnostician,testRunner}`; `reviewThreshold`;
+`toggles.{tdd,worktree,greenfield,autopilot,kb}`; `paths.{base,spec,plan,durable,kb}`;
+`kb.{freshnessWindowDays,maxRecallEntries}`.
+
 ## Run resolution (how every command finds the run before reading the manifest)
 
 All commands resolve the target run the **same way** — this is the canonical rule; phase
@@ -121,6 +155,19 @@ commands reference it instead of restating their own:
    each candidate — rather than guessing.
 5. **Cold-start / new run.** An entry or first-phase command starting fresh work instead
    derives a new kebab `slug` from `$ARGUMENTS` and **creates** `<base>/<slug>/`.
+6. **Corrupt manifest — never improvise (applies to EVERY command, not just resume/status).**
+   If the located run has a `manifest.json` that exists but does **not** parse as JSON, do
+   **not** proceed on a guessed state and do **not** overwrite it blind. Apply the **Disk
+   inference procedure** below to reconstruct phase state from the artifacts on disk, tell the
+   user the manifest was corrupt and exactly what was inferred, and continue from the inferred
+   resume point (a mutating phase first rewrites a clean manifest from the inference, then
+   proceeds). This was previously honored only by `ff-resume`/`ff-status`; it is now universal
+   so a phase command can never act on — or clobber — a corrupt manifest.
+7. **Before mutating, apply Manifest write safety.** Once the run is resolved, any command that
+   will write the manifest follows **Manifest write safety** below — whole-object atomic write
+   plus the advisory `lock` (acquire before the first mutation, release at turn end). Stated
+   here, in the universally-referenced resolution rule, so every mutating command inherits it
+   (the same way step 6 makes corrupt-manifest handling universal).
 
 ## Rules every command MUST follow
 
@@ -132,10 +179,41 @@ commands reference it instead of restating their own:
 3. **Do the phase work**, reading any required upstream artifacts.
 4. **Write the artifact** to the run dir (or the configured override path).
 5. **Update the manifest**: set this phase's `status` + `artifact`, bump `updatedAt`
-   and `currentPhase`.
+   and `currentPhase`. **Write the whole object atomically and release the lock** — see
+   **Manifest write safety** below.
 
-Resume (`/ff-resume`) and status (`/ff-status`) read this file. If the manifest is
-missing or corrupt, they apply the **Disk inference procedure** below.
+Resume (`/ff-resume`) and status (`/ff-status`) read this file. **Every** command — not
+only those two — applies the **Disk inference procedure** below when the manifest is missing
+or corrupt (Run resolution step 6); no command may improvise on, or blind-overwrite, a
+manifest it could not parse.
+
+## Manifest write safety
+
+The `manifest.json` is the single durable state object and is rewritten on every phase, so
+its write is the highest-probability corruption path. Two rules, both mandatory for every
+command that mutates it:
+
+1. **Whole-object atomic write.** Always serialize and **Write the complete manifest object
+   in one operation** — never a partial line-edit, never an append. A half-applied edit can
+   leave the file as invalid JSON; rewriting the whole (small) object each time means the
+   file is either the old valid state or the new valid state, never a torn middle. Read →
+   mutate in memory → Write the whole thing.
+
+2. **Advisory lock (soft concurrency guard).** Guards against two sessions touching one run
+   (e.g. an autopilot chain in one session while the user invokes a phase manually in
+   another). It is advisory — prose, not enforced — so it is staleness-self-healing rather
+   than blocking:
+   - **Before the first mutation of a turn**, read `lock`. If it is set, owned by **another**
+     session, and **fresh** (`acquiredAt` within the last 15 minutes), do not write — warn the
+     user that run `<slug>` looks active in another session and ask whether to proceed; only
+     continue on confirmation. If `lock` is null/absent, **stale** (`acquiredAt` older than 15
+     minutes — assume the prior session died), or already yours, take it: set
+     `lock = { owner, acquiredAt: <now> }` as part of that same whole-object Write.
+   - **Release at the natural turn end** (phase complete / STOP / hand-off): set `lock = null`
+     in the final whole-object Write. A dropped session leaves a lock behind; the 15-minute
+     staleness rule reclaims it automatically, so a crash never wedges a run.
+   - `lock` is **advisory and back-compatible**: a manifest without the field is simply
+     unlocked. Never block a run solely because the field is missing.
 
 ## Disk inference procedure
 

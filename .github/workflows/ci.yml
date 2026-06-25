@@ -1,0 +1,37 @@
+name: checks
+
+# Runs the structural guard scripts on every push and PR. Until now nothing ran them, and
+# they could not pass on a fresh clone (dist/ is gitignored, so the parity checks had nothing
+# to diff against). This builds the Codex package first, then runs every guard.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Codex package (dist/ is gitignored — create it before parity checks)
+        run: bash scripts/package-codex-plugin.sh
+
+      - name: Validate JSON configs and manifests parse
+        run: |
+          set -e
+          for f in config/defaults.json .claude-plugin/plugin.json \
+                   .claude-plugin/marketplace.json .codex-plugin/plugin.json; do
+            echo "== $f =="
+            python3 -c "import json,sys; json.load(open('$f'))"
+          done
+
+      - name: Run guard scripts
+        run: |
+          set -e
+          shopt -s nullglob
+          for g in scripts/checks/*.sh; do
+            echo "::group::$g"
+            bash "$g"
+            echo "::endgroup::"
+          done
