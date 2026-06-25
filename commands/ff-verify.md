@@ -77,6 +77,10 @@ fix without a regression test (RED→GREEN evidence) is reported **incomplete**,
 
 ## Update manifest + hand off (order differs by track)
 
+Which command marks the run `done` is the canonical **Terminal convergence** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the per-track routing below implements it (it
+does not re-derive it).
+
 **Use the Write tool** to write `verify.md`. Set
 `phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`.
 

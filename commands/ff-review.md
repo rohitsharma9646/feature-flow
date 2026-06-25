@@ -69,7 +69,9 @@ do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
   `/feature-flow:ff-review` — do **not** route forward to verify or done (in either mode).
 
 Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, bump
-`updatedAt`, and hand off by track:
+`updatedAt`, and hand off by track. (Which command marks the run `done` is the canonical
+**Terminal convergence** rule in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the routing
+below implements it.)
 
 - **Feature track:** review runs **before** verify. If `manifest.autopilot` is `true`,
   emit the progress strip and proceed directly into the verify phase per
