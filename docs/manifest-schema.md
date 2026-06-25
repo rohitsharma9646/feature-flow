@@ -129,7 +129,7 @@ Validation is advisory: **warn and fall back to the safe default — never hard-
 **Known keys** (the schema of `defaults.json` — keep in sync when adding a config key):
 `explorerAgents`, `architectAgents`, `reviewerAgents`, `diagnosticianAgents`;
 `models.{explorer,architect,reviewer,diagnostician,testRunner}`; `reviewThreshold`;
-`toggles.{tdd,worktree,greenfield,autopilot,kb}`; `paths.{base,spec,plan,durable,kb}`;
+`toggles.{tdd,worktree,greenfield,autopilot,kb,enforce}`; `paths.{base,spec,plan,durable,kb}`;
 `kb.{freshnessWindowDays,maxRecallEntries}`.
 
 ## Run resolution (how every command finds the run before reading the manifest)
