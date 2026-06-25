@@ -138,6 +138,15 @@ build, and lint and returned real output. The analysis agents (`ff-code-explorer
 `ff-code-architect`, `ff-code-reviewer`, `ff-diagnostician`) are strictly read-only.
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.
 
+## Searching the repo (performance)
+
+When you (or any `Bash`-capable step) search the codebase, use the **Grep** and **Glob**
+tools — **never** Bash `grep -r` / `find` over the repo root. They run ripgrep, honor
+`.gitignore`, and are far faster on large repos because they skip the ignored dependency,
+build, and cache trees that `grep -r`/`find` would otherwise walk in full. Reserve Bash
+`grep`/`find` for a scoped subdirectory or a piped filter — not the root. The read-only
+analysis agents already lack `Bash` and search via these tools; keep it that way.
+
 ## Knowledge base
 
 **Opt-in, off by default.** Set `toggles.kb: true` and `paths.kb: "<dir>"` in `.feature-flow.json`
