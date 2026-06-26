@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] — reliability hardening (Phase 0–1)
+## [0.6.0] — 2026-06-26 — reliability hardening + fail-closed enforcement
 
 Foundation-safety fixes from the v0.5.0 architecture review (`docs/feature-flow/architecture-review-2026-06-25.md`). All **non-breaking**: additive frontmatter, additive schema rules, prose clarifications, one optional manifest field (`lock`, absent = unlocked), and new dev/CI tooling. Manifests authored before this change still validate; no migration.
 
