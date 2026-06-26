@@ -96,7 +96,11 @@ missing, resume infers the phase from which artifacts exist on disk.
 
 ## Soft gates (honor them)
 
-Nothing in the harness fails closed — the gates are prose you must respect:
+The gates are prose you must respect. On Claude Code, two of them are additionally
+**machine-enforced** by the `enforce-gate` PreToolUse hook — it denies a manifest write that
+enters `implement` without sign-off, or reaches `done` without verify/review evidence (requires
+`jq`; disable with `toggles.enforce: false`). On Codex the gates remain prose-only. The hook
+backstops the prose; honoring the gates below is still your job:
 
 - **Sign-off gate** (differs by track — the bugfix track has no clarify/design phase):
   - **Feature track:** sign-off is **collected at the end of `/feature-flow:ff-clarify`** and
