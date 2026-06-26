@@ -52,6 +52,20 @@ beat next, dig on shallow answers, and skip what is already obvious from `explor
 request. Don't over-ask. The technique *how-to* for each beat lives in
 `${CLAUDE_PLUGIN_ROOT}/docs/grilling-playbook.md` — read it and follow it.
 
+**Lite tier (`tier == "lite"`) — minimal clarify.** Skip beats 1–2 entirely (no
+premise-challenge, no 2–3 approach weighing — a lite feature has one obvious approach). Run
+only enough of beat 3 to make every acceptance criterion **binary and testable** — often
+**zero questions** when the request + `explore.md` already pin them; ask at most a couple
+if an AC is genuinely ambiguous. Fill the spec's **Solution approaches considered** with a
+single line — *"lite tier — single obvious approach; alternatives not weighed"* — never a
+blank section. Then write `spec.md` and go straight to the sign-off gate.
+
+**Escalation (lite → full).** If clarify reveals the work actually needs competing
+approaches weighed or a real multi-component design, **escalate**: set `tier = "full"`,
+reset `signOff.signed = false`, keep the spec draft so far, run the **full** interrogation
+(beats 1–4) over it, and route to `/feature-flow:ff-design` after sign-off. Escalation is
+one-way — full never becomes lite.
+
 1. **Premise** — anchor to the real underlying need, not the feature as phrased (The Mom Test;
    one "why" probe on a shallow answer).
 2. **Solution options** — for non-trivial work, surface 2–3 distinct *problem-level* approaches
@@ -103,9 +117,16 @@ never assume the mode from memory) and continue per the Update-manifest section 
 Once sign-off is recorded, set
 `phases.clarify = { status: "complete", artifact: "<resolved spec path>" }`,
 `signOff.required = true`, bump `updatedAt`. Then **STOP (step-by-step) / continue
-(autopilot):** if the re-read `manifest.autopilot` is `true`, emit the progress strip and
-proceed directly into the design phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-design.md` —
-see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — instead of the
-hand-off message. If `false` or absent, **STOP** and tell the user to run
-`/feature-flow:ff-design` next, ending the message with the one-line progress strip — see
-**Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+(autopilot)**, routing by tier:
+- **Lite tier (`tier == "lite"`):** route to `/feature-flow:ff-implement` — lite skips the
+  design + plan phases. Autopilot → emit the progress strip and proceed directly into
+  implement per `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md`; step-by-step → **STOP** and
+  tell the user to run `/feature-flow:ff-implement` next.
+- **Full tier:** route to `/feature-flow:ff-design`. Autopilot → emit the progress strip and
+  proceed directly into the design phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-design.md` —
+  see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; step-by-step →
+  **STOP** and tell the user to run `/feature-flow:ff-design` next.
+
+End the message with the one-line progress strip — the **lite** strip omits design + plan
+(`explore[done] → clarify[done] → implement[NEXT] → review → verify`) — see **Progress
+strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.

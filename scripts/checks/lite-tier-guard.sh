@@ -19,5 +19,11 @@ has commands/ff-explore.md 'resolved .*tier|tier.*lite/full'      "ff-explore wr
 has commands/ff-explore.md 'exactly ONE|one .*ff-code-explorer'   "ff-explore dispatches 1 explorer when lite"
 has commands/ff-explore.md 'tier == .lite.'                       "ff-explore branches on tier == lite"
 
+# ff-clarify.md: lite minimal clarify, route lite->implement, escalation valve
+has commands/ff-clarify.md 'Lite tier'                            "ff-clarify has a lite-tier mode"
+has commands/ff-clarify.md 'skip beats 1.2|skip beats 1'          "ff-clarify lite skips premise+approach beats"
+has commands/ff-clarify.md 'ff-implement'                         "ff-clarify routes lite to implement"
+has commands/ff-clarify.md 'Escalation .lite . full|tier = .full.' "ff-clarify has lite->full escalation"
+
 if [ "$fail" -eq 0 ]; then echo "PASS: lite-tier guard"; else echo "RED: lite-tier guard failed"; fi
 exit "$fail"
