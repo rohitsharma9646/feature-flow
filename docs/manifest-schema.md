@@ -42,9 +42,13 @@ makes phases composable, standalone-runnable, and resumable from disk.
 - **`track`** and **`tier`** are set by `/ff` at classification time, or by the first
   standalone command run if a phase command is invoked directly with no manifest yet.
   - `track: feature` → phases: explore → clarify → design → plan → implement → review → verify.
+  - `track: feature`, `tier: lite` → phases: explore → clarify → implement → review → verify
+    (skips design + plan; 1-agent explore).
   - `track: bugfix` → phases: diagnose → implement (test-first) → verify → review.
 - **`tier`**: `full` (larger work; requires a signed-off `spec.md`/`diagnosis.md` and a `plan.md`)
-  vs `lite` (trivial/obvious bug; a confirmed `diagnosis.md` is the gate, no separate signed spec).
+  vs `lite` (small/obvious work). A lite **bugfix** uses a confirmed `diagnosis.md` as the gate
+  with no separate sign-off; a lite **feature** keeps sign-off but skips the design + plan phases
+  and uses a 1-agent explore (`explore → clarify → implement → review → verify`).
 - **`currentPhase`** is the phase most recently entered; `done` when the run is complete;
   `abandoned` when the run was cancelled via `/feature-flow:ff-abandon`. An abandoned run is
   **excluded from automatic run resolution** (steps 3–4 below); its phases and artifacts are
@@ -465,6 +469,7 @@ step-by-step: every STOP ends the turn (v0.2.0 behavior, unchanged).
 
 **Ceremonial boundaries (chain through these):**
 - feature: explore → clarify; post-sign-off → design → plan → implement → review → verify
+- feature lite: explore → clarify; post-sign-off → implement → review → verify
 - bugfix lite: diagnose → implement → verify → review
 - bugfix full: post-sign-off → plan → implement → verify → review
 

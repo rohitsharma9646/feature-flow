@@ -40,6 +40,11 @@ m='{"track":"bugfix","tier":"lite","currentPhase":"implement","phases":{"diagnos
 assert_allow "GateA: bugfix-lite diagnose complete → implement (no sign-off needed)" "$(run "$rd/manifest.json" "$m")"
 m='{"track":"bugfix","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false}}'
 assert_deny  "GateA: bugfix-full unsigned → implement" "$(run "$rd/manifest.json" "$m")"
+# feature/lite is covered by the feature/* arm with NO hook change (M2/AC8)
+m='{"track":"feature","tier":"lite","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false},"artifacts":{}}'
+assert_deny  "GateA: feature-lite unsigned → implement (feature/* arm covers lite)" "$(run "$rd/manifest.json" "$m")"
+m='{"track":"feature","tier":"lite","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":true},"artifacts":{}}'
+assert_allow "GateA: feature-lite signed → implement" "$(run "$rd/manifest.json" "$m")"
 
 # ---- Gate B: reach done ------------------------------------------------------
 rd="$(mkrun b-ok)"; printf '# Verify\n\n## Verdict\npass\n' > "$rd/verify.md"
