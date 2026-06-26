@@ -28,7 +28,8 @@ no upstream artifact is required (cold-start safe).
    derive a short kebab `slug` from it, create the run dir, **resolve `autopilot` first**
    (run-start procedure — see **Autopilot** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; never choose the value yourself),
-   and write a manifest with `track: "feature"`, `tier: "full"`, the resolved
+   and write a manifest with `track: "feature"`, the **resolved** `tier` (lite/full per
+   `ff.md` Step 1; in doubt full — never hardcode `"full"`), the resolved
    `autopilot`, empty `phases`, `signOff.required: true`.
    If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
 3. **Re-run guard:** if `phases.explore.status` is already `"complete"`, stop and ask for
@@ -60,6 +61,11 @@ with a differentiated focus so the coverage is genuinely distinct:
 - **similar features** — find existing features closest to the request and how they're built.
 - **architecture** — map the layers, entry points, and conventions the feature must fit.
 - **patterns/abstractions** — the reusable patterns, utilities, and extension points available.
+
+**Lite tier (`tier == "lite"`): dispatch exactly ONE `ff-code-explorer`** with a single
+combined focus (where the change lives + what to reuse) instead of the `explorerAgents`
+fan-out — a small feature does not need 3-way coverage. Full/unset → the `explorerAgents`
+fan-out above, unchanged.
 
 Read the files the agents flag as essential. Synthesize a findings summary: where the
 feature will live, what to reuse, constraints discovered, and open questions for clarify.
