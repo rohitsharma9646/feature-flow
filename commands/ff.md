@@ -36,6 +36,14 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
   tell the user you'll **split** it: handle the **bug fix first** (its own run), then the
   feature as a separate run. Set up only the first (bugfix) run now.
 
+**Feature tier (lite vs full) — soft judgment, features only.** Once classified as a
+feature, judge the *size*. **Lite** = a small, single-approach change (add a flag, a config
+key, a small endpoint, a localized tweak) with one obvious approach and narrow blast radius.
+**Full** = anything needing 2–3 problem-level approaches weighed, a multi-component design,
+or broad blast radius. Announce the call (*"small change — starting a lite feature run"*).
+**Ambiguous → ask once. In doubt → full.** (Bugfix tier is still decided in diagnose —
+unchanged.)
+
 ## Step 2 — Set up the run (do this now)
 
 0. **If you are in plan mode, leave it before writing anything.** feature-flow's first real
@@ -72,7 +80,8 @@ Judge `$ARGUMENTS` (soft judgment — no rigid keyword rule):
 3. **Create the run:** derive a short kebab `slug` from `$ARGUMENTS`. **Use the Write tool
    now** to create `<base>/<slug>/manifest.json` per the contract
    (`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`):
-   - **feature:** `track: "feature"`, `tier: "full"`, `currentPhase: "explore"`,
+   - **feature:** `track: "feature"`, `tier`: the **resolved** lite/full judgment from
+     Step 1 (never hardcode `"full"`), `currentPhase: "explore"`,
      `signOff: { required: true, signed: false }`.
    - **bugfix:** `track: "bugfix"`, `currentPhase: "diagnose"`, `signOff: { required:
      false, signed: false }` (tier is decided during diagnose).
