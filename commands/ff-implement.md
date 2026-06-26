@@ -62,17 +62,26 @@ A promoted plan lives outside the sandbox (`<paths.durable>/<date>-<slug>/plan.m
 **never gate on a bare `plan.md` filename** — that bare-name check is exactly what would
 false-fire "no `plan.md`" on a run whose plan was promoted out of the sandbox.
 
-- **Feature:** with the resolved paths in hand, if `artifacts.plan`, `artifacts.design`, or
-  `artifacts.spec` points at a file that does **not** exist on disk, route to the first
-  missing artifact's phase (`/feature-flow:ff-plan` → `/feature-flow:ff-design` →
-  `/feature-flow:ff-clarify`) rather than implementing against nothing — a missing design
-  routes to `/feature-flow:ff-design` even when the plan exists.
+- **Feature, `tier: full` (or unset):** with the resolved paths in hand, if `artifacts.plan`,
+  `artifacts.design`, or `artifacts.spec` points at a file that does **not** exist on disk,
+  route to the first missing artifact's phase (`/feature-flow:ff-plan` →
+  `/feature-flow:ff-design` → `/feature-flow:ff-clarify`) rather than implementing against
+  nothing — a missing design routes to `/feature-flow:ff-design` even when the plan exists.
+- **Feature, `tier: lite`:** lite has **no design or plan phase** — require **only** `artifacts.spec`
+  (resolved via the manifest pointer). If the resolved spec is missing, route to
+  `/feature-flow:ff-clarify`; **never** route to `/feature-flow:ff-design` or `/feature-flow:ff-plan`
+  on a lite run (those phases do not exist for lite). The sign-off gate above is unchanged —
+  lite still requires `signOff.signed`.
 - **Bugfix:** resolve `artifacts.diagnosis`; if it does not exist, route to
   `/feature-flow:ff-diagnose`.
 
 ## Do the work — feature track
 
-Read the plan, spec, and design — resolving each path via `manifest.artifacts.<name>`
+**Lite tier (`tier == "lite"`):** there is no plan or design — read the **spec**
+(`manifest.artifacts.spec`) and implement its acceptance criteria directly, task by task
+(as the bugfix-lite path implements from the diagnosis). The `toggles.tdd` rule below still
+applies. **Full tier (or unset):** read the plan, spec, and design — resolving each path via
+`manifest.artifacts.<name>`
 (manifest-first; sandbox fallback only when the manifest is absent, exactly as in Cold-start).
 Implement the plan task by task. Honor config toggles:
 - `toggles.tdd` (default true): write the test before the implementation for each unit

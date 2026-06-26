@@ -25,5 +25,10 @@ has commands/ff-clarify.md 'skip beats 1.2|skip beats 1'          "ff-clarify li
 has commands/ff-clarify.md 'ff-implement'                         "ff-clarify routes lite to implement"
 has commands/ff-clarify.md 'Escalation .lite . full|tier = .full.' "ff-clarify has lite->full escalation"
 
+# ff-implement.md: tier-aware feature cold-start — lite requires only spec, never routes to design/plan
+has commands/ff-implement.md 'Feature, .tier: lite|Feature.*tier == .lite' "ff-implement has a feature-lite cold-start branch"
+has commands/ff-implement.md 'only.*artifacts\.spec|require .*only.*spec' "ff-implement lite requires only spec"
+has commands/ff-implement.md 'never.*ff-design|never.*ff-plan'    "ff-implement lite never routes to design/plan"
+
 if [ "$fail" -eq 0 ]; then echo "PASS: lite-tier guard"; else echo "RED: lite-tier guard failed"; fi
 exit "$fail"
