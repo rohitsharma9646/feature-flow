@@ -30,5 +30,9 @@ has commands/ff-implement.md 'Feature, .tier: lite|Feature.*tier == .lite' "ff-i
 has commands/ff-implement.md 'only.*artifacts\.spec|require .*only.*spec' "ff-implement lite requires only spec"
 has commands/ff-implement.md 'never.*ff-design|never.*ff-plan'    "ff-implement lite never routes to design/plan"
 
+# docs document the feature lite tier
+has docs/manifest-schema.md 'feature lite: explore|tier: lite. → phases: explore' "schema documents feature lite tier"
+has skills/feature-flow/SKILL.md 'lite feature|feature .*lite tier' "SKILL documents feature lite tier"
+
 if [ "$fail" -eq 0 ]; then echo "PASS: lite-tier guard"; else echo "RED: lite-tier guard failed"; fi
 exit "$fail"

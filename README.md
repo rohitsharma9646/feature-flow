@@ -10,7 +10,10 @@ Two gated, resumable workflows over on-disk artifacts, each verified by really-e
 
 - **Feature track** — `explore → clarify → design → plan → implement → review → verify`.
   *clarify* challenges the premise, weighs problem-level solution approaches, and locks testable
-  acceptance criteria (it owns the WHAT; *design* owns the HOW).
+  acceptance criteria (it owns the WHAT; *design* owns the HOW). A small feature can run the
+  **lite** tier (`explore → clarify → implement → review → verify`) — it skips the design + plan
+  phases and uses a 1-agent explore but keeps sign-off; tier is soft-judged at entry (in doubt,
+  full) and a lite run can escalate to full before implement.
 - **Bugfix track** (test-first) — `diagnose → implement (failing regression test → RED → fix →
   GREEN) → verify → review`.
 

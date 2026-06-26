@@ -21,6 +21,10 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   `explore → clarify → design → plan → implement → review → verify`.
   *clarify* challenges the premise (is this the right need?), weighs 2-3 problem-level solution
   approaches, and locks testable acceptance criteria — it owns the WHAT; *design* owns the HOW.
+  A small, single-approach **lite feature** (`tier: lite`, soft-judged at entry — in doubt,
+  full) runs `explore → clarify → implement → review → verify`, skipping the design + plan
+  phases and using a 1-agent explore while keeping sign-off; it can escalate to full before
+  implement if it turns out bigger.
 - **Bugfix** — restoring intended behavior in existing code. Phases (test-first):
   `diagnose → implement (write failing regression test → RED → fix → GREEN) → verify → review`.
 
@@ -127,6 +131,10 @@ short `diagnosis.md` (repro + root cause + fix approach) is the gate — no sepa
 signed-off spec. Larger bugs escalate to **full**: a `plan.md` + sign-off, like a feature.
 Don't impose feature-weight ceremony on a one-line fix, and don't skip the spec on real
 feature work.
+
+The **feature** track mirrors this: a small feature takes the **lite** tier (skips the
+design + plan phases, 1-agent explore, keeps sign-off); a larger one stays **full**. Tier is
+soft-judged at entry — in doubt, full — and a lite run can escalate to full before implement.
 
 ## Solution horizon
 

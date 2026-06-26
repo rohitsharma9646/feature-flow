@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0] — 2026-06-26 — lite feature tier
+
+Brings the feature track to parity with the bugfix track's lite/full split (M2 from the v0.5.0 architecture review). **Non-breaking and additive**: `tier` already existed on the manifest; this teaches the feature track to use `lite`. A feature with no/`full` tier behaves byte-identically to before.
+
+### Added
+- **Lite feature tier (M2).** Small, single-approach features can run `tier: lite` — `explore → clarify → implement → review → verify` — **skipping the design + plan phases** and using a **1-agent explore**, while keeping sign-off + review + verify. Tier is **soft-judged at `/ff` entry** (announced; ambiguous → ask once; **in doubt → full**), mirroring the existing feature-vs-bugfix classification. A lite run can **escalate to full before implement** (sets `tier=full`, resets sign-off, carries the spec forward into the full clarify → design path). `ff-clarify` runs a minimal clarify on lite (skips the premise + approach-weighing beats, asks only enough to lock binary ACs); `ff-implement`'s feature cold-start is now tier-aware (lite requires only the signed `spec.md`, never routes to the non-existent design/plan phases). `enforce-gate`'s Gate A already covers `feature/*`, so a lite feature is enforced (no implement without sign-off) with **no hook change**. Contract pinned by `scripts/checks/lite-tier-guard.sh`; the free hook coverage pinned by two new `enforce-gate-guard.sh` fixtures.
+
 ## [0.6.0] — 2026-06-26 — reliability hardening + fail-closed enforcement
 
 Foundation-safety fixes from the v0.5.0 architecture review (`docs/feature-flow/architecture-review-2026-06-25.md`). All **non-breaking**: additive frontmatter, additive schema rules, prose clarifications, one optional manifest field (`lock`, absent = unlocked), and new dev/CI tooling. Manifests authored before this change still validate; no migration.
