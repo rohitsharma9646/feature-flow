@@ -1,209 +1,205 @@
 # feature-flow
 
-Composable, durable, verifying Claude Code plugin for **feature development** and **bug fixing** — two tracks, one spine, real (executed) verification.
+A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
+**gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.5.0.
+> **Status:** v0.7.0 · MIT licensed
 
-## What it is
+## Why use it
 
-Two gated, resumable workflows over on-disk artifacts, each verified by really-executed tests:
+Ad-hoc AI coding drifts: it builds the wrong thing, loses context mid-task, or claims "done"
+without proof. feature-flow fixes all three with a durable pipeline:
 
-- **Feature track** — `explore → clarify → design → plan → implement → review → verify`.
-  *clarify* challenges the premise, weighs problem-level solution approaches, and locks testable
-  acceptance criteria (it owns the WHAT; *design* owns the HOW). A small feature can run the
-  **lite** tier (`explore → clarify → implement → review → verify`) — it skips the design + plan
-  phases and uses a 1-agent explore but keeps sign-off; tier is soft-judged at entry (in doubt,
-  full) and a lite run can escalate to full before implement.
-- **Bugfix track** (test-first) — `diagnose → implement (failing regression test → RED → fix →
-  GREEN) → verify → review`.
+- **Align before building** — a *clarify* phase locks testable acceptance criteria and makes you
+  sign off before any code is written.
+- **Never lose your place** — every run's state lives on disk in `.feature-flow/<slug>/`, so an
+  interrupted session resumes exactly where it stopped.
+- **Proof, not promises** — the *verify* phase actually runs your tests/build/lint and maps every
+  acceptance criterion to pass/fail with evidence.
 
-All run state lives in a `.feature-flow/<slug>/` sandbox with a `manifest.json`, so work is
-resumable and a dropped session is recoverable. The full behavioral contract (gates, tracks,
-proportional ceremony) lives in [skills/feature-flow/SKILL.md](skills/feature-flow/SKILL.md);
-the manifest/state contract in [docs/manifest-schema.md](docs/manifest-schema.md).
+It runs **two tracks over one spine**:
+
+- **Feature** — `explore → clarify → design → plan → implement → review → verify`
+  (small features can run a **lite** tier that skips design + plan but keeps sign-off).
+- **Bugfix** (test-first) — `diagnose → implement (failing test → RED → fix → GREEN) → verify → review`.
+
+The full behavioral contract lives in
+[skills/feature-flow/SKILL.md](skills/feature-flow/SKILL.md); the on-disk state format in
+[docs/manifest-schema.md](docs/manifest-schema.md).
 
 ## Install
 
-### Teammate install (using the plugin)
+### Claude Code
 
 ```
 claude plugin marketplace add rohitsharma9646/feature-flow
 claude plugin install feature-flow@feature-flow
 ```
 
-Then **fully restart your Claude session** — plugins load at process startup, so a new
-conversation or `/clear` is not enough.
+Then **fully restart Claude** — plugins load at startup, so `/clear` or a new conversation is
+**not** enough.
 
-### Plugin author (local development)
+### Codex
 
-The install **copies** source into `~/.claude/plugins/cache/feature-flow/feature-flow/<version>/`
-(not a symlink). After editing the source, refresh the cache with **uninstall + reinstall**
-(`claude plugin update` no-ops on an unchanged version), then fully restart the session.
-
-### Codex local install
-
-This repo also includes Codex plugin metadata at `.codex-plugin/plugin.json`. For local
-Codex use, build a clean package and expose that package through the personal marketplace:
+Build a package and add it through your personal marketplace:
 
 ```
 scripts/package-codex-plugin.sh --install-link
 codex plugin add feature-flow@personal
 ```
 
-The personal marketplace file is `~/.agents/plugins/marketplace.json` and points at
-`./plugins/feature-flow`; the package script updates that symlink to
-`dist/codex/feature-flow`. Re-run the package script after source edits, then reinstall
-and start a new Codex thread so newly loaded skills are available.
+Start a new Codex thread afterward so the skills load. (Enforcement is machine-checked only on
+Claude Code — see [Enforcement](#enforcement).)
 
-## Quick start — a worked feature run
+## Quick start
+
+Kick off a feature run:
 
 ```
 /feature-flow:ff "add a --csv flag to the export command"
 ```
 
-1. **explore** runs immediately: read-only explorer agents map the codebase, findings land in
-   `.feature-flow/add-csv-flag/explore.md`. STOP.
-2. `/feature-flow:ff-clarify` — grills the premise, weighs 2–3 solution approaches, writes
-   `spec.md`, and asks you to **sign off**, quoting the acceptance criteria verbatim. STOP.
-3. `/feature-flow:ff-design` — architect agents fan out (minimal/clean/pragmatic), you pick;
-   `design.md` records the choice and rejected alternatives. STOP.
-4. `/feature-flow:ff-plan` — decomposes the design into tasks with a populated Outcome gate in
-   `plan.md`. STOP.
-5. `/feature-flow:ff-implement` — refuses to write code until the spec is signed; then executes
-   the plan task by task. STOP.
-6. `/feature-flow:ff-review` — reviewer agents report issues ≥ the confidence threshold into
-   `review.md`; a Critical finding blocks the run until resolved. STOP.
-7. `/feature-flow:ff-verify` — `ff-test-runner` actually executes tests/build/lint and maps
-   every acceptance criterion to pass/fail with evidence in `verify.md`. Run is `done`.
+It classifies the request (feature vs. bugfix), creates the run, asks **autopilot or
+step-by-step?** once, and starts phase 1. Each phase writes an artifact and **stops** for you:
 
-Every STOP message ends with a progress strip, e.g.
+| Phase | What happens | Artifact |
+|---|---|---|
+| **explore** | Read-only agents map the codebase | `explore.md` |
+| **clarify** | Challenges the premise, locks acceptance criteria, asks you to **sign off** | `spec.md` |
+| **design** | Architect agents fan out (minimal / clean / pragmatic); you pick | `design.md` |
+| **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
+| **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
+| **review** | Reviewer agents report issues; a Critical finding blocks the run | `review.md` |
+| **verify** | Really runs tests/build/lint, maps each criterion to pass/fail | `verify.md` |
+
+Every stop ends with a progress strip, e.g.
 `explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify`.
 
-A bug report (`/feature-flow:ff "fix: save throws TypeError"`) takes the bugfix track instead:
-diagnose (reproduce + root cause + sign-off if escalated) → implement (failing regression test,
-RED, fix, GREEN) → verify → review.
+A bug report takes the other track:
 
-## Autopilot mode
+```
+/feature-flow:ff "fix: save throws TypeError on empty title"
+```
 
-By default every new run asks once: **autopilot or step-by-step?** In autopilot the phases
-chain automatically — the run above becomes just **three touches** instead of seven commands:
+→ diagnose (reproduce + root cause) → implement (write a failing regression test, watch it go RED,
+fix, confirm GREEN) → verify → review.
 
-1. `/feature-flow:ff "add a --csv flag"` → answer **autopilot** → explore AND clarify run;
-   the clarify questions are asked in-session; the run pauses at **sign-off** (a grouped
-   checklist of the acceptance criteria — reply "signed off").
-2. Your sign-off resumes the chain: design runs (pauses in-session for **your pick** among
-   the architecture options), then plan → implement → review → verify chain automatically.
-3. If review finds Critical issues, autopilot fixes them and re-reviews **once** (recorded
-   in `review.md`); if Criticals remain it stops for you. Otherwise the run reports `done`.
+## Autopilot
 
-Auto-completed phases render `[auto]` in the strip:
-`explore[done] → clarify[auto] → design[auto] → plan[NEXT] → …`. Sign-offs are never
-automated — autopilot never sets `signOff.signed` itself, and every gate still applies.
-The mode is resolved **before the run's manifest is written** — when config says `"ask"`,
-the assistant must ask; it may never pick the mode itself.
-Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the run-start
-question. A dropped mid-chain session recovers normally via `/feature-flow:ff-resume`
-(which continues the chain on autopilot runs). All phase commands are autopilot-aware;
-the canonical rules live in `docs/manifest-schema.md` §Autopilot.
+By default each run asks **autopilot or step-by-step?** In autopilot the phases chain
+automatically, pausing only at the gates that genuinely need you:
+
+1. `/feature-flow:ff "..."` → pick **autopilot** → explore + clarify run, then it pauses at
+   **sign-off**.
+2. Your sign-off resumes the chain: design pauses for **your architecture pick**, then plan →
+   implement → review → verify run through.
+3. If review finds Critical issues, autopilot fixes and re-reviews **once**; if any remain it stops
+   for you.
+
+Auto-completed phases show `[auto]` in the strip. **Sign-offs are never automated** — every gate
+still applies. Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the
+run-start question. Full rules: `docs/manifest-schema.md` §Autopilot.
 
 ## Enforcement
 
-On Claude Code, two gates are **machine-enforced** by a PreToolUse hook (`hooks/enforce-gate`),
-on by default: no run may enter **implement** without sign-off, and none may reach **done**
-without valid verify (and, on the bugfix track, review) evidence on disk. The hook **fails
-open** — it blocks only a provably-illegal `manifest.json` write and otherwise stays out of the
-way — and requires `jq`. Disable with `toggles.enforce: false` in `.feature-flow.json`. On Codex
-(no hook mechanism) these gates remain prose.
+On Claude Code, two gates are **machine-enforced** by a PreToolUse hook (on by default, requires
+`jq`): no run enters **implement** without sign-off, and none reaches **done** without valid verify
+(and, on bugfix, review) evidence on disk. The hook **fails open** — it blocks only a provably
+illegal state write and otherwise stays out of the way. Disable with `toggles.enforce: false`. On
+Codex (no hook mechanism) these gates are enforced by prose instruction, not code.
 
-## Knowledge base
+## Knowledge base (optional)
 
-feature-flow can **remember** what each run decided and **recall** it in later runs — so a new run
-doesn't re-derive a settled decision or silently contradict it. It is **off by default**; activate
-it per-project in `.feature-flow.json`:
+feature-flow can **remember** what a run decided and **recall** it in later runs, so you don't
+re-derive or contradict a settled decision. It's **off by default**; turn it on per-project:
 
 ```json
 { "toggles": { "kb": true }, "paths": { "kb": "docs/kb" } }
 ```
 
-- **Capture** happens at run close, **confirm-gated**: feature-flow proposes 1–3 candidate entries
-  distilled from the run's decisions; you accept / edit / reject. Accepted entries are written as
-  project-local, committed markdown carrying provenance (capture date, git commit SHA, referenced
-  files, topic tags) — feature-flow never `git add`/`commit`s them for you (you commit).
-- **Recall** runs at the start of `explore` and `design`: entries whose tags match the request are
-  surfaced to the agents as context (up to `kb.maxRecallEntries`, recency-ordered).
-- **Staleness:** an entry is flagged `[STALE]` if a referenced file is gone/moved or it is older
-  than `kb.freshnessWindowDays` — flagged and still shown, never silently dropped or presented as
-  current truth.
-- **v1 non-goals (deferred to a fast-follow):** **dedup** of near-duplicate entries and
-  **supersession** (a newer entry marking an older obsolete) are not in v1 — duplicates persist
-  (surfaced, not dropped). Distinct from claude-mem: project-local, git-committed, team-shared,
-  project-scoped.
+- **Capture** at run close, confirm-gated — it proposes 1–3 entries, you accept/edit/reject.
+  Accepted entries are project-local, git-committed markdown with provenance; you commit them.
+- **Recall** at the start of *explore* and *design* — tag-matched entries are surfaced as context.
+- **Staleness** — an entry is flagged `[STALE]` (shown, never silently dropped) if a referenced
+  file is gone or it's older than `kb.freshnessWindowDays`.
+- **Not in v1:** dedup and supersession of near-duplicate entries (deferred to a fast-follow).
+
+Full contract: `docs/manifest-schema.md` §Knowledge base.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `/feature-flow:ff "<request>"` | Entry point: classify feature vs bugfix, create the run, ask autopilot vs step-by-step (once), start the first phase |
-| `/feature-flow:ff-explore` | [feature] Fan out read-only explorers, write `explore.md` |
+| `/feature-flow:ff "<request>"` | Entry point: classify, create the run, ask autopilot vs step-by-step, start phase 1 |
+| `/feature-flow:ff-explore` | [feature] Fan out read-only explorers → `explore.md` |
 | `/feature-flow:ff-clarify` | [feature] Grill requirements, write `spec.md`, collect sign-off |
-| `/feature-flow:ff-design` | [feature] Architect fan-out, record the chosen design in `design.md` |
-| `/feature-flow:ff-plan` | [shared] Decompose the contract into a phased `plan.md` with an Outcome gate |
-| `/feature-flow:ff-diagnose` | [bugfix] Reproduce + root-cause, decide hotfix-vs-proper, write `diagnosis.md` |
+| `/feature-flow:ff-design` | [feature] Architect fan-out, record the chosen design → `design.md` |
+| `/feature-flow:ff-plan` | [shared] Decompose into a phased `plan.md` with an Outcome gate |
+| `/feature-flow:ff-diagnose` | [bugfix] Reproduce + root-cause, decide hotfix-vs-proper → `diagnosis.md` |
 | `/feature-flow:ff-implement` | [shared] Build from the plan (sign-off gated) / test-first bugfix (RED→GREEN) |
-| `/feature-flow:ff-review` | [shared] Reviewer fan-out into `review.md`; Critical findings block |
-| `/feature-flow:ff-verify` | [shared] Really execute tests/build/lint; map the contract to pass/fail |
+| `/feature-flow:ff-review` | [shared] Reviewer fan-out → `review.md`; Critical findings block |
+| `/feature-flow:ff-verify` | [shared] Really run tests/build/lint; map the contract to pass/fail |
 | `/feature-flow:ff-status` | Print a run's track, tier, phase statuses, sign-off, artifacts |
-| `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete (or invalid) phase; on autopilot runs, continues the chain to the next gate |
-| `/feature-flow:ff-list` | List ALL runs — slug, track, tier, phase, dates — incl. abandoned/closed |
-| `/feature-flow:ff-abandon <slug>` | Mark a run abandoned (excluded from automatic run resolution) |
-| `/feature-flow:ff-close <slug>` | Close a `done` run (excluded from automatic run resolution) |
+| `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete phase |
+| `/feature-flow:ff-list` | List ALL runs (incl. abandoned/closed) |
+| `/feature-flow:ff-abandon <slug>` | Mark a run abandoned (excluded from auto-resolution) |
+| `/feature-flow:ff-close <slug>` | Close a `done` run (excluded from auto-resolution) |
 
-All phase commands are **autopilot-aware**: on an autopilot run they chain into the next
-phase instead of stopping (pausing only at the gates listed in the Autopilot section above).
+On autopilot runs, phase commands chain into the next phase instead of stopping.
 
 ## Configuration
 
-A repo-root `.feature-flow.json` overrides `config/defaults.json`:
+Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 
 | Key | Default | Effect |
 |---|---|---|
-| `explorerAgents` | `3` | Parallel `ff-code-explorer` agents in the explore phase |
-| `architectAgents` | `3` | Parallel `ff-code-architect` agents in the design phase |
-| `reviewerAgents` | `3` | Parallel `ff-code-reviewer` agents in the review phase |
-| `diagnosticianAgents` | `1` | `ff-diagnostician` agents in the diagnose phase |
-| `models.explorer` | `"sonnet"` | Model passed to dispatched explorer agents |
-| `models.architect` | `"sonnet"` | Model passed to dispatched architect agents |
-| `models.reviewer` | `"sonnet"` | Model passed to dispatched reviewer agents |
-| `models.diagnostician` | `"sonnet"` | Model passed to dispatched diagnostician agents |
-| `models.testRunner` | `"sonnet"` | Model passed to the test-runner agent |
+| `explorerAgents` | `3` | Parallel explorer agents in *explore* |
+| `architectAgents` | `3` | Parallel architect agents in *design* |
+| `reviewerAgents` | `3` | Parallel reviewer agents in *review* |
+| `diagnosticianAgents` | `1` | Diagnostician agents in *diagnose* |
+| `models.*` | `"sonnet"` | Model for each agent role: `explorer`, `architect`, `reviewer`, `diagnostician`, `testRunner` |
 | `reviewThreshold` | `80` | Reviewers report only issues with confidence ≥ this (0–100) |
-| `toggles.tdd` | `true` | Test-first on the feature track (bugfix RED→GREEN is always mandatory) |
+| `toggles.tdd` | `true` | Test-first on the feature track (bugfix RED→GREEN is always on) |
 | `toggles.worktree` | `false` | Implement in an isolated git worktree |
 | `toggles.greenfield` | `false` | Relax git-diff assumptions for new/non-git projects |
-| `toggles.autopilot` | `"ask"` | Tri-state (the only non-boolean toggle): `"ask"` asks once per new run; `true` = always autopilot; `false` = always step-by-step. Recorded per-run as `manifest.autopilot` |
+| `toggles.autopilot` | `"ask"` | `"ask"` (per-run prompt), `true` (always), or `false` (never) |
+| `toggles.enforce` | `true` | Machine-enforce the sign-off and evidence gates (Claude Code) |
+| `toggles.kb` | `false` | Turn the Knowledge base on (needs `paths.kb` set too) |
 | `paths.base` | `".feature-flow"` | Run sandbox root |
-| `paths.durable` | `null` | Directory for **committed** decision docs (spec/design/plan/diagnosis). Each run's docs are promoted to `<dir>/<createdAt-date>-<slug>/` as their phase completes. Unset (default) = every artifact stays in the gitignored sandbox, byte-for-byte as before |
-| `paths.spec` | `null` | **Legacy per-artifact override** — relocates only the spec to `<dir>/<slug>.md`. Takes **precedence over `paths.durable`** for the spec |
-| `paths.plan` | `null` | **Legacy per-artifact override** — relocates only the plan to `<dir>/<slug>.md`. Takes **precedence over `paths.durable`** for the plan |
-| `toggles.kb` | `false` | Master switch for the Knowledge base (capture at run close + recall in explore/design). Off (default) = byte-identical to today |
-| `paths.kb` | `null` | Knowledge base store directory (repo-relative). The KB is active only when `toggles.kb: true` **and** this is set |
-| `kb.freshnessWindowDays` | `90` | Age (days from capture date) past which a recalled entry is flagged stale |
-| `kb.maxRecallEntries` | `5` | Max KB entries surfaced to the fan-out agents at recall (recency-ordered) |
+| `paths.durable` | `null` | Directory for **committed** decision docs; unset keeps everything in the gitignored sandbox |
+| `paths.kb` | `null` | Knowledge base store directory (repo-relative) |
+| `kb.freshnessWindowDays` | `90` | Age past which a recalled entry is flagged stale |
+| `kb.maxRecallEntries` | `5` | Max KB entries surfaced at recall |
+
+> **Models & 1M context:** on the Anthropic API, `"sonnet"` already resolves to Sonnet 5 with the
+> full 1M-token context window — nothing to enable. The explicit form `"sonnet[1m]"` only matters
+> behind an LLM gateway or on Bedrock/Vertex with older Sonnet versions.
+
+`paths.spec` / `paths.plan` also exist as legacy per-artifact overrides — see
+`docs/manifest-schema.md` for those and the full resolution rules.
 
 ## Troubleshooting
 
-- **Commands not found after install** — fully restart the Claude session. Plugins load at
-  process startup; a new conversation or `/clear` does not reload them.
-- **Edits to the plugin source not taking effect** — the cache is a copy: uninstall, reinstall,
-  then restart the session (`plugin update` no-ops on an unchanged version).
-- **A command picked the wrong run** — run `/feature-flow:ff-list` to see every run, then pass
-  the slug explicitly (e.g. `/feature-flow:ff-status my-run`). Abandon stale runs with
-  `/feature-flow:ff-abandon <slug>` so they stop capturing commands.
-- **Resume re-entered a phase you thought was done** — the manifest claimed `complete` but the
-  artifact was missing or failed its validity check; the resume message names the file. This is
-  intentional (disk is the ground truth).
-- **`models.*` not taking effect** — key names must match the role exactly:
+- **Commands not found after install** — fully restart Claude. `/clear` doesn't reload plugins.
+- **A command picked the wrong run** — run `/feature-flow:ff-list`, then pass the slug explicitly
+  (e.g. `/feature-flow:ff-status my-run`). Abandon stale runs with `/feature-flow:ff-abandon`.
+- **Resume re-entered a phase you thought was done** — the artifact was missing or failed its
+  validity check (disk is the source of truth); the resume message names the file.
+- **`models.*` not taking effect** — key names must match exactly:
   `explorer` / `architect` / `reviewer` / `diagnostician` / `testRunner`.
+
+## Development
+
+Working on the plugin itself, not just using it:
+
+- **Claude Code source edits** — the install **copies** source into
+  `~/.claude/plugins/cache/feature-flow/feature-flow/<version>/` (not a symlink). After editing,
+  refresh with uninstall + reinstall (`claude plugin update` no-ops on an unchanged version), then
+  restart the session.
+- **Codex packaging** — `.codex-plugin/plugin.json` holds the Codex metadata. Rebuild the package
+  after source edits with `scripts/package-codex-plugin.sh --install-link` (updates the
+  `~/.agents/plugins/marketplace.json` symlink to `dist/codex/feature-flow`), then reinstall and
+  start a new Codex thread.
 
 ## License
 
