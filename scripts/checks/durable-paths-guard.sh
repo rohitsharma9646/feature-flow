@@ -73,6 +73,7 @@ check_writer commands/ff-clarify.md  spec
 check_writer commands/ff-plan.md     plan
 check_writer commands/ff-design.md   design
 check_writer commands/ff-diagnose.md diagnosis
+check_writer commands/ff-verify.md   verify
 
 # --- (g) ff-implement reads via artifacts.plan, manifest-first ORDER (AC6) ---
 grep -q 'artifacts.plan' commands/ff-implement.md \

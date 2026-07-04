@@ -67,17 +67,35 @@ deny() { # $1 gate label  $2 reason
   exit 0
 }
 
+# resolve_artifact_path <pointer>: manifest.artifacts.<name> value -> absolute path
+# (shared by valid_artifact and valid_verify_evidence — one resolution rule, stated once).
+resolve_artifact_path() {
+  case "$1" in
+    /*)  printf '%s' "$1" ;;
+    */*) printf '%s' "${cwd:-$run_dir}/$1" ;;
+    *)   printf '%s' "$run_dir/$1" ;;
+  esac
+}
+
 # valid_artifact <pointer>: resolve via manifest.artifacts.<name> (never hardcoded),
 # require present + non-empty + >=1 markdown heading.
 valid_artifact() {
   local rel="$1" path
   [ -z "$rel" ] && return 1
-  case "$rel" in
-    /*)  path="$rel" ;;
-    */*) path="${cwd:-$run_dir}/$rel" ;;
-    *)   path="$run_dir/$rel" ;;
-  esac
+  path="$(resolve_artifact_path "$rel")"
   [ -s "$path" ] && grep -qE '^#{1,6} ' "$path"
+}
+
+# valid_verify_evidence <pointer>: v0.9.0/AC10 content floor for artifacts.verify ONLY
+# (see docs/manifest-schema.md §Enforcement + §Evidence). Requires a '## Contract mapping'
+# heading and >=1 captured status token. Whole-file token grep on purpose: the floor
+# command's exit code in '## Commands run' keeps an all-gaps + waived report passable —
+# this denies an empty-shell report, it does NOT grade evidence quality or waiver coverage.
+valid_verify_evidence() {
+  local path
+  path="$(resolve_artifact_path "$1")"
+  grep -qE '^## Contract mapping' "$path" 2>/dev/null \
+    && grep -qiE 'exit [0-9]+|HTTP[/ ]?[0-9]{3}|status[:= ] ?[0-9]+' "$path" 2>/dev/null
 }
 
 # Gate A — entering implement.
@@ -95,8 +113,9 @@ fi
 
 # Gate B — reaching done.
 if [ "$phase" = "done" ]; then
-  if [ "$(mq '.phases.verify.status // empty')" != "complete" ] || ! valid_artifact "$(mq '.artifacts.verify // empty')"; then
-    deny "Gate B" "cannot mark done: verify evidence missing or invalid (need phases.verify.status=complete + a non-empty verify artifact with a heading)"
+  vrel="$(mq '.artifacts.verify // empty')"
+  if [ "$(mq '.phases.verify.status // empty')" != "complete" ] || ! valid_artifact "$vrel" || ! valid_verify_evidence "$vrel"; then
+    deny "Gate B" "cannot mark done: verify evidence missing or invalid (need phases.verify.status=complete + a non-empty verify artifact with a heading, a '## Contract mapping' section, and >=1 captured exit/HTTP/status code)"
   fi
   if [ "$track" = "bugfix" ]; then
     if [ "$(mq '.phases.review.status // empty')" != "complete" ] || ! valid_artifact "$(mq '.artifacts.review // empty')"; then

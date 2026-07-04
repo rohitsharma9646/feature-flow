@@ -120,9 +120,11 @@ backstops the prose; honoring the gates below is still your job:
 - **Diagnosis gate (bugfix):** `/feature-flow:ff-implement` requires a confirmed `diagnosis.md`
   (reproduced + root cause + chosen fix approach). An unreproduced bug never proceeds to a
   fix — guessing a fix for an unconfirmed bug is forbidden.
-- **Verification gate:** `/feature-flow:ff-verify` refuses "done" unless every contract item has a
-  `pass` or an explicit `manual-unverified` line, backed by **real executed** test output
-  from `ff-test-runner`. A bugfix without a RED→GREEN regression test is incomplete.
+- **Verification gate:** `/feature-flow:ff-verify` refuses "done" on evidence gaps — every
+  contract item must clear the mechanical confidence bar or the run ends with a gap report,
+  pending the user's explicit waiver. Contract: `docs/manifest-schema.md` §Evidence;
+  doctrine: **Real verification, not reasoning** below. A bugfix without a RED→GREEN
+  regression test is incomplete.
 
 ## Proportional ceremony
 
@@ -149,6 +151,19 @@ Verification means the `ff-test-runner` agent (which has `Bash`) actually ran th
 build, and lint and returned real output. The analysis agents (`ff-code-explorer`,
 `ff-code-architect`, `ff-code-reviewer`, `ff-diagnostician`) are strictly read-only.
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.
+
+Since v0.9.0 verification is **evidence-based across the project's whole detected surface**
+(`docs/manifest-schema.md` §Evidence — the canonical contract): eight evidence kinds
+(executed-test, build/static-analysis, e2e/browser via Playwright CLI, http/api, db,
+cli-output, logs, before/after) captured as literal records with real exit/HTTP status
+codes and files under `<run dir>/evidence/`; per-criterion confidence derived
+**mechanically** by counting distinct passing kinds — the four levels
+`Verified (multi-source)` / `Verified (single-source)` / `Partially verified` /
+`Unverified`, never a numeric score; detected-but-ungathered surfaces are explicit gaps
+(N/A only for undetected surfaces, always with a reason); and any item below
+`Verified (single-source)` blocks `done` pending the user's explicit waiver. Code
+inspection alone is never proof — that rule now spans both tracks, not just the bugfix
+RED→GREEN contract.
 
 ## Searching the repo (performance)
 

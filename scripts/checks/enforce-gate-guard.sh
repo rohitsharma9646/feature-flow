@@ -47,9 +47,23 @@ m='{"track":"feature","tier":"lite","currentPhase":"implement","phases":{"implem
 assert_allow "GateA: feature-lite signed → implement" "$(run "$rd/manifest.json" "$m")"
 
 # ---- Gate B: reach done ------------------------------------------------------
+# v0.9.0/AC10: the historic stub (heading but no evidence content) must now DENY.
 rd="$(mkrun b-ok)"; printf '# Verify\n\n## Verdict\npass\n' > "$rd/verify.md"
 m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"complete"}},"artifacts":{"verify":"verify.md"}}'
-assert_allow "GateB: feature done + valid verify.md" "$(run "$rd/manifest.json" "$m")"
+assert_deny  "GateB/AC10: legacy stub verify.md (no Contract mapping) → denied" "$(run "$rd/manifest.json" "$m")"
+
+rd="$(mkrun b-filled)"
+printf '# Verify\n\n## Contract mapping\n\n### AC1: thing works\n- **Evidence:** `make test` — exit 0 — all green\n\n## Verdict\npass\n' > "$rd/verify.md"
+assert_allow "GateB/AC10: filled report (Contract mapping + status token) → allowed" "$(run "$rd/manifest.json" "$m")"
+
+rd="$(mkrun b-headingonly)"; printf '# Verify\n\n## Contract mapping\n\nlooks fine to me\n' > "$rd/verify.md"
+assert_deny  "GateB/AC10: Contract mapping without a captured status token → denied" "$(run "$rd/manifest.json" "$m")"
+
+# The SHIPPED TEMPLATE itself (verbatim, unfilled) must never pass Gate B — pins the
+# placeholder-contains-a-real-status-token regression class (a bare digit in a skeleton
+# line would make the content check vacuous).
+rd="$(mkrun b-template)"; cp templates/verify.md "$rd/verify.md"
+assert_deny  "GateB/AC10: verbatim unfilled template → denied" "$(run "$rd/manifest.json" "$m")"
 
 rd="$(mkrun b-missing)"
 m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"complete"}},"artifacts":{"verify":"verify.md"}}'
@@ -66,15 +80,17 @@ m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"in_pro
 assert_deny  "GateB: feature done but verify.status != complete" "$(run "$rd/manifest.json" "$m")"
 
 # AC5: renamed pointer honored (no hardcoded filename)
-rd="$(mkrun b-renamed)"; printf '# Verify\n' > "$rd/verify-out.md"
+# (content enriched for v0.9.0/AC10 — this fixture tests the pointer, not content depth)
+rd="$(mkrun b-renamed)"; printf '# Verify\n\n## Contract mapping\n\nAC1 — exit 0\n' > "$rd/verify-out.md"
 m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"complete"}},"artifacts":{"verify":"verify-out.md"}}'
 assert_allow "GateB/AC5: honors renamed artifacts.verify pointer" "$(run "$rd/manifest.json" "$m")"
 
-# bugfix needs BOTH verify + review
-rd="$(mkrun b-bugfix-ok)"; printf '# Verify\n' > "$rd/verify.md"; printf '# Review\n' > "$rd/review.md"
+# bugfix needs BOTH verify + review. review.md stays a bare heading on purpose —
+# the AC10 content check is verify-specific and must NOT apply to review.
+rd="$(mkrun b-bugfix-ok)"; printf '# Verify\n\n## Contract mapping\n\nRED then GREEN — exit 0\n' > "$rd/verify.md"; printf '# Review\n' > "$rd/review.md"
 m='{"track":"bugfix","currentPhase":"done","phases":{"verify":{"status":"complete"},"review":{"status":"complete"}},"artifacts":{"verify":"verify.md","review":"review.md"}}'
 assert_allow "GateB: bugfix done + verify + review" "$(run "$rd/manifest.json" "$m")"
-rd="$(mkrun b-bugfix-noreview)"; printf '# Verify\n' > "$rd/verify.md"
+rd="$(mkrun b-bugfix-noreview)"; printf '# Verify\n\n## Contract mapping\n\nRED then GREEN — exit 0\n' > "$rd/verify.md"
 assert_deny  "GateB: bugfix done, review.md absent" "$(run "$rd/manifest.json" "$m")"
 
 # ---- Fast-exit + fail-open ---------------------------------------------------

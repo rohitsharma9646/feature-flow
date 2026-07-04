@@ -1,5 +1,84 @@
 # Changelog
 
+## [0.9.0] — 2026-07-05 — Evidence-based verification
+
+No task reaches `done` without objective, reproducible, multi-source evidence. The verify
+pipeline widens from generic test/build/lint to the project's whole **detected** evidence
+surface, `verify.md` becomes a client-sign-off-grade report, and insufficient evidence now
+**blocks completion** pending an explicit user waiver. Additive and non-breaking: no new
+phase, agent, config key, or artifact type; existing runs and configs behave as before —
+the verify phase simply produces (and is gated on) more than a bare pass/fail table.
+
+### Added
+- **Canonical `## Evidence` contract** (`docs/manifest-schema.md`): the 8-kind taxonomy
+  (executed-test, build/static-analysis, e2e/browser via Playwright CLI, http/api, db,
+  cli-output, logs, before/after), the literal record shape
+  `{kind, command, actual exit/HTTP status, excerpt, artifact paths}`, the evidence
+  directory rule (`<run dir>/evidence/`, cleared per run, copied on durable promotion),
+  the **mechanical confidence ladder** (`Verified (multi-source)` / `Verified
+  (single-source)` / `Partially verified` / `Unverified`; overall = minimum; independence
+  = distinct kinds), the detection→gap/N-A rule, the waiver rule, tier scaling, an
+  "Adding an evidence kind" recipe, and stated v1 non-goals. Commands reference it by
+  name — never restate it.
+- **Widened `ff-test-runner`** (`agents/ff-test-runner.md`): detects `composer.json`
+  scripts, `phpunit.xml(.dist)`, `playwright.config.*`, `bin/magento`, and MFTF alongside
+  package.json/Makefile/pyproject; captures all 8 kinds with real status codes; writes
+  only under `<run dir>/evidence/` (cleared at start); bounds every command with a
+  timeout; guarantees ≥1 attempted command with a real exit code even on a no-tests
+  project (cheapest smoke/syntax check).
+- **Client-grade `verify.md`** (`templates/verify.md`): evidence coverage matrix
+  (full-tier; lite renders the floor-only note), per-criterion evidence blocks
+  (requirement verbatim → method → evidence with commands + status codes + `evidence/`
+  artifacts → confidence), evidence artifacts index, Limitations & remaining risks, and an
+  overall-confidence verdict. `## Commands run`, `## Contract mapping`, and
+  `## Regression risk` headings unchanged.
+- **Evidence gap stop** (`commands/ff-verify.md` + §Autopilot mandatory-pauses row): any
+  contract item below `Verified (single-source)` blocks `done` — the run ends with a gap
+  report (what could not be verified, why, what evidence is required). Only the user's own
+  waiver line — `Evidence gap accepted by user (<date>): <reason>` — unblocks it; a waiver
+  never upgrades confidence, and autopilot never records one.
+- **Gate B content check** (`hooks/enforce-gate`): `artifacts.verify` must now also contain
+  a `## Contract mapping` heading and ≥1 captured exit/HTTP/status token — the historic
+  `# Verify` stub that previously passed Gate B is now denied
+  (`scripts/checks/enforce-gate-guard.sh` fixtures flipped/added to prove it: stub → deny,
+  filled report → allow, heading-without-token → deny). Still fail-open, `jq`-only,
+  verify-specific (`artifacts.review` keeps the generic check), Claude-Code-only.
+- **Durable client report**: `verify` joins the durable-eligible artifacts — with
+  `paths.durable` set, `verify.md` promotes to `<paths.durable>/<D>-<slug>/` with the
+  run's `evidence/` directory **copied** alongside (Evidence companion copy), keeping
+  relative links resolving. README warns about committing binary-heavy evidence dirs.
+- **Guards**: `scripts/checks/evidence-guard.sh` extended with sections (f)–(l) pinning
+  the §Evidence subsections + record shape + taxonomy, the four confidence tokens (schema
+  AND template), the new report headings + lite note, the ff-test-runner detection tokens +
+  evidence-dir discipline, the Autopilot pause row, the ff-verify wiring + waiver line, and
+  dist parity for the newly pinned files. `durable-paths-guard.sh` now `check_writer`s
+  `commands/ff-verify.md` for `artifacts.verify`.
+
+### Changed
+- `commands/ff-verify.md`: evidence authority extends to all kinds (a detected surface that
+  did not run/pass is an explicit **gap**; N/A only for undetected surfaces, always with a
+  reason); confidence derived mechanically (count distinct passing kinds — never eyeballed);
+  `## Refuse premature "done"` is now the evidence gap stop; verify resolves its path per
+  Durable artifact resolution and records it in `artifacts.verify`.
+- `docs/manifest-schema.md` §Disk inference: `verify.md` minimal validity now matches Gate
+  B's content check (heading + status token), so inference and the hook never disagree.
+
+### Reconciliation with v0.5.0
+v0.5.0 deferred a "completion-proof framework" (duplicative of verify.md) and rejected
+numeric confidence/readiness scores ("unfalsifiable LLM output"). **Both decisions are
+upheld**: there is still no parallel report artifact — `verify.md` itself is the report,
+upgraded in place — and there are still no numeric scores — confidence is categorical and
+mechanically recountable from the captured evidence (count the distinct passing kinds).
+What changed since v0.5.0 is the external requirement: client sign-off now depends on the
+verification report, and the evidence surface widens from test/build/lint to everything
+the project detectably has (incl. Magento/PHP stacks: composer, PHPUnit, `bin/magento`,
+MFTF — and Playwright e2e via CLI).
+
+### Deferred (stated, not silent)
+MCP/interactive browser automation (Playwright CLI via Bash only); Gate B waiver-coverage
+checking (semantic, not grep-determinate — v2 hardening candidate); environment
+provisioning; CI integration; perf-benchmark framework; retroactive re-verification.
+
 ## [0.8.0] — 2026-07-04 — Knowledge base on by default + bugfix-track recall
 
 The KB (0.4.0, opt-in) becomes **on by default**, and recall reaches the bugfix track. **Zero

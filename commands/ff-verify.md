@@ -41,18 +41,32 @@ bugfix track, **STOP** and tell the user to run `/feature-flow:ff-diagnose` firs
 
 Read `models.testRunner` from config (`.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for the dispatched
-agent. Dispatch the **`ff-test-runner`** agent. It detects and **actually runs** the project's
-test / build / lint commands and returns real output (command, exit status, failing
-excerpts). It never edits code.
+agent. Dispatch the **`ff-test-runner`** agent, telling it the run's `tier`. It detects and
+**actually runs** the project's test / build / lint commands **and the project's detected
+evidence surfaces** — e2e/browser (Playwright CLI), http/api, db, cli-output, logs,
+before/after — per the evidence-kind taxonomy in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
+§Evidence (follow that canonical contract; do not restate it here). It returns evidence
+records with real status codes and files under `<run dir>/evidence/`. It never edits code.
 
-**Evidence authority — record, never paraphrase.** The test runner's returned per-command
-`{command, exit status, excerpt}` is the evidence of record; transcribe it into `verify.md`
-literally. A contract item may be marked `pass` **only** when it is backed by a captured
-command with a success exit status — never on the runner's narration alone, never on your own
-reasoning, and never inferred from "it looks right." If a returned result lacks an exit
-status (the runner described a pass without a captured exit code), treat it as
-`manual-unverified`, not `pass`, and say why. Do not re-author or upgrade the runner's
-verdict; you only map its real output to the contract.
+**Tier scaling (§Evidence, Tier scaling):** the floor — executed test/build/lint mapped per
+contract item with real exit codes — is tier-invariant; **lite** runs stop there (the
+coverage matrix collapses to its lite note). **Full** runs also fill the Evidence coverage
+matrix from the runner's detection data and are expected to gather every detected kind.
+
+**Evidence authority — record, never paraphrase.** The test runner's returned evidence
+records `{kind, command, actual exit/HTTP status, excerpt, artifact paths}` are the evidence
+of record; transcribe them into `verify.md` literally. A contract item may be marked `pass`
+**only** when it is backed by a captured command with a success exit/HTTP status — never on
+the runner's narration alone, never on your own reasoning, and never inferred from "it looks
+right." A result without a captured status is `manual-unverified`, with the reason said.
+Apply the **Detection and N/A rule** in §Evidence to every kind — detected-but-not-passed is
+an explicit gap, never a silent omission or an `N/A`. Do not re-author or upgrade the
+runner's verdict; you only map its real output to the contract.
+
+**Derive confidence mechanically** per §Evidence, **Confidence ladder** — count the
+**distinct** evidence kinds that passed per contract item; overall = the minimum across
+items. Never invent, eyeball, or numerically score a level; the schema owns the ladder —
+do not restate it here.
 
 Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/verify.md`:
 
@@ -68,10 +82,22 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   touched — shared / central code raises it, isolated new code lowers it — and record it in
   `verify.md` §Regression risk. No numeric score.
 
-## Refuse premature "done"
+## Refuse premature "done" (evidence gap stop)
 
-Do **not** report the work as done unless **every** contract item has a `pass` or an
-explicit `manual-unverified` line with a reason. If automated tests are absent, say so —
+A contract item is done-eligible only at `Verified (single-source)` or `Verified
+(multi-source)`. If **any** item sits at `Partially verified` or `Unverified`, the run is
+**not done**: render the report anyway (true confidence levels, gaps stated), then **STOP —
+end the turn with the gap report**, shaped:
+
+> Verification found evidence gaps — this run is NOT done:
+> - AC<n>: <requirement> — <Partially verified | Unverified> — <what could not be verified, why>
+> To proceed: (a) address the gap and re-run `/feature-flow:ff-verify`, or (b) reply with an
+> explicit waiver per gap — it will be recorded in `verify.md` as
+> `Evidence gap accepted by user (<date>): <reason>` and the done transition re-attempted.
+
+Record the waiver **only** per §Evidence, **Evidence waiver** (from the user's own reply,
+never self-authored — the **Evidence gap stop** row in §Autopilot,
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If automated tests are absent, say so —
 run build/lint/smoke instead and never call a no-tests run a pass. On the bugfix track, a
 fix without a regression test (RED→GREEN evidence) is reported **incomplete**, not done.
 
@@ -81,8 +107,18 @@ Which command marks the run `done` is the canonical **Terminal convergence** rul
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the per-track routing below implements it (it
 does not re-derive it).
 
-**Use the Write tool** to write `verify.md`. Set
-`phases.verify = { status: "complete", artifact: "verify.md" }`, bump `updatedAt`.
+Resolve the report's path per the **Durable artifact resolution** rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (`verify` is durable-eligible:
+`paths.durable` → `<paths.durable>/<D>-<slug>/verify.md`, else sandbox
+`<run dir>/verify.md`; **create the target directory if absent**). **Use the Write tool**
+to write `verify.md` at the resolved path. When the report promotes out of the sandbox,
+copy the evidence directory alongside it — `rm -rf "<durable dir>/evidence" && cp -r
+"<run dir>/evidence" "<durable dir>/evidence"` (replace, never merge — a bare `cp -r` into
+an existing destination nests `evidence/evidence` on re-promotion) — so the report's
+relative links keep resolving (**Evidence companion copy**, §Durable artifact resolution;
+copy, never move the sandbox original). Record the resolved path
+in **both** `artifacts.verify` and `phases.verify.artifact`: set
+`phases.verify = { status: "complete", artifact: "<resolved verify path>" }`, bump `updatedAt`.
 
 - **Feature track:** verify is the **terminal** phase. If all contract items pass, first run
   **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is active),

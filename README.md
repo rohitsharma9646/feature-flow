@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.8.0 · MIT licensed
+> **Status:** v0.9.0 · MIT licensed
 
 ## Why use it
 
@@ -14,8 +14,11 @@ without proof. feature-flow fixes all three with a durable pipeline:
   sign off before any code is written.
 - **Never lose your place** — every run's state lives on disk in `.feature-flow/<slug>/`, so an
   interrupted session resumes exactly where it stopped.
-- **Proof, not promises** — the *verify* phase actually runs your tests/build/lint and maps every
-  acceptance criterion to pass/fail with evidence.
+- **Proof, not promises** — the *verify* phase actually runs your tests/build/lint **plus every
+  detected evidence surface** (Playwright e2e, HTTP/API, DB via your own CLI, `bin/magento`-style
+  CLI output, logs, before/after), maps every acceptance criterion to captured evidence with a
+  mechanical confidence level, and produces a client-sign-off-grade `verify.md`. Insufficient
+  evidence **blocks "done"** unless you explicitly waive the gap.
 
 It runs **two tracks over one spine**:
 
@@ -70,7 +73,7 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 | **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
 | **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
 | **review** | Reviewer agents report issues; a Critical finding blocks the run | `review.md` |
-| **verify** | Really runs tests/build/lint, maps each criterion to pass/fail | `verify.md` |
+| **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
 
 Every stop ends with a progress strip, e.g.
 `explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify`.
@@ -104,9 +107,38 @@ run-start question. Full rules: `docs/manifest-schema.md` §Autopilot.
 
 On Claude Code, two gates are **machine-enforced** by a PreToolUse hook (on by default, requires
 `jq`): no run enters **implement** without sign-off, and none reaches **done** without valid verify
-(and, on bugfix, review) evidence on disk. The hook **fails open** — it blocks only a provably
+(and, on bugfix, review) evidence on disk — for `verify.md` that now includes a content check
+(a `## Contract mapping` section and at least one captured exit/HTTP/status code), so an
+empty-shell report can no longer pass. The hook **fails open** — it blocks only a provably
 illegal state write and otherwise stays out of the way. Disable with `toggles.enforce: false`. On
 Codex (no hook mechanism) these gates are enforced by prose instruction, not code.
+
+## Evidence-based verification
+
+Every verify phase is **evidence-driven, never assumption-driven**: no run reaches `done` on
+code inspection or reasoning alone.
+
+- **Eight evidence kinds** — executed-test, build/static-analysis, e2e/browser (Playwright CLI),
+  http/api (curl, real HTTP status), db (your project's own CLI), cli-output, logs,
+  before/after. Detection is automatic: `package.json`, Makefile, pyproject, `composer.json`,
+  `phpunit.xml(.dist)`, `playwright.config.*`, `bin/magento`, MFTF.
+- **Mechanical confidence, no scores** — each criterion gets one of `Verified (multi-source)` /
+  `Verified (single-source)` / `Partially verified` / `Unverified`, derived by counting the
+  distinct evidence kinds that passed — recountable from the report, never an LLM-asserted number.
+- **Gaps block done** — a detected surface that didn't run/pass is an explicit gap; any item
+  below `Verified (single-source)` stops the run with a gap report (what, why, what evidence is
+  required). Only an explicit user waiver (`Evidence gap accepted by user (<date>): <reason>`)
+  unblocks it — and it never upgrades the stated confidence.
+- **Client-ready report** — `verify.md` carries the coverage matrix, per-criterion evidence
+  blocks (commands, status codes, `evidence/` artifacts), limitations & remaining risks, and an
+  overall confidence — suitable for client acceptance. With `paths.durable` set it promotes out
+  of the sandbox with its `evidence/` directory copied alongside.
+  > **Note:** promoted `evidence/` directories can contain large binaries (screenshots, traces).
+  > feature-flow never runs `git add` — review what you commit.
+- The floor (executed tests/build/lint with real exit codes) is **tier-invariant**; the widened
+  breadth applies to full-tier runs.
+
+Full contract: `docs/manifest-schema.md` §Evidence.
 
 ## Knowledge base (on by default)
 
@@ -140,7 +172,7 @@ Full contract: `docs/manifest-schema.md` §Knowledge base.
 | `/feature-flow:ff-diagnose` | [bugfix] Reproduce + root-cause, decide hotfix-vs-proper → `diagnosis.md` |
 | `/feature-flow:ff-implement` | [shared] Build from the plan (sign-off gated) / test-first bugfix (RED→GREEN) |
 | `/feature-flow:ff-review` | [shared] Reviewer fan-out → `review.md`; Critical findings block |
-| `/feature-flow:ff-verify` | [shared] Really run tests/build/lint; map the contract to pass/fail |
+| `/feature-flow:ff-verify` | [shared] Really run tests/build/lint + evidence surfaces; confidence-graded report; gaps block done |
 | `/feature-flow:ff-status` | Print a run's track, tier, phase statuses, sign-off, artifacts |
 | `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete phase |
 | `/feature-flow:ff-list` | List ALL runs (incl. abandoned/closed) |
