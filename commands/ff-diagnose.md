@@ -36,9 +36,24 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
    `signOff.signed`) — see **Re-run guard** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 4. Set `phases.diagnose.status = "in_progress"`, bump `currentPhase = "diagnose"`.
 
+## KB recall (when enabled)
+
+Run this **before the diagnostician dispatch** in `## Do the work — reproduce + root-cause`. It
+is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non-null, read from
+`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and
+dispatch the diagnosticians exactly as today (byte-identical behavior).
+
+When active, follow the **Knowledge base** recall rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+(glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
+steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
+(the bug report)**, and surface matches to the **diagnostician agents** as context — **stale**
+entries flagged `[STALE — <reason>]`, never dropped. Empty store / no match → one-line note, proceed.
+
 ## Do the work — reproduce + root-cause
 
-Read `diagnosticianAgents` (default 1) and `models.diagnostician` from config
+First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op unless the KB is
+active. Then read `diagnosticianAgents` (default 1) and `models.diagnostician` from config
 (`.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); dispatch that many
 **`ff-diagnostician`** agents (read-only), passing the model, to: reproduce the bug, isolate
 the fault to the smallest responsible code region, and identify the **root cause** (not the

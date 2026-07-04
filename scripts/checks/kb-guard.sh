@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Regression guard: the Knowledge base feature must be structurally wired.
 # Pins the STRUCTURAL acceptance criteria of the KB feature
-# (.feature-flow/knowledge-base): the config keys default-off (AC10), the canonical
-# '## Knowledge base' contract section + entry-template provenance (AC3), the capture
-# wiring in the terminal commands (AC1, AC2), the recall wiring in explore/design
-# (AC5, AC6), the staleness terminology (AC8, AC9), honest deferral (AC13), and Codex
-# dist parity (AC11). Section-scoped `awk` (the durable-paths section-(k) lesson):
+# (.feature-flow/knowledge-base) as amended by the kb-on-by-default run (v0.8.0):
+# the config keys default-ON (v0.8.0 AC1 — supersedes the original AC10 default-off),
+# the canonical '## Knowledge base' contract section + entry-template provenance (AC3),
+# the capture wiring in the terminal commands (AC1, AC2), the recall wiring in
+# explore/design/diagnose (AC5, AC6; diagnose added by v0.8.0 AC2/AC3), the staleness
+# terminology (AC8, AC9), honest deferral (AC13), and Codex dist parity (AC11). Section-scoped `awk` (the durable-paths section-(k) lesson):
 # each command-file check is scoped to its '## KB capture' / '## KB recall' section
 # and requires contract/template terminology, so a coarse rename can't pass it.
 #
@@ -30,13 +31,13 @@ TPL="templates/kb-entry.md"
 # exactly that section. '### ' sub-headings stay inside (only '## ' ends a section).
 section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$1"; }
 
-# --- (a) config keys, default-off (AC10) ------------------------------------
-grep -qE '"kb"[[:space:]]*:[[:space:]]*false' "$CFG" \
-  && ok "$CFG: toggles.kb present, default false" \
-  || err "$CFG: toggles object must contain \"kb\": false"
-grep -qE '"kb"[[:space:]]*:[[:space:]]*null' "$CFG" \
-  && ok "$CFG: paths.kb present, default null" \
-  || err "$CFG: paths object must contain \"kb\": null"
+# --- (a) config keys, default-ON (v0.8.0 AC1; supersedes AC10 default-off) ---
+grep -qE '"kb"[[:space:]]*:[[:space:]]*true' "$CFG" \
+  && ok "$CFG: toggles.kb present, default true" \
+  || err "$CFG: toggles object must contain \"kb\": true"
+grep -qE '"kb"[[:space:]]*:[[:space:]]*"\.feature-flow-kb"' "$CFG" \
+  && ok "$CFG: paths.kb present, default \".feature-flow-kb\"" \
+  || err "$CFG: paths object must contain \"kb\": \".feature-flow-kb\""
 grep -q 'freshnessWindowDays' "$CFG" && grep -q 'maxRecallEntries' "$CFG" \
   && ok "$CFG: kb.freshnessWindowDays + kb.maxRecallEntries present" \
   || err "$CFG: must define kb.freshnessWindowDays and kb.maxRecallEntries"
@@ -117,7 +118,7 @@ nvr=$(section commands/ff-review.md '^## Update manifest' | grep -cE '\*\*KB cap
   && ok "commands/ff-review.md §Update manifest: bugfix done-transition invokes KB capture ($nvr)" \
   || err "commands/ff-review.md §Update manifest: the bugfix done-transition must invoke KB capture (found ${nvr:-0})"
 
-# --- (e) recall wiring (AC5, AC6, AC8, AC9): ff-explore + ff-design ---------
+# --- (e) recall wiring (AC5, AC6, AC8, AC9; + ff-diagnose per v0.8.0 AC2) ----
 check_recall() { # file
   local f="$1" body
   body="$(section "$f" '^## KB recall')"
@@ -138,6 +139,7 @@ check_recall() { # file
 }
 check_recall commands/ff-explore.md
 check_recall commands/ff-design.md
+check_recall commands/ff-diagnose.md
 
 # --- (f) honest deferral in user docs (AC13) -------------------------------
 for f in skills/feature-flow/SKILL.md README.md; do
@@ -149,7 +151,7 @@ done
 # --- (g) read-site safety: no bare-name durable reader in any KB section -----
 # KB capture/recall sections read run artifacts; they MUST use the pointer form so
 # durable-paths-guard.sh section (k) stays GREEN. Belt-and-suspenders check here.
-for f in commands/ff-verify.md commands/ff-review.md commands/ff-explore.md commands/ff-design.md; do
+for f in commands/ff-verify.md commands/ff-review.md commands/ff-explore.md commands/ff-design.md commands/ff-diagnose.md; do
   bad="$(section "$f" '^## KB (capture|recall)' \
         | grep -nE '(^|[^-[:alnum:]])(spec|design|plan|diagnosis)\.md' \
         | grep -viE 'artifacts\.(spec|design|plan|diagnosis)' \
@@ -177,6 +179,7 @@ for rel in \
   commands/ff-review.md \
   commands/ff-explore.md \
   commands/ff-design.md \
+  commands/ff-diagnose.md \
   skills/feature-flow/SKILL.md \
   README.md
 do

@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.7.0 · MIT licensed
+> **Status:** v0.8.0 · MIT licensed
 
 ## Why use it
 
@@ -108,18 +108,20 @@ On Claude Code, two gates are **machine-enforced** by a PreToolUse hook (on by d
 illegal state write and otherwise stays out of the way. Disable with `toggles.enforce: false`. On
 Codex (no hook mechanism) these gates are enforced by prose instruction, not code.
 
-## Knowledge base (optional)
+## Knowledge base (on by default)
 
-feature-flow can **remember** what a run decided and **recall** it in later runs, so you don't
-re-derive or contradict a settled decision. It's **off by default**; turn it on per-project:
+feature-flow **remembers** what a run decided and **recalls** it in later runs, so you don't
+re-derive or contradict a settled decision. It's **on by default** (store: `.feature-flow-kb/`
+at your repo root; override with `paths.kb`). To opt out per-project:
 
 ```json
-{ "toggles": { "kb": true }, "paths": { "kb": "docs/kb" } }
+{ "toggles": { "kb": false } }
 ```
 
 - **Capture** at run close, confirm-gated — it proposes 1–3 entries, you accept/edit/reject.
   Accepted entries are project-local, git-committed markdown with provenance; you commit them.
-- **Recall** at the start of *explore* and *design* — tag-matched entries are surfaced as context.
+- **Recall** at the start of *explore*, *design*, and *diagnose* — tag-matched entries are
+  surfaced as context.
 - **Staleness** — an entry is flagged `[STALE]` (shown, never silently dropped) if a referenced
   file is gone or it's older than `kb.freshnessWindowDays`.
 - **Not in v1:** dedup and supersession of near-duplicate entries (deferred to a fast-follow).
@@ -164,10 +166,10 @@ Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 | `toggles.greenfield` | `false` | Relax git-diff assumptions for new/non-git projects |
 | `toggles.autopilot` | `"ask"` | `"ask"` (per-run prompt), `true` (always), or `false` (never) |
 | `toggles.enforce` | `true` | Machine-enforce the sign-off and evidence gates (Claude Code) |
-| `toggles.kb` | `false` | Turn the Knowledge base on (needs `paths.kb` set too) |
+| `toggles.kb` | `true` | Knowledge base master switch — set `false` to opt out |
 | `paths.base` | `".feature-flow"` | Run sandbox root |
 | `paths.durable` | `null` | Directory for **committed** decision docs; unset keeps everything in the gitignored sandbox |
-| `paths.kb` | `null` | Knowledge base store directory (repo-relative) |
+| `paths.kb` | `".feature-flow-kb"` | Knowledge base store directory (repo-relative); `null` also disables the KB |
 | `kb.freshnessWindowDays` | `90` | Age past which a recalled entry is flagged stale |
 | `kb.maxRecallEntries` | `5` | Max KB entries surfaced at recall |
 

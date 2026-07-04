@@ -122,7 +122,8 @@ Validation is advisory: **warn and fall back to the safe default — never hard-
    `config: unknown key '<key>' in .feature-flow.json — ignored (did you mean '<nearest>'?)`
    and proceed with defaults. Catches the silent-typo footgun: `explorerAgent` (vs
    `explorerAgents`) would otherwise fall through to the default with no signal at all.
-2. **Half-configuration.** `toggles.kb: true` with `paths.kb` null/unset → warn
+2. **Half-configuration.** `toggles.kb: true` (the default) with `paths.kb` explicitly
+   `null` → warn
    `config: toggles.kb is true but paths.kb is unset — the knowledge base stays OFF`, then run
    with the KB inactive (the documented defense-in-depth, now surfaced rather than silent).
    Same shape for any feature whose activation needs two coordinated keys.
@@ -350,20 +351,23 @@ terminal commands (`ff-verify`, `ff-review`) **reference** it rather than restat
 
 The Knowledge base (KB) closes feature-flow's learning loop: it **captures** each finished run's
 architectural decisions / project conventions as committed, project-local markdown entries, and
-**recalls** matching entries into the `explore` and `design` fan-outs of later runs — stale ones
-flagged, never silently presented as fresh. This is the single canonical contract; the four hooked
-commands (`ff-verify`, `ff-review`, `ff-explore`, `ff-design`) reference this section by name and
-never restate it inline. It is the same house style as **Durable artifact resolution** above.
+**recalls** matching entries into the `explore`, `design`, and `diagnose` fan-outs of later runs —
+stale ones flagged, never silently presented as fresh. This is the single canonical contract; the
+five hooked commands (`ff-verify`, `ff-review`, `ff-explore`, `ff-design`, `ff-diagnose`) reference
+this section by name and never restate it inline. It is the same house style as **Durable artifact
+resolution** above.
 
-### Activation (off by default)
+### Activation (on by default; opt out with `toggles.kb: false`)
 
 The KB is **active iff `toggles.kb === true` AND `paths.kb` is non-null** (defense-in-depth: a
-half-configuration skips cleanly, never errors). With either unset, every hooked phase behaves
-**byte-identically to today** — capture and recall are skipped no-ops. Config keys
-(`config/defaults.json`, overridable in `.feature-flow.json`):
+half-configuration skips cleanly, never errors). Both ship active since v0.8.0; setting either
+off in `.feature-flow.json` — `toggles.kb: false` or `paths.kb: null` — cleanly deactivates the
+KB: capture and recall become skipped no-ops and every hooked phase behaves as if the KB did not
+exist. Config keys (`config/defaults.json`, overridable in `.feature-flow.json`):
 
-- `toggles.kb` (default `false`) — master switch.
-- `paths.kb` (default `null`) — store directory, **relative to repo root**. The KB is **cross-run**:
+- `toggles.kb` (default `true`) — master switch; set `false` to opt out.
+- `paths.kb` (default `".feature-flow-kb"`) — store directory, **relative to repo root**;
+  `null` also deactivates. The KB is **cross-run**:
   it is resolved from config, NOT under `paths.durable`, and NOT added to `manifest.artifacts`
   (which is per-run only).
 - `kb.freshnessWindowDays` (default `90`) — age-based staleness window.
@@ -418,14 +422,16 @@ When active, the command reaching the done-transition:
    **feature-flow performs no `git add` / `git commit`** (write-only doctrine — the user commits).
 6. Reject-all / none proposed → write nothing; the run completes without error → `currentPhase="done"`.
 
-### Recall rule (wired into BOTH explore and design)
+### Recall rule (wired into explore, design, and diagnose)
 
-Recall runs **before the agent fan-out** in `ff-explore` (before the explorer dispatch) and
-`ff-design` (after the sign-off gate, before the architect dispatch). When active:
+Recall runs **before the agent fan-out** in `ff-explore` (before the explorer dispatch),
+`ff-design` (after the sign-off gate, before the architect dispatch), and `ff-diagnose`
+(before the diagnostician dispatch). When active:
 
 1. `Glob <paths.kb>/*.md`. **Empty store** → print a one-line note and proceed normally (no error).
-2. Extract keywords from `$ARGUMENTS` (and, for design, the spec's `## Problem` resolved via
-   `manifest.artifacts.spec`) and **tag-match** them against each entry's `tags` frontmatter.
+2. Extract keywords from `$ARGUMENTS` (for diagnose that is the bug report; for design, also the
+   spec's `## Problem` resolved via `manifest.artifacts.spec`) and **tag-match** them against each
+   entry's `tags` frontmatter.
 3. Run the staleness check (below) on each match.
 4. Surface up to `kb.maxRecallEntries` matches (recency-ordered by `captureDate`) to the fan-out
    agents as appended context — fresh entries plain, stale entries decorated (never dropped).

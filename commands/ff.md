@@ -63,7 +63,7 @@ unchanged.)
    `.feature-flow`), agent counts, models, `reviewThreshold`, and toggles. **Validate the
    resolved config** and surface any problem per **Config resolution & validation** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — warn on an unknown/typo'd key or a
-   half-configuration (e.g. `toggles.kb` true with `paths.kb` unset), then fall back to the
+   half-configuration (e.g. `toggles.kb` true with `paths.kb` explicitly null), then fall back to the
    safe default. Never silently no-op a misconfiguration.
 2. **Resolve autopilot first (run-start procedure — BEFORE the manifest write):** if this
    run's manifest already exists with an `autopilot` field, skip this entirely — never

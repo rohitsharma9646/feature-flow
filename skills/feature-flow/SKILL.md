@@ -161,17 +161,20 @@ analysis agents already lack `Bash` and search via these tools; keep it that way
 
 ## Knowledge base
 
-**Opt-in, off by default.** Set `toggles.kb: true` and `paths.kb: "<dir>"` in `.feature-flow.json`
-to activate; unset (the default) leaves every run **byte-identical to today**. The canonical
-contract is `docs/manifest-schema.md` §Knowledge base — the commands reference it by name.
+**On by default** (since v0.8.0): `toggles.kb: true` and `paths.kb: ".feature-flow-kb"` ship as
+defaults, so every project has an active KB from its first run. Opt out in `.feature-flow.json`
+with `toggles.kb: false` (or `paths.kb: null`) — either cleanly deactivates capture and recall.
+The canonical contract is `docs/manifest-schema.md` §Knowledge base — the commands reference it
+by name.
 
 - **Capture** (confirm-gated, at the terminal phase — `ff-verify` feature / `ff-review` bugfix, with
   a feature-track guard on `ff-review` so feature runs don't double-capture): feature-flow distills
   1–3 candidate entries from the run's artifacts (architectural decisions + project conventions),
   records provenance (capture date, git commit SHA or `null`, referenced files, topic tags), and
   writes only the entries you accept — **no `git add`/`commit`** (write-only; you commit).
-- **Recall** (wired into BOTH `ff-explore` and `ff-design`, before the fan-out): tag-matches the
-  request against stored entries and surfaces up to `kb.maxRecallEntries` to the agents as context.
+- **Recall** (wired into `ff-explore`, `ff-design`, and `ff-diagnose`, before each fan-out):
+  tag-matches the request against stored entries and surfaces up to `kb.maxRecallEntries` to the
+  agents as context.
 - **Staleness:** an entry is flagged stale if a referenced file is missing/moved OR it is older than
   `kb.freshnessWindowDays` (default 90). Stale entries are **decorated, never dropped and never shown
   as fresh** — a KB serving knowledge written against since-changed code is worse than none.
