@@ -2,6 +2,6 @@
   "name": "feature-flow",
   "owner": { "name": "Rohit Sharma" },
   "plugins": [
-    { "name": "feature-flow", "source": "./", "version": "0.7.0", "description": "Gated, resumable feature-development and test-first bugfix workflow with on-disk run state and real executed verification." }
+    { "name": "feature-flow", "source": "./", "version": "0.8.0", "description": "Gated, resumable feature-development and test-first bugfix workflow with on-disk run state and real executed verification." }
   ]
 }

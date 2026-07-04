@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.8.0] — 2026-07-04 — Knowledge base on by default + bugfix-track recall
+
+The KB (0.4.0, opt-in) becomes **on by default**, and recall reaches the bugfix track. **Zero
+runtime-logic change**: the activation AND-gate, recall procedure (tag-match + staleness
+flag-not-drop), confirm-gated capture, and Codex degrade path are all semantically identical —
+only the shipped default *values* and the set of recall-hooked commands change. Projects with an
+explicit `.feature-flow.json` behave exactly as before (explicit keys override defaults).
+
+### Changed
+- **KB defaults flipped** (`config/defaults.json`): `toggles.kb` `false` → `true`, `paths.kb`
+  `null` → `".feature-flow-kb"`. A fresh project has an active KB from its first run — capture
+  at the done-transition, recall before the fan-outs. **Opt out per-project** with
+  `{ "toggles": { "kb": false } }` (or `paths.kb: null`); either cleanly deactivates (the
+  half-config warning from 0.6.0 still fires on an explicit `paths.kb: null` with the toggle on).
+  `kb.freshnessWindowDays` (90) and `kb.maxRecallEntries` (5) unchanged.
+- **`kb-guard.sh` re-pinned**: section (a) now asserts the *new* defaults (RED→GREEN
+  demonstrated against the old config); sections (e)/(g)/(h) extended to cover
+  `commands/ff-diagnose.md`.
+
+### Added
+- **KB recall on the bugfix track** (`commands/ff-diagnose.md` `## KB recall`): tag-matched
+  entries are surfaced to the diagnostician agents before dispatch, keyword source = the bug
+  report (`$ARGUMENTS`). Previously recall was feature-track-only (`ff-explore`/`ff-design`),
+  leaving the KB write-only on bugfix-heavy projects — captured at `ff-review` but never
+  consumed. The canonical contract (`docs/manifest-schema.md` §Knowledge base) now names five
+  hooked commands and a three-command recall rule.
+
+### Docs
+- `manifest-schema.md` §Activation rewritten for on-by-default (+ the half-config example now
+  says *explicitly null*, matching the post-flip reality — also mirrored in `ff.md`); SKILL.md
+  §Knowledge base and README (section + config table) updated; the repo's own KB entry
+  recording the old default-off decision rewritten in place to the new convention. Historical
+  CHANGELOG entries (0.4.0–0.7.0) untouched.
+
 ## [0.7.0] — 2026-06-26 — lite feature tier
 
 Brings the feature track to parity with the bugfix track's lite/full split (M2 from the v0.5.0 architecture review). **Non-breaking and additive**: `tier` already existed on the manifest; this teaches the feature track to use `lite`. A feature with no/`full` tier behaves byte-identically to before.
