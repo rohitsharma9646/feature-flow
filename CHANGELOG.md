@@ -1,5 +1,53 @@
 # Changelog
 
+## [0.11.0] — 2026-07-05 — Planning intelligence (dependency graph → critical path → STOP)
+
+Plans stop being a flat task list. `ff-plan` now derives four sections into every `plan.md` /
+`plan-bugfix.md` (between `## Tasks` and `## Status conventions`): a **Dependency graph** (edges
+naming only lower-numbered `Task N` IDs — so task order is always topological and cycles are
+unexpressible), a **Critical path** *derived* from that graph (the longest dependency chain,
+deterministic tie-break — never hand-authored), a categorical **Risk register**, and a **Rollback
+plan**. The critical path is the **sole hard actuator**: `ff-implement` reads it (via
+`manifest.artifacts.plan`) and **STOPs** — unconditional in both modes, cloned from the
+decision-recall do-not-contradict STOP — if the approach skips or reorders a critical-path task; an
+override is the user's own words, recorded verbatim as `Critical-path override by user (<date>):
+<reason>` in the plan, never self-authored. The other three plug into existing consumers: the risk
+register feeds `ff-verify`'s `## Regression risk`; the rollback plan is the recovery `ff-implement`
+runs on a failed `Step N: Verify`. Additive and non-breaking: **no new config toggle, no new
+manifest field** (the sections live inside the already-durable plan); a pre-WS-2 plan with no
+sections is absent-tolerated everywhere (STOP proceeds, verify derives risk cold).
+
+**Known coverage gap (named, not silent):** the *semantic* catch — `ff-implement` actually
+STOPping on a critical-path-skipping approach — has **no automated regression guard**; it is a
+manual/fresh-session self-run behavioral AC (AC15). `planning-intelligence-guard.sh` pins only the
+STOP *instruction's presence*, section placement, and the derivation rule's wording — not that the
+catch fires. Same honest posture as v0.10.0's AC13.
+
+### Added
+- **Four planning-intelligence sections** in `templates/plan.md` and `templates/plan-bugfix.md`
+  (`## Dependency graph`, `## Critical path`, `## Risk register`, `## Rollback plan`), each with
+  house-style `> ` fill-in guidance; categorical risk (Low/Med/High), no numeric scores.
+- **`## Planning intelligence`** canonical contract (`docs/manifest-schema.md`) — the dependency
+  notation + lower-numbered invariant, the deterministic critical-path derivation, the
+  `ff-implement` do-not-contradict STOP, and the risk/rollback consumer contracts; plus a
+  **Critical-path stop** row in the Autopilot mandatory-pauses table (unconditional, no
+  auto-resolve retry).
+- **`scripts/checks/planning-intelligence-guard.sh`** — pins both templates' four sections
+  (presence, order, placement, categorical risk table, Task-ID edges), the schema section +
+  Autopilot row, the `ff-plan` derive-instruction placement, the `ff-implement` `## Critical-path
+  check` section (placement + `artifacts.plan` + unconditional + override string + rollback
+  pointer), the `ff-verify` risk cross-reference, the no-new-config/manifest-field negatives, and
+  Codex dist parity.
+
+### Changed
+- **`ff-plan`** derives the four sections after task decomposition / AC-mapping and before the
+  Outcome gate (both tracks); the critical path is derived from the graph, never hand-authored.
+- **`ff-implement`** gained a `## Critical-path check` section (between `## Decision recall` and
+  `## Do the work — feature track`): the critical-path STOP plus the rollback-on-failed-Verify
+  recovery pointer.
+- **`ff-verify`** cross-references the plan's `## Risk register` into its `## Regression risk`
+  assessment instead of deriving risk cold (full tier; lite/pre-WS-2 unchanged).
+
 ## [0.10.0] — 2026-07-05 — Structured decision records (record → recall → enforce)
 
 Design decisions stop being write-only. `ff-design` now records the chosen architecture in a

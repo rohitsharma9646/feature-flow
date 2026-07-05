@@ -69,6 +69,21 @@ files-to-touch and a verification step:
   with a one-line reason — never leave an AC silently uncovered. (A full-tier **bugfix** has
   no spec/ACs — its contract is the diagnosis — so this mapping does not apply there.)
 
+**Derive planning intelligence (both tracks — feature and bugfix-full):** after the tasks above
+are decomposed (and, feature track, AC-mapped — nothing to hang a graph on before the tasks
+exist), populate the plan's four planning-intelligence sections per the canonical **Planning
+intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — do not restate its
+steps here:
+- **Dependency graph** — one row per task naming its prerequisite `Task N` IDs (or "— (root)"),
+  **only lower-numbered** tasks.
+- **Critical path** — **derive** it (§Planning intelligence → Critical-path derivation): the
+  longest dependency chain through the graph you just wrote, deterministic tie-break.
+  **Never hand-author it independently of the graph.** Every task on it is a hard actuator —
+  `/feature-flow:ff-implement` STOPs if the approach skips or reorders one.
+- **Risk register** — categorical (Low/Med/High) rows, cross-referenced later by
+  `/feature-flow:ff-verify`'s regression-risk assessment; no numeric scores.
+- **Rollback plan** — the named recovery action per risky task if its `Step N: Verify` fails.
+
 **Populate the Outcome gate** from the contract: the resolved contract path (from
 `artifacts.spec` or `artifacts.diagnosis`), acceptance-criteria / "bug no longer reproduces"
 reference, and the current `signOff` state
