@@ -81,6 +81,16 @@ choose (or confirm your recommendation). Do not pick silently. This choice is an
 **in-session pause in both modes** — in autopilot, ask (AskUserQuestion), then continue
 the phase and the chain in the same turn once the user answers.
 
+> **Do-not-contradict STOP.** Before finalizing the pick, check the chosen architecture against
+> any **prior** settled decision surfaced by the KB recall above (source 2 only — this run has
+> not written its own decision record yet, so there is nothing intra-run to compare). Follow the
+> **Decision recall** procedure in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Knowledge base
+> (do not restate its steps here). If the pick **diverges** from a prior settled decision, **STOP
+> — unconditional in both modes**, no autopilot auto-resolve retry: surface the conflict and ask
+> the user to either realign the architecture or reply with an explicit override, recorded
+> verbatim as `Decision override by user (<date>): <reason>` — never self-authored. No prior
+> decision recalled, or no conflict → proceed to write the artifacts below.
+
 ## Write the artifact + update manifest
 
 Resolve the design's path per the **Durable artifact resolution** rule in
@@ -90,6 +100,17 @@ the design from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`: chosen approach, re
 alternatives + why, component map, data flow, risks. Record the resolved path in **both**
 `artifacts.design` and `phases.design.artifact`: set `phases.design = { status: "complete",
 artifact: "<resolved design path>" }`, bump `updatedAt`.
+
+**Then record the decision.** Resolve the `decision` path the same way — the **Durable artifact
+resolution** rule, artifact name `decision`, the same `<D>-<slug>/` directory already created for
+the design. **Use the Write tool** to write it from `${CLAUDE_PLUGIN_ROOT}/templates/decision.md`,
+capturing the pick just made: the decision, context, options considered, the trade-offs matrix,
+chosen + rationale, related ACs/files, and (auto-proposed) `tags` + `referencedFiles`. Record the
+resolved path in `artifacts.decision` **only** — `phases.design.artifact` keeps pointing at the
+design (`artifacts.<name>` is the sole locating authority, so a second artifact from one phase
+rides in `artifacts.decision` with no phases-schema change). This decision record is what
+`ff-implement`'s **Decision recall** checks the implementation against, and what KB capture
+distills at run close.
 
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the plan phase per

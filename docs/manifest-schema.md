@@ -29,6 +29,7 @@ makes phases composable, standalone-runnable, and resumable from disk.
   "artifacts": {
     "spec": "spec.md",
     "design": "design.md",
+    "decision": "decision.md",
     "diagnosis": "diagnosis.md",
     "plan": "plan.md",
     "review": "review.md",
@@ -82,6 +83,15 @@ makes phases composable, standalone-runnable, and resumable from disk.
 - **`artifacts`** maps logical names to the file path each phase wrote. `artifacts.<name>` is
   the **sole authority** for locating an artifact — every read (implement, status, resume,
   disk-inference) resolves through it.
+- **`artifacts.decision`** (added v0.10.0): the resolved path of the run's decision record —
+  written by `ff-design` on the **full** tier (a promoted `decision.md`), or set by
+  `ff-clarify` to the **spec's** path on the **lite** tier (the spec's inline `## Solution
+  approaches considered` *is* the lite decision record). **Dual-shaped:** full → a
+  `decision.md`-shaped file, lite → a `spec.md`-shaped file — a consumer that globs/parses
+  `artifacts.decision` targets must not assume a uniform shape. **Absent field = no decision
+  recorded** (every pre-v0.10.0 manifest, and any run whose design predates this field): treat
+  as "this run has no decision artifact" — no error, no migration; `ff-status`/disk-inference
+  report it as not-present, never missing-and-invalid.
 
   **Durable artifact resolution.** Each producing phase resolves where to write its artifact
   (and records the result) by this rule. Given artifact name `N`, slug `S`, and the run's
@@ -101,8 +111,10 @@ makes phases composable, standalone-runnable, and resumable from disk.
   `specs/add-oauth.md`.
 
   - **Durable artifacts** (resolution-eligible — promote when a durable location is configured):
-    `spec`, `design`, `plan`, `diagnosis`, `verify`. They co-locate in one `<D>-<S>/` directory
-    even when produced on different calendar days, because `D` derives from `createdAt`.
+    `spec`, `design`, `decision`, `plan`, `diagnosis`, `verify`. They co-locate in one `<D>-<S>/`
+    directory even when produced on different calendar days, because `D` derives from `createdAt`.
+    (`decision` promotes only on the full tier — it rides alongside `design` in the same
+    `<D>-<S>/` dir; on lite, `artifacts.decision` points at the already-promoted `spec` instead.)
     **Evidence companion copy:** `verify` is special — when it promotes, the run's
     `<base>/<S>/evidence/` directory is **copied** alongside to `<paths.durable>/<D>-<S>/evidence/`
     (copy, never move — the sandbox stays the one place `ff-test-runner` clears and writes; on
@@ -365,9 +377,9 @@ Used by `/ff-resume` and `/ff-status` when the manifest is missing/corrupt, or t
 manifest that claims phases are complete:
 
 1. Walk the track's phase order — feature: explore(`explore`) → clarify(`spec`) →
-   design(`design`) → plan(`plan`) → implement(no artifact) → review(`review`) →
-   verify(`verify`); bugfix: diagnose(`diagnosis`) → implement(no artifact) →
-   verify(`verify`) → review(`review`).
+   design(`design`, `decision` — `decision` optional, absent tolerated pre-v0.10.0) →
+   plan(`plan`) → implement(no artifact) → review(`review`) → verify(`verify`); bugfix:
+   diagnose(`diagnosis`) → implement(no artifact) → verify(`verify`) → review(`review`).
 2. **Resolve each phase's artifact path before checking existence.** When the manifest is
    present, take the path from `manifest.artifacts.<name>` (the sole locating authority) — so a
    doc promoted to `<paths.durable>/<D>-<slug>/` is checked at its real path, never mis-marked
@@ -468,11 +480,11 @@ terminal commands (`ff-verify`, `ff-review`) **reference** it rather than restat
 
 The Knowledge base (KB) closes feature-flow's learning loop: it **captures** each finished run's
 architectural decisions / project conventions as committed, project-local markdown entries, and
-**recalls** matching entries into the `explore`, `design`, and `diagnose` fan-outs of later runs —
-stale ones flagged, never silently presented as fresh. This is the single canonical contract; the
-five hooked commands (`ff-verify`, `ff-review`, `ff-explore`, `ff-design`, `ff-diagnose`) reference
-this section by name and never restate it inline. It is the same house style as **Durable artifact
-resolution** above.
+**recalls** matching entries into the `explore`, `design`, and `diagnose` fan-outs of later runs
+(and, via **Decision recall** below, into `implement`) — stale ones flagged, never silently
+presented as fresh. This is the single canonical contract; the six hooked commands (`ff-verify`,
+`ff-review`, `ff-explore`, `ff-design`, `ff-diagnose`, `ff-implement`) reference this section by
+name and never restate it inline. It is the same house style as **Durable artifact resolution** above.
 
 ### Activation (on by default; opt out with `toggles.kb: false`)
 
@@ -529,7 +541,10 @@ double-captures.
 When active, the command reaching the done-transition:
 
 1. Reads the run's artifacts via **`manifest.artifacts.<name>`** pointers (`spec`/`diagnosis`,
-   `design` and `plan` if present, `verify`, `review`) — never bare filenames.
+   `design`, `decision`, and `plan` if present, `verify`, `review`) — never bare filenames. When
+   a `decision` record is present, it is the **preferred** distillation source for the run's
+   architectural decision (already structured — options, trade-offs, chosen rationale), so
+   capture lifts it rather than re-deriving the decision from `design` prose.
 2. Captures `git rev-parse HEAD` inline → `captureCommitSha` or `null` on failure (never blocks).
 3. Distills **1–3 candidate entries**, biased to architectural decisions + project conventions
    (lessons/pitfalls are opt-in), auto-proposing `tags` + `referencedFiles`.
@@ -553,6 +568,51 @@ Recall runs **before the agent fan-out** in `ff-explore` (before the explorer di
 4. Surface up to `kb.maxRecallEntries` matches (recency-ordered by `captureDate`) to the fan-out
    agents as appended context — fresh entries plain, stale entries decorated (never dropped).
    **No match** → one-line note, proceed.
+
+### Decision recall (ff-design, ff-implement)
+
+Closes feature-flow's actuation gap: a run's decision record does not just get filed — it
+**constrains** later phases of the same run, and (once captured to the KB) later runs. This is
+the single canonical contract; `ff-design` and `ff-implement` reference this subsection by name
+and never restate its steps inline. Two sources feed the **do-not-contradict** STOP, resolved
+differently and **never conflated**:
+
+1. **This run's own decision — `manifest.artifacts.decision`, unconditional (no KB needed).**
+   The sole locating authority (never a hardcoded filename). The read is unconditional — it
+   costs nothing and applies identically on full tier (resolves to the promoted decision record)
+   and lite tier (resolves to the `spec` — `ff-clarify` set the pointer there, since the spec's
+   inline `## Solution approaches considered` *is* the lite decision record). **No tier branch in
+   the locating logic** — the same pointer read serves both. Absent `artifacts.decision`
+   (pre-v0.10.0 manifest) → "no decision recorded"; proceed, no error. `ff-design` does **not**
+   read this source (a run cannot contradict a decision it has not made yet) — it reads only
+   source 2.
+2. **Prior decisions from other runs — KB-gated, reuses the Recall rule above verbatim.**
+   Gated on `toggles.kb` + `paths.kb`. Every KB entry already records a settled decision or
+   convention (`templates/kb-entry.md` §Decision / convention), so the generic recall surface
+   **is** the prior-decision surface — glob, tag-match, apply the **Staleness rule** below
+   (stale entries flagged `[STALE — <reason>]`, never dropped). `ff-design` tag-matches the
+   spec's `## Problem` before the architecture pick; `ff-implement` tag-matches this run's
+   decision content alongside its source-1 read. KB off → source 2 is skipped; source 1 still fires.
+
+**Do-not-contradict STOP (the refuse).** A **prose gate only** — no hook can diff semantic
+contradiction, so this is honorable by instruction (Codex-safe), not machine-enforced. If the
+architecture about to be chosen (`ff-design`, vs source 2) or the approach about to be coded
+(`ff-implement`, vs source 1 or 2) **diverges** from a recalled decision, **STOP unconditionally
+in both modes** — never self-resolved, never autopilot-retried (unlike a Critical review
+finding). Surface the conflict, shaped:
+
+> Decision conflict detected — not proceeding on the current approach:
+> - **Recalled decision:** `<prior KB entry path | this run's decision>` — `<title>` (`<date>`):
+>   `<the settled decision statement>`
+> - **Diverges because:** `<the specific way the current pick/approach contradicts it>`
+> To proceed: (a) realign the approach with the settled decision, or (b) reply with an explicit
+> override — recorded verbatim as `Decision override by user (<date>): <reason>` in the resolved
+> `artifacts.decision` record, and the run continues.
+
+The override is **never self-authored** — record only the user's own in-conversation words,
+exactly like the evidence waiver (§Evidence). No prior decision recalled / no conflict →
+one-line note, proceed (mirrors empty-store recall). See the **Decision conflict stop** row in
+§Autopilot.
 
 ### Staleness rule
 
@@ -604,6 +664,7 @@ or self-answers a gate:**
 | Spec sign-off (`ff-clarify`) | cross-turn | end the turn with the sign-off ask (**Sign-off rendering** above); never set `signOff.signed` yourself; chain resumes on the user's confirmation or `ff-resume` |
 | Diagnosis sign-off, full tier (`ff-diagnose`) | cross-turn | same as spec sign-off |
 | Not-reproduced stop (`ff-diagnose`) | cross-turn | ends the chain unconditionally — autopilot does not retry |
+| Decision conflict stop (`ff-design` vs prior decisions; `ff-implement` vs this run's own decision) | cross-turn | **unconditional** STOP in both modes — autopilot does not auto-resolve or retry (unlike the Critical-review fix cycle); the chain resumes only when the user realigns the approach or replies with an explicit `Decision override by user (<date>): <reason>` — never self-authored — see §Knowledge base → **Decision recall** |
 | Critical review block (`ff-review`) | cross-turn | one fix-and-re-review cycle (below), then stop if Criticals remain |
 | Evidence gap stop (`ff-verify`) | cross-turn | any contract item below `Verified (single-source)` blocks `done` — end the turn with the gap report (what could not be verified, why, what evidence is required); autopilot never records a waiver itself; chain resumes on the user's waiver (see §Evidence, Evidence waiver) or a re-run after the gap is addressed |
 | KB capture confirm-gate (`ff-verify` feature-terminal / `ff-review` bugfix-terminal), only when `toggles.kb` active | cross-turn | distill candidates, end the turn for the user to accept/edit/reject; never write entries unconfirmed; chain resumes to `currentPhase="done"` on the answer or `ff-resume` — see §Knowledge base |

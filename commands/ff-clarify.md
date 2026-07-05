@@ -118,10 +118,14 @@ Once sign-off is recorded, set
 `phases.clarify = { status: "complete", artifact: "<resolved spec path>" }`,
 `signOff.required = true`, bump `updatedAt`. Then **STOP (step-by-step) / continue
 (autopilot)**, routing by tier:
-- **Lite tier (`tier == "lite"`):** route to `/feature-flow:ff-implement` — lite skips the
-  design + plan phases. Autopilot → emit the progress strip and proceed directly into
-  implement per `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md`; step-by-step → **STOP** and
-  tell the user to run `/feature-flow:ff-implement` next.
+- **Lite tier (`tier == "lite"`):** set `manifest.artifacts.decision` to the **same resolved
+  path** as `artifacts.spec` — lite skips `ff-design`, so the spec's inline `## Solution
+  approaches considered` section *is* the decision record, and pointing `artifacts.decision`
+  there lets `ff-implement`'s **Decision recall** resolve uniformly through one pointer with no
+  tier fork. Then route to `/feature-flow:ff-implement` — lite skips the design + plan phases.
+  Autopilot → emit the progress strip and proceed directly into implement per
+  `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md`; step-by-step → **STOP** and tell the user to
+  run `/feature-flow:ff-implement` next.
 - **Full tier:** route to `/feature-flow:ff-design`. Autopilot → emit the progress strip and
   proceed directly into the design phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-design.md` —
   see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; step-by-step →

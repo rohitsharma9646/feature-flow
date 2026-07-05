@@ -72,6 +72,7 @@ check_writer() { # file artifact_field
 check_writer commands/ff-clarify.md  spec
 check_writer commands/ff-plan.md     plan
 check_writer commands/ff-design.md   design
+check_writer commands/ff-design.md   decision
 check_writer commands/ff-diagnose.md diagnosis
 check_writer commands/ff-verify.md   verify
 
@@ -159,7 +160,7 @@ done
 # create…`, `templates/…`) are removed by the write/create + templates excludes below, not
 # by the pattern — FP-over-FN per design §B2. awk emits `FNR: <line>` (no filename, so the
 # `ff-design.md`/`ff-plan.md` filenames can't self-match); the file is reported separately.
-DURABLE='(^|[^-[:alnum:]])(spec|design|plan|diagnosis)\.md'
+DURABLE='(^|[^-[:alnum:]])(spec|design|decision|plan|diagnosis)\.md'
 kviol=0
 for f in commands/*.md; do
   while IFS= read -r h; do
@@ -168,7 +169,7 @@ for f in commands/*.md; do
     kviol=1
   done < <(awk '/^## /{b=1} b{print FNR": "$0}' "$f" \
     | grep -E "$DURABLE" \
-    | grep -viE 'artifacts\.(spec|design|plan|diagnosis)' \
+    | grep -viE 'artifacts\.(spec|design|decision|plan|diagnosis)' \
     | grep -viE 'write|writes|writing|record|overwriting|create' \
     | grep -viE 'templates/' \
     | grep -viE 'User signed off' \

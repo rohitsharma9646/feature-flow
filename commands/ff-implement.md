@@ -75,6 +75,36 @@ false-fire "no `plan.md`" on a run whose plan was promoted out of the sandbox.
 - **Bugfix:** resolve `artifacts.diagnosis`; if it does not exist, route to
   `/feature-flow:ff-diagnose`.
 
+## Decision recall
+
+**Feature track only** (the bugfix track's contract is the diagnosis — skip this section on
+bugfix). Run this **after Cold-start, before any Write/Edit call** in `## Do the work` — it is
+the implement-side of **Decision recall**: it makes this run's recorded decision **constrain**
+the code about to be written.
+
+Resolve **this run's own decision** via `manifest.artifacts.decision` — the sole locating
+authority, per **Durable artifact resolution** — **never a bare filename**. This read is
+**unconditional of the KB toggle**: full tier resolves the promoted decision record, lite tier
+resolves `manifest.artifacts.spec` (its `## Solution approaches considered` section *is* lite's
+decision record — the pointer was set by `ff-clarify`). **The same pointer read serves both
+tiers — no tier branch in the locating logic.** Absent `artifacts.decision` (a pre-v0.10.0
+manifest) → "no decision recorded"; proceed, no error.
+
+Then, when the KB is active (`toggles.kb === true` AND `paths.kb` non-null), also follow the
+**Decision recall** procedure in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Knowledge base
+(source 2 — tag-match prior decisions, apply the staleness flag; **stale** entries decorated
+`[STALE — <reason>]`, never dropped) — **do not restate its steps here.** KB inactive → skip
+this cross-run half only; the unconditional `artifacts.decision` read above still fires.
+
+> **Do-not-contradict STOP.** Before writing any code, compare the approach you are about to
+> implement against the decision(s) recalled above. If it **diverges** from this run's own
+> recorded decision (source 1) or a prior KB decision (source 2), **STOP-and-surface —
+> unconditional in both modes, no autopilot auto-resolve retry** (unlike the Critical-review fix
+> cycle). Tell the user the conflicting decision and how the approach diverges; resolve **only**
+> by the user realigning the implementation or replying with an explicit override, recorded
+> verbatim as `Decision override by user (<date>): <reason>` in the resolved `artifacts.decision`
+> record — never self-authored. No divergence, or nothing recalled → proceed to the work below.
+
 ## Do the work — feature track
 
 **Lite tier (`tier == "lite"`):** there is no plan or design — read the **spec**

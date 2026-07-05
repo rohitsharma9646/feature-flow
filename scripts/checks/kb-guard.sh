@@ -118,28 +118,34 @@ nvr=$(section commands/ff-review.md '^## Update manifest' | grep -cE '\*\*KB cap
   && ok "commands/ff-review.md §Update manifest: bugfix done-transition invokes KB capture ($nvr)" \
   || err "commands/ff-review.md §Update manifest: the bugfix done-transition must invoke KB capture (found ${nvr:-0})"
 
-# --- (e) recall wiring (AC5, AC6, AC8, AC9; + ff-diagnose per v0.8.0 AC2) ----
-check_recall() { # file
-  local f="$1" body
-  body="$(section "$f" '^## KB recall')"
+# --- (e) recall wiring (AC5, AC6, AC8, AC9; + ff-diagnose per v0.8.0 AC2; ----
+#         + ff-implement '## Decision recall' per decision-records v0.10.0) ----
+# heading param defaults to '^## KB recall' so the three pre-v0.10.0 call-sites are
+# byte-identical in behavior; ff-implement's decision recall reuses the SAME assertions
+# (gates on toggles.kb for source 2, references §Knowledge base, applies staleness).
+check_recall() { # file [heading-regex]
+  local f="$1" heading="${2:-^## KB recall}" name body
+  name="${heading#^}"
+  body="$(section "$f" "$heading")"
   if [ -z "$body" ]; then
-    err "$f: missing a '## KB recall' section (recall wiring absent)"
+    err "$f: missing a '$name' section (recall wiring absent)"
     return
   fi
-  ok "$f: has a '## KB recall' section"
+  ok "$f: has a '$name' section"
   printf '%s\n' "$body" | grep -q 'toggles.kb' \
-    && ok "$f §KB recall: gates on toggles.kb" \
-    || err "$f §KB recall: must gate on toggles.kb (+ paths.kb)"
+    && ok "$f §$name: gates on toggles.kb" \
+    || err "$f §$name: must gate on toggles.kb (+ paths.kb)"
   printf '%s\n' "$body" | grep -q 'Knowledge base' \
-    && ok "$f §KB recall: references the §Knowledge base contract" \
-    || err "$f §KB recall: must reference the §Knowledge base contract by name"
+    && ok "$f §$name: references the §Knowledge base contract" \
+    || err "$f §$name: must reference the §Knowledge base contract by name"
   printf '%s\n' "$body" | grep -qiE 'stale' \
-    && ok "$f §KB recall: applies the staleness flag (flag-not-suppress)" \
-    || err "$f §KB recall: must apply the staleness flag (flag-not-suppress)"
+    && ok "$f §$name: applies the staleness flag (flag-not-suppress)" \
+    || err "$f §$name: must apply the staleness flag (flag-not-suppress)"
 }
 check_recall commands/ff-explore.md
 check_recall commands/ff-design.md
 check_recall commands/ff-diagnose.md
+check_recall commands/ff-implement.md '^## Decision recall'
 
 # --- (f) honest deferral in user docs (AC13) -------------------------------
 for f in skills/feature-flow/SKILL.md README.md; do
@@ -151,10 +157,10 @@ done
 # --- (g) read-site safety: no bare-name durable reader in any KB section -----
 # KB capture/recall sections read run artifacts; they MUST use the pointer form so
 # durable-paths-guard.sh section (k) stays GREEN. Belt-and-suspenders check here.
-for f in commands/ff-verify.md commands/ff-review.md commands/ff-explore.md commands/ff-design.md commands/ff-diagnose.md; do
-  bad="$(section "$f" '^## KB (capture|recall)' \
-        | grep -nE '(^|[^-[:alnum:]])(spec|design|plan|diagnosis)\.md' \
-        | grep -viE 'artifacts\.(spec|design|plan|diagnosis)' \
+for f in commands/ff-verify.md commands/ff-review.md commands/ff-explore.md commands/ff-design.md commands/ff-diagnose.md commands/ff-implement.md; do
+  bad="$(section "$f" '^## (KB (capture|recall)|Decision recall)' \
+        | grep -nE '(^|[^-[:alnum:]])(spec|design|decision|plan|diagnosis)\.md' \
+        | grep -viE 'artifacts\.(spec|design|decision|plan|diagnosis)' \
         | grep -viE 'write|writes|writing|record|overwriting|create' \
         | grep -viE 'templates/' \
         | grep -viE 'never gate on a bare|outside the sandbox|false-fire' \
@@ -180,6 +186,7 @@ for rel in \
   commands/ff-explore.md \
   commands/ff-design.md \
   commands/ff-diagnose.md \
+  commands/ff-implement.md \
   skills/feature-flow/SKILL.md \
   README.md
 do
