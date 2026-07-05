@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.10.0] — 2026-07-05 — Structured decision records (record → recall → enforce)
+
+Design decisions stop being write-only. `ff-design` now records the chosen architecture in a
+structured `decision.md` (options, trade-offs, chosen rationale), promoted alongside `design.md`;
+and that decision **constrains later phases** — `ff-implement` recalls this run's own decision
+(and, when the KB is active, prior decisions from other runs) before writing code and **STOPs** if
+the approach diverges, and `ff-design` STOPs if a pick contradicts a prior settled decision. The
+STOP is a **prose gate** (an LLM judgment, like sign-off — no hook, semantic contradiction is not
+machine-checkable) and **unconditional in both modes**; an override is the user's own words,
+recorded verbatim, never self-authored. Additive and non-breaking: no new phase or agent; the one
+new manifest field (`artifacts.decision`) is absent-tolerated with no migration, and `tier: lite`
+stays cheap (the spec's inline decision *is* the record — `artifacts.decision` points at the spec).
+
+**Known coverage gap (named, not silent):** the *semantic* catch — the agent actually STOPping on a
+contradiction — has **no automated regression guard**; it is a manual/self-run behavioral AC
+(AC13). Automated coverage pins only the STOP *instruction's presence* in the command files
+(`decision-record-guard.sh`) and the recall *preconditions* (`scripts/eval.sh`). A future
+fast-follow could deepen this; today it is honestly manual.
+
+### Added
+- **`templates/decision.md`** — the decision record: frontmatter (`tags`, `referencedFiles`, for
+  recall tag-match + staleness) + `## Decision / Context / Options considered / Trade-offs
+  (matrix) / Chosen + rationale / Outcome / Future considerations` + `**Related ACs:**` /
+  `**Related files:**`.
+- **`### Decision recall`** contract (`docs/manifest-schema.md` §Knowledge base) — the canonical
+  two-source rule (this run's `artifacts.decision`, unconditional; prior KB decisions, KB-gated)
+  and the do-not-contradict STOP; a **Decision conflict stop** row in the Autopilot mandatory-pauses
+  table; `artifacts.decision` field note (absent = no decision recorded, no migration; dual-shaped
+  full/lite); `decision` added to the durable-artifact list + the disk-inference tuple.
+- **`scripts/checks/decision-record-guard.sh`** — pins the template headers (against the verbatim
+  shipped template), the ff-design/ff-implement/ff-clarify wiring, the STOP-instruction survival in
+  both command files, and dist parity of `templates/decision.md`.
+- **`scripts/eval.sh` + `evals/`** (WS-8) — a **non-blocking** precondition harness (outside
+  `scripts/checks/`, not in CI): one fixture asserting a decision record is well-formed,
+  tag-matchable against a contradicting request, and that the STOP wiring exists. Not the semantic
+  catch (see coverage gap above).
+
+### Changed
+- **`commands/ff-design.md`** — after the architecture pick, writes `decision.md` (recorded in
+  `artifacts.decision`) and STOPs on a pick that contradicts a prior settled decision.
+- **`commands/ff-implement.md`** — new `## Decision recall` section (between Cold-start and Do the
+  work) recalls the run's decision and STOPs on divergence before any code is written.
+- **`commands/ff-clarify.md`** — lite branch points `artifacts.decision` at the spec, so implement's
+  recall is tier-agnostic (no fork).
+- **KB capture** now reads `decision` (preferred distillation source over `design` prose), closing
+  the decision-record ↔ KB-entry redundancy.
+- **`scripts/checks/kb-guard.sh`** (`check_recall` generalized + `ff-implement` decision-recall
+  call) and **`durable-paths-guard.sh`** (`decision` writer check + bare-name coverage) extended.
+
 ## [0.9.0] — 2026-07-05 — Evidence-based verification
 
 No task reaches `done` without objective, reproducible, multi-source evidence. The verify
