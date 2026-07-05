@@ -71,4 +71,54 @@ if [ "$fail" -eq 0 ]; then
 else
   echo "RED:  decision-conflict — a precondition failed"
 fi
+
+# --- fixture: delivery-gap (WS-3) -------------------------------------------
+# A done run whose plan has a migration task with NO rollback line — the exact hole
+# ff-deliver must surface as a non-blocking ⚠ DELIVERY GAP. Asserts the MECHANICAL
+# preconditions of the delivery-gap actuation; the SEMANTIC catch (ff-deliver actually
+# writing the gap line on a live run) is AC5 — manual, NOT assertable in bash.
+echo ""
+echo "fixture: delivery-gap"
+gap_start=$fail
+FXP="evals/fixtures/delivery-gap/plan.md"
+TPL_D="templates/delivery.md"
+
+# (1) fixture plan exists and carries a migration/schema task (the thing needing a rollback)
+if [ -f "$FXP" ]; then ok "fixture plan exists ($FXP)"; else err "fixture plan missing ($FXP)"; fi
+grep -qiE 'migrat|schema' "$FXP" 2>/dev/null \
+  && ok "fixture plan carries a migration/schema task" \
+  || err "fixture plan must carry a migration/schema task"
+
+# (2) the deliberate hole: the migration task (Task 2) has NO recovery ROW in ## Rollback plan.
+# Match table rows only ('| Task 2 …'), not prose that merely names the task — a recovery line is
+# a table row, exactly what ff-deliver checks for.
+roll="$(awk '/^## Rollback plan/{s=1;next} /^## /{s=0} s' "$FXP" 2>/dev/null)"
+printf '%s\n' "$roll" | grep -qE '^\| *Task 2' \
+  && err "fixture Rollback plan must OMIT the migration task's recovery row (| Task 2 …) — that omission IS the gap" \
+  || ok "migration task has no recovery row in Rollback plan — the delivery gap is present and detectable"
+
+# (3) drift guard: the shipped template still defines the sections the gap/known-issues/validation
+# are written into, so a template restructure the fixture no longer matches is caught (not silently passed).
+for h in '^## Rollback checklist' '^## Known issues' '^## Release validation steps'; do
+  grep -qE "$h" "$TPL_D" 2>/dev/null \
+    && ok "shipped delivery template defines '${h#^## }' (fixture not drifted)" \
+    || err "shipped delivery template must define '${h#^## }' — regenerate the fixture from $TPL_D"
+done
+
+# (4) the gap-detection + pointer wiring the catch depends on exists in ff-deliver
+grep -qiF 'DELIVERY GAP' commands/ff-deliver.md \
+  && ok "commands/ff-deliver.md carries the DELIVERY GAP detection instruction" \
+  || err "commands/ff-deliver.md is missing the DELIVERY GAP detection instruction"
+for ptr in 'artifacts.plan' 'artifacts.verify'; do
+  grep -qF "$ptr" commands/ff-deliver.md \
+    && ok "commands/ff-deliver.md resolves upstream via $ptr" \
+    || err "commands/ff-deliver.md must resolve upstream via $ptr"
+done
+
+if [ "$fail" -eq "$gap_start" ]; then
+  echo "PASS: delivery-gap (preconditions) — semantic catch is AC5/manual"
+else
+  echo "RED:  delivery-gap — a precondition failed"
+fi
+
 exit "$fail"
