@@ -32,6 +32,48 @@ to specific ACs; the final task verifies all of them.
 
 - [ ] **Step 1:** ...
 
+## Dependency graph
+
+| Task | Depends on |
+|------|------------|
+| Task 1 | — (root) |
+| Task 2 | Task 1 |
+
+> One row per task in `## Tasks` above. `Depends on` names only **lower-numbered** `Task N`
+> IDs already defined above (or "— (root)" for no prerequisite) — never a phantom or a
+> higher-numbered task. Multiple roots are normal; this is dependency data, not an instruction
+> to run tasks concurrently.
+
+## Critical path
+
+**Path:** Task 1 → Task 2
+
+> **Derived — never hand-authored.** The longest dependency chain through the graph above (per
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Planning intelligence → Critical-path
+> derivation). Every task named here is non-skippable, in this order: `/feature-flow:ff-implement`
+> STOPs if the approach skips or reorders one. No dependencies at all → "no gating chain — all
+> tasks independent"; fully linear plan → the whole task sequence. Re-derive if the graph changes.
+
+## Risk register
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|-----------|
+| <what could go wrong> | Low / Med / High | Low / Med / High | <mitigation, or "accepted, not mitigated: <reason>"> |
+
+> Categorical only — **no numeric scores** (upholds the no-numeric-confidence doctrine).
+> `/feature-flow:ff-verify` cross-references this register into its `## Regression risk`
+> assessment instead of deriving risk cold. A risk accepted without mitigation says so.
+
+## Rollback plan
+
+| Task | Recovery action if `Step N: Verify` fails |
+|------|--------------------------------------------|
+| Task 1 | <e.g. `git checkout -- <path>` — or "irreversible: mitigation is <X>"> |
+
+> One row per task that risks a half-applied state. `/feature-flow:ff-implement` runs this
+> recovery instead of leaving the tree half-applied when a Verify step fails. An irreversible
+> step states "irreversible: mitigation is `<X>`" rather than a fake undo.
+
 ## Status conventions
 
 Stateful document. After each task bump its status:

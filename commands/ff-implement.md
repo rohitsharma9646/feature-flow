@@ -105,6 +105,37 @@ this cross-run half only; the unconditional `artifacts.decision` read above stil
 > verbatim as `Decision override by user (<date>): <reason>` in the resolved `artifacts.decision`
 > record — never self-authored. No divergence, or nothing recalled → proceed to the work below.
 
+## Critical-path check
+
+**Whenever a full-tier plan exists** (`manifest.artifacts.plan` — the sole locating authority,
+never a bare filename — resolves to a real file; feature full tier, or an escalated full-tier
+bugfix). Lite tiers have no plan and **skip this section entirely**, same absent-tolerance as
+Decision recall. Run this **after Decision recall, before any Write/Edit call** in `## Do the
+work` — it is the implement-side actuator of **Planning intelligence**: the plan's *derived*
+critical path does not just get filed, it **constrains** the order tasks may execute in.
+
+Read the plan's `## Critical path` (derived by `/feature-flow:ff-plan` from its `## Dependency
+graph` — see **Planning intelligence** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; do not
+restate its steps here). Before executing a task, check whether the approach you are about to take
+skips a task the critical path names, or executes critical-path tasks out of the stated order.
+
+> **Critical-path STOP.** Copies the do-not-contradict shape of **Decision recall** above — same
+> unconditional-in-both-modes rule, same verbatim-override rule, reused rather than reinvented. If
+> the approach **skips or reorders** a critical-path task, **STOP unconditionally in both modes** —
+> never self-resolved, never autopilot-retried. Tell the user which critical-path task is being
+> skipped/reordered and why the approach requires it. Resolve **only** by (a) realigning the work
+> to respect the critical path, or (b) an explicit user override recorded verbatim as
+> `Critical-path override by user (<date>): <reason>` in the plan's `## Critical path` section
+> (via `manifest.artifacts.plan`) — never self-authored. No divergence, or no critical path
+> recorded (a pre-WS-2 plan) → one-line note, proceed.
+
+**Rollback on a failed Verify step.** When any task's `Step N: Verify` fails during `## Do the
+work` below, the recovery is **not** ad hoc: read that task's row in the plan's `## Rollback plan`
+section (resolved via `manifest.artifacts.plan`) and apply its named recovery action before
+deciding whether to retry the step or stop — never leave the tree half-applied. An "irreversible"
+row means apply the stated mitigation and surface the failure, not a fake undo. Full tier only
+(no plan → recover ad hoc, note it under the manifest's Blockers).
+
 ## Do the work — feature track
 
 **Lite tier (`tier == "lite"`):** there is no plan or design — read the **spec**

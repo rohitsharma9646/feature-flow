@@ -79,8 +79,15 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   the post-fix pass. If the manifest has no `bugfix.red` evidence, the fix was not done
   test-first — report it **incomplete** (the RED state can no longer be reconstructed).
 - Assess **regression risk** (`Low | Medium | High` + reason) from the surface the change
-  touched — shared / central code raises it, isolated new code lowers it — and record it in
-  `verify.md` §Regression risk. No numeric score.
+  touched — shared / central code raises it, isolated new code lowers it — **cross-referencing
+  the plan's `## Risk register`** when a full-tier plan exists: read it via
+  `manifest.artifacts.plan` (the sole locating authority), per the canonical **Planning
+  intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — cite any register
+  entry whose surface the just-verified change touched and whether it materialized (do not
+  re-derive a risk the register already named), then assess whatever the register did **not**
+  anticipate. No plan (lite tier, or a pre-WS-2 plan with no register) → derive risk cold from
+  the touched surface alone, as before. Record the combined assessment in `verify.md`
+  §Regression risk. No numeric score.
 
 ## Refuse premature "done" (evidence gap stop)
 
