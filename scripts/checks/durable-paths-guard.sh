@@ -75,6 +75,7 @@ check_writer commands/ff-design.md   design
 check_writer commands/ff-design.md   decision
 check_writer commands/ff-diagnose.md diagnosis
 check_writer commands/ff-verify.md   verify
+check_writer commands/ff-deliver.md  delivery
 
 # --- (g) ff-implement reads via artifacts.plan, manifest-first ORDER (AC6) ---
 grep -q 'artifacts.plan' commands/ff-implement.md \
@@ -160,7 +161,7 @@ done
 # create…`, `templates/…`) are removed by the write/create + templates excludes below, not
 # by the pattern — FP-over-FN per design §B2. awk emits `FNR: <line>` (no filename, so the
 # `ff-design.md`/`ff-plan.md` filenames can't self-match); the file is reported separately.
-DURABLE='(^|[^-[:alnum:]])(spec|design|decision|plan|diagnosis)\.md'
+DURABLE='(^|[^-[:alnum:]])(spec|design|decision|plan|diagnosis|delivery)\.md'
 kviol=0
 for f in commands/*.md; do
   while IFS= read -r h; do

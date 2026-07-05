@@ -27,6 +27,12 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   implement if it turns out bigger.
 - **Bugfix** — restoring intended behavior in existing code. Phases (test-first):
   `diagnose → implement (write failing regression test → RED → fix → GREEN) → verify → review`.
+- **Delivery (optional, both tracks).** After a run is `done`, `/feature-flow:ff-deliver` assembles
+  a `delivery.md` (release notes, deploy/rollback/migration checklists, known issues, release
+  validation) by **consuming** the run's upstream artifacts. It is **post-terminal and non-gated** —
+  it never blocks `done`, is off for `tier: lite` unless requested, and autopilot never runs it; you
+  invoke it by hand. A plan migration task missing its rollback line surfaces here as a non-blocking
+  `⚠ DELIVERY GAP`. See `docs/manifest-schema.md` §Delivery.
 
 ## Starting a run — you do NOT have to type a command
 
@@ -78,7 +84,8 @@ block (autopilot gets exactly one fix-and-re-review cycle, then stops). Honor th
 **Manual controls (these DO require typing, no natural-language trigger exists):** the
 individual phases `/feature-flow:ff-explore`, `/feature-flow:ff-clarify`, `/feature-flow:ff-design`,
 `/feature-flow:ff-plan`, `/feature-flow:ff-diagnose`, `/feature-flow:ff-implement`,
-`/feature-flow:ff-review`, `/feature-flow:ff-verify`, plus the run-management commands:
+`/feature-flow:ff-review`, `/feature-flow:ff-verify`, `/feature-flow:ff-deliver` (optional,
+post-`done` delivery notes), plus the run-management commands:
 `/feature-flow:ff-status` (inspect a run), `/feature-flow:ff-resume` (re-enter an interrupted
 run), `/feature-flow:ff-list` (list all runs, including abandoned/closed),
 `/feature-flow:ff-abandon <slug>` (drop a run from automatic resolution), and

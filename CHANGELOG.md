@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.12.0] — 2026-07-05 — Delivery intelligence (release / deploy / rollback / migration)
+
+Runs gain an optional, post-`done` **delivery** phase. `/feature-flow:ff-deliver` assembles a
+`delivery.md` — release notes, deployment checklist, rollback checklist, migration notes, known
+issues, release validation — by **consuming** the run's upstream artifacts, never restating them:
+release notes from the spec's ACs + `decision.md`, the rollback checklist row-for-row from
+`plan.md §Rollback plan`, known issues mirrored from `verify.md §Limitations & remaining risks`,
+validation steps from `verify.md §Commands run`. Delivery is a **value-add**: it is invoked by hand,
+**never blocks `done`**, is off for `tier: lite` unless requested, and autopilot never chains into
+it. Its actuation is the **delivery gap** — a plan task touching migration/schema/irreversible I/O
+with no `§Rollback plan` recovery line is surfaced as a non-blocking `⚠ DELIVERY GAP`, back-pressuring
+the plan to record the rollback WS-2 asks for. Additive and non-breaking: `currentPhase` stays `done`
+(the enum is unchanged and Gate B is untouched); delivery is tracked only in a new `phases.deliver` +
+`artifacts.delivery`, both absent-defaulted, so every pre-v0.12.0 manifest resolves and resumes unchanged.
+
+**Known coverage gap (named, not silent):** the *semantic* catch — `ff-deliver` actually writing the
+`⚠ DELIVERY GAP` line on a live run — has **no automated regression guard**; it is a manual/fresh-session
+behavioral AC (AC5). `delivery-guard.sh` and the `delivery-gap` eval fixture pin only the mechanical
+preconditions (template headers, the gap-detection instruction's presence, the fixture hole is
+detectable) — not that the catch fires. Same honest posture as v0.10.0's AC13 and v0.11.0's AC15.
+
+### Added
+- **`deliver` phase** — new `commands/ff-deliver.md` (optional, post-`done`, non-gated, shared across
+  feature + bugfix) and `templates/delivery.md` (six sections, each consuming section names its source).
+- **`## Delivery`** canonical contract (`docs/manifest-schema.md`): `phases.deliver` +
+  `artifacts.delivery` (absent-defaulted, promotion-eligible), the consumption-source table, and the
+  delivery-gap actuation. The `currentPhase` enum is unchanged.
+- **`scripts/checks/delivery-guard.sh`** — structural guard (template headers, command wiring, schema
+  fields, enum-unchanged, SKILL/README wiring, dist parity).
+- **`evals/fixtures/delivery-gap/`** + a `scripts/eval.sh` block — a done run whose plan's migration
+  task is missing its rollback line, proving the gap is mechanically detectable.
+
+### Changed
+- `skills/feature-flow/SKILL.md` phase lists + manual-controls list, and the `README.md` command table,
+  now document the optional delivery phase.
+- `docs/manifest-schema.md` §Terminal convergence + §Autopilot note that delivery is post-terminal and
+  never chained; the durable-eligible artifact set includes `delivery`.
+
 ## [0.11.0] — 2026-07-05 — Planning intelligence (dependency graph → critical path → STOP)
 
 Plans stop being a flat task list. `ff-plan` now derives four sections into every `plan.md` /
