@@ -91,21 +91,51 @@ the phase and the chain in the same turn once the user answers.
 > verbatim as `Decision override by user (<date>): <reason>` — never self-authored. No prior
 > decision recalled, or no conflict → proceed to write the artifacts below.
 
+## Devil's-advocate pass — final adversarial beat, before writing
+
+Before writing any artifact, stress-test the just-confirmed pick as if trying to kill it. This is
+the framework's only adversarial pass against the *selected design* (`ff-clarify`'s red-team pass
+targets the *spec*) — do not skip it because the pick already survived the do-not-contradict check
+above. Follow the canonical **Design trade-offs & devil's advocate** contract in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — do not restate its rules here.
+
+1. **Trade-off matrix.** Score **every** fanned-out option (not just the winner) on the three core
+   axes — **complexity**, **risk / operational impact**, **test effort** — every run. Add another
+   axis (performance, maintainability, scalability, security, cost) as an extra column **only when
+   it actually differentiates** the options; a matrix padded with axes that score the same
+   everywhere is ceremony, not signal.
+2. **Devil's advocate.** Scoped to the **chosen** option only: name **at least one concrete failure
+   scenario** — a specific way this approach breaks, not a hand-waved "might have issues" — as a
+   `**FS<n>:**` bullet numbered from 1, then list edge cases and migration/operational risks not
+   already captured as a failure scenario. Each `FS<n>` becomes a verify contract item that blocks
+   `done` until proven or waived (§Design trade-offs & devil's advocate) — so name real scenarios;
+   an unproven one is a debt this run's own verify will surface.
+
+Full-tier-only beat (lite never reaches `ff-design`). Both feed the design's `## Trade-off matrix`
+and `## Devil's advocate` sections, and the decision record's existing Trade-offs table + rationale —
+derived, never re-authored.
+
 ## Write the artifact + update manifest
 
 Resolve the design's path per the **Durable artifact resolution** rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (`paths.durable` → sandbox `<run
 dir>/design.md`; **create the target directory if absent**). **Use the Write tool** to write
 the design from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`: chosen approach, rejected
-alternatives + why, component map, data flow, risks. Record the resolved path in **both**
+alternatives + why, the **trade-off matrix** and the **devil's-advocate failure scenarios + edge
+cases** (from the pass above), component map, data flow, risks. Record the resolved path in **both**
 `artifacts.design` and `phases.design.artifact`: set `phases.design = { status: "complete",
 artifact: "<resolved design path>" }`, bump `updatedAt`.
 
 **Then record the decision.** Resolve the `decision` path the same way — the **Durable artifact
 resolution** rule, artifact name `decision`, the same `<D>-<slug>/` directory already created for
 the design. **Use the Write tool** to write it from `${CLAUDE_PLUGIN_ROOT}/templates/decision.md`,
-capturing the pick just made: the decision, context, options considered, the trade-offs matrix,
-chosen + rationale, related ACs/files, and (auto-proposed) `tags` + `referencedFiles`. Record the
+capturing the pick just made: the decision, context, options considered, the **Trade-offs** table
+— **derive** its `Effort`/`Risk`/`Reversibility` cells *from* the design's `## Trade-off matrix`
+(Complexity + Test effort → Effort, Risk / operational impact → Risk; Reversibility assessed as
+before), **never a second, divergent scoring pass** — chosen + rationale (naming the chosen
+option's devil's-advocate failure scenario(s) **by reference** to the design's `## Devil's
+advocate` section — never copied verbatim; the design stays the single source of truth for the
+`FS<n>` list), related ACs/files, and (auto-proposed) `tags` + `referencedFiles`. Record the
 resolved path in `artifacts.decision` **only** — `phases.design.artifact` keeps pointing at the
 design (`artifacts.<name>` is the sole locating authority, so a second artifact from one phase
 rides in `artifacts.decision` with no phases-schema change). This decision record is what

@@ -20,7 +20,9 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
 - **Feature** — adding new behavior. Phases:
   `explore → clarify → design → plan → implement → review → verify`.
   *clarify* challenges the premise (is this the right need?), weighs 2-3 problem-level solution
-  approaches, and locks testable acceptance criteria — it owns the WHAT; *design* owns the HOW.
+  approaches, and locks testable acceptance criteria — it owns the WHAT; *design* owns the HOW
+  (architects fan out, score a lean trade-off matrix, and stress-test the pick with a
+  devil's-advocate pass naming ≥1 failure scenario that *verify* later proves or blocks done on).
   A small, single-approach **lite feature** (`tier: lite`, soft-judged at entry — in doubt,
   full) runs `explore → clarify → implement → review → verify`, skipping the design + plan
   phases and using a 1-agent explore while keeping sign-off; it can escalate to full before

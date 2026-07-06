@@ -1,5 +1,72 @@
 # Changelog
 
+## [0.15.0] — 2026-07-06 — Design-time trade-off matrix + devil's advocate (WS-5)
+
+`ff-design` gains a **lean/adaptive trade-off matrix** (`design.md §Trade-off matrix`) — every
+fanned-out option scored on three **core axes**, always (**complexity, risk/operational impact,
+test effort**), with performance/maintainability/scalability/security/cost added as columns **only
+when they differentiate** the options — and a **devil's-advocate pass** (`§Devil's advocate →
+Failure scenarios`) naming ≥1 concrete failure scenario for the *chosen* option, plus edge cases and
+migration/operational risk. This is the framework's only adversarial pass against the *selected
+design* (`ff-clarify`'s red-team pass targets the *spec*), added as a final beat in `ff-design`
+between the do-not-contradict STOP and the artifact write.
+
+Each named failure scenario **actuates**: `ff-verify` resolves `manifest.artifacts.design` (full
+tier; absent on lite/bugfix/pre-WS-5 → skip, never a STOP) and maps each `**FS<n>:**` bullet into
+its own `### FS<n>` contract item in `verify.md`, **exactly as an acceptance criterion is mapped**.
+An unproven `FS<n>` holds the run at `Partially verified`/`Unverified` and **blocks `done`** — cleared
+only by proving it or the **same** verbatim `Evidence gap accepted by user (<date>): <reason>` waiver
+an unverified AC already uses. The `docs/manifest-schema.md §Evidence` confidence ladder now names a
+third contract-item class (design-time failure scenario). `decision.md`'s existing Trade-offs row
+(`Effort | Risk | Reversibility`, **unchanged**, still pinned by `decision-record-guard.sh`) is now
+explicitly **derived** from the design matrix rather than independently re-scored, and its rationale
+names the failure scenario(s) by reference — `design.md` stays the single source of truth for the
+`FS<n>` list. Additive and non-breaking: **no new `manifest.json` field, no `toggles.*` key, no new
+phase, no new §Autopilot row, no new waiver line** — the existing "Evidence gap stop" row already
+generalizes over any contract item, and Gate B (`hooks/enforce-gate`) is already scenario-agnostic.
+Full tier only; `lite-tier-guard.sh` passes unmodified (lite skips `ff-design` by construction).
+
+**Known coverage gap (named, not silent):** the *behavioral* catch has **no automated regression
+guard** — verified by a fresh-session STOP-vs-control self-run (same posture as WS-1 AC13 / WS-2
+AC15 / WS-3 AC5 / WS-4 AC6/AC7):
+- **AC7 (fired arm):** a full-tier design names a failure scenario with no mechanical way to capture
+  evidence → `ff-verify` reports it `Unverified`, the run does **not** reach `done`, and the gap
+  names the `FS<n>`; supplying the verbatim waiver then unblocks it.
+- **AC8 (control arm):** a full-tier design names a scenario the implementation actually covers and
+  the runner CAN capture → `ff-verify` reports `Verified` and the run reaches `done` with **no**
+  waiver — the mechanism does not false-fire on a genuinely-proven scenario.
+
+Also accepted as a named non-goal: an `FS<n>` waiver and an `AC` waiver are **not** distinguishable
+per-item on disk (FS carries no validation-required flag the way WS-4's assumptions do). Re-run the
+self-run after any edit to the `ff-design` beat or the `ff-verify` FS-mapping text.
+`design-tradeoff-guard.sh` and the `design-gap` eval fixture pin only the mechanical structure/wiring.
+
+### Added
+- **`## Design trade-offs & devil's advocate`** canonical contract (`docs/manifest-schema.md`) —
+  core/adaptive axes, the `FS<n>` labeled-bullet notation, its actuation into `ff-verify` (reusing
+  the evidence-gap stop + waiver, no new row/field/hook), and the `decision.md` derive-don't-widen
+  reconciliation, with a `### v1 non-goals` naming the un-guarded AC7/AC8 catch.
+- **`scripts/checks/design-tradeoff-guard.sh`** — structural guard: design-template sections + core
+  header, the `ff-design` beat placement (asserts both anchors before comparing), the `ff-verify`
+  FS-mapping + `artifacts.design` wiring, the **digit-free** FS placeholder (mirrors Gate B's regex),
+  the no-new-config-key negative check, an assertion that `templates/decision.md`'s Trade-offs header
+  is untouched, and per-file dist parity.
+- **`evals/fixtures/design-gap/`** + a non-blocking `scripts/eval.sh` block — pins the mechanical
+  preconditions of the `FS<n>` actuation (a labeled unprovable failure scenario + drift guard vs
+  `templates/design.md` + `ff-verify` wiring string). The harness is now **5 fixtures, all green**.
+
+### Changed
+- `templates/design.md` — new `## Trade-off matrix` (after Rejected alternatives) and
+  `## Devil's advocate` (`### Failure scenarios` labeled bullets + `### Edge cases & operational
+  risk`) — additive; existing sections untouched.
+- `commands/ff-design.md` — the devil's-advocate pass beat (between the do-not-contradict STOP and
+  `## Write the artifact`); the decision-writing step now states the Trade-offs derive-not-diverge rule.
+- `commands/ff-verify.md` — Cold-start resolves `artifacts.design` (full tier, absent-tolerant); a
+  new FS-mapping bullet alongside the AC/bugfix mapping bullets.
+- `templates/verify.md` — new digit-free `### FS1` contract-mapping block.
+- `docs/manifest-schema.md` — §Evidence Confidence ladder names the third contract-item class.
+- `skills/feature-flow/SKILL.md`, `README.md` — describe the matrix + devil's-advocate pass.
+
 ## [0.14.0] — 2026-07-06 — Eval harness: WS-2 coverage + non-blocking CI wiring
 
 Closes the eval harness's (WS-8) largest hole and gives it a home in CI. WS-2 Planning

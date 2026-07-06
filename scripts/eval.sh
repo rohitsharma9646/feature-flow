@@ -234,4 +234,44 @@ else
   echo "RED:  planning-gap — a precondition failed"
 fi
 
+# --- fixture: design-gap (WS-5) ---------------------------------------------
+# A design.md whose Devil's-advocate FS1 names a failure scenario with no mechanical way to
+# capture evidence in-sandbox — the exact hole ff-verify's FS<n> mapping must surface as an
+# evidence gap that blocks `done`. Asserts the MECHANICAL preconditions of the FS<n> actuation;
+# the SEMANTIC catch (ff-verify actually mapping it + the gap actually blocking done, AC7, and a
+# covered scenario NOT false-firing, AC8) is a manual self-run, NOT assertable in bash. The 0.15.0
+# CHANGELOG names that as a known coverage gap.
+echo ""
+echo "fixture: design-gap"
+dg_start=$fail
+FXDG="evals/fixtures/design-gap/design.md"
+TPL_DG="templates/design.md"
+
+# (1) fixture exists and carries a well-formed, labeled failure scenario
+if [ -f "$FXDG" ]; then ok "fixture design exists ($FXDG)"; else err "fixture design missing ($FXDG)"; fi
+grep -qE '^\- \*\*FS1:\*\*' "$FXDG" 2>/dev/null \
+  && ok "fixture carries a labeled FS1 failure scenario — the gap is present and detectable" \
+  || err "fixture must carry a '- **FS1:**' failure scenario row"
+
+# (2) drift guard: the shipped design template still defines the sections the fixture mirrors
+for h in '^## Trade-off matrix' "^## Devil's advocate" '^### Failure scenarios'; do
+  grep -qE "$h" "$TPL_DG" 2>/dev/null \
+    && ok "shipped design template defines '${h#^}' (fixture not drifted)" \
+    || err "shipped design template must define '${h#^}' — regenerate the fixture from $TPL_DG"
+done
+
+# (3) the FS<n>-mapping + artifacts.design wiring the catch depends on exists in ff-verify
+grep -qF 'artifacts.design' commands/ff-verify.md \
+  && ok "commands/ff-verify.md resolves upstream via artifacts.design" \
+  || err "commands/ff-verify.md is missing the artifacts.design resolution"
+grep -qiF 'exactly as an acceptance criterion' commands/ff-verify.md \
+  && ok "commands/ff-verify.md carries the FS<n>-maps-like-an-AC instruction" \
+  || err "commands/ff-verify.md is missing the FS<n> contract-mapping instruction"
+
+if [ "$fail" -eq "$dg_start" ]; then
+  echo "PASS: design-gap (preconditions) — semantic catch is AC7/AC8/manual"
+else
+  echo "RED:  design-gap — a precondition failed"
+fi
+
 exit "$fail"
