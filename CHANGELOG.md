@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.13.0] — 2026-07-06 — Structured assumption records (validation-required → sign-off block → plan task)
+
+Beat-4 assumptions become a **structured 5-column table** — `Statement`, `Confidence` (`low|med|high`),
+`Basis / evidence`, `If-wrong impact`, `Validation-required` (`y|n`) — in both `spec.md` and (full-tier)
+`diagnosis.md`, replacing the former free-text bullets. The `validation-required: y` flag now **actuates**
+instead of sitting inert: (1) at the **sign-off gate** (feature both tiers; bugfix full tier), every
+still-unvalidated `y` assumption is **echoed** in the sign-off ask as a distinct `### Unvalidated
+assumptions` block (never folded into the `- [ ] AC<n>` checkboxes) and **blocks a clean sign-off** — the
+run cannot reach `signOff.signed = true` until each is **resolved**: validated, waived, or (full tier)
+explicitly acknowledged as staying open; (2) on the **full tier**, `ff-plan` maps each such
+acknowledged-open `y` assumption to a plan **validation task** carrying `**Validates:** Assumption N`
+(or a named coverage gap), cloning the `**Covers:**` AC-mapping discipline.
+So a surfaced assumption produces a decision (validate/waive at sign-off) or work (a full-tier plan
+task) — it can no longer be recorded and silently forgotten. The actuation is the **Evidence-gap-stop shape** —
+turn-ending and waivable by the verbatim, **user-authored** line `Assumption validation waived by user
+(<date>): <reason>` (autopilot never records it) — **not** the do-not-contradict STOP: an unvalidated
+assumption is *unaddressed*, not *contradicting*, so its §Autopilot mandatory-pause row deliberately does
+**not** say "unconditional". Additive and non-breaking: no new `manifest.json` field and no `toggles.*`
+key — assumption data lives inside the artifact, located via the existing `manifest.artifacts.spec` /
+`.diagnosis` pointers (WS-2's always-on, artifact-resident posture). New canonical `## Assumption records`
+section in `docs/manifest-schema.md`; `§Sign-off rendering` bumped to "Three rules". `scripts/checks/assumption-guard.sh`
+pins the structure against the shipped files; a non-blocking `evals/fixtures/assumption-gap/` fixture pins
+the mechanical preconditions.
+
+**Known coverage gap (named, not silent):** the *behavioral* catch — the echo actually **rendering** an
+unvalidated assumption and **blocking** a clean sign-off (AC6), and the clean control **not** false-firing
+(AC7) — has **no automated regression guard**; it is a semantic, LLM-judgment behavior verified by a
+fresh-session STOP-vs-control self-run (same posture as WS-1 AC13 / WS-2 AC15 / WS-3 AC5).
+`assumption-guard.sh` and the `assumption-gap` eval fixture pin only the mechanical structure and wiring.
+
+### Added
+- **`## Assumption records`** canonical contract (`docs/manifest-schema.md`) — 5-column row schema,
+  the `validation-required: y` trigger (author-set, never derived), Actuation 1 (sign-off echo) /
+  Actuation 2 (plan validation task), waiver semantics, and tier/track scope.
+- **`scripts/checks/assumption-guard.sh`** — structural guard: table columns, clarify/diagnose wiring,
+  §Sign-off rendering rule 3, the verbatim waiver line + §Autopilot row, the plan-mapping rule, and a
+  per-file Codex dist-parity check. Deliberately does not assert "unconditional" on the WS-4 row.
+- **`evals/fixtures/assumption-gap/`** + a non-blocking `scripts/eval.sh` block — pins the mechanical
+  preconditions of the sign-off echo (an unvalidated `y` row + drift guard + echo/waiver wiring).
+
+### Changed
+- `templates/spec.md` / `templates/diagnosis.md` — free-text assumption bullets → identical 5-column
+  table (`diagnosis.md`'s is full-tier-only, between `## Fix approach` and `## Fix surface`).
+- `templates/plan.md` — Outcome-gate `**Validates:** Assumption N` mapping rule + a task example.
+- `commands/ff-clarify.md` / `commands/ff-diagnose.md` — Beat-4 / fix-approach steps write assumption
+  rows; sign-off gate echoes unvalidated `y` rows as a distinct block + the verbatim waiver line.
+- `commands/ff-plan.md` — full-tier assumption→task mapping bullet, between the AC-map bullet and
+  "Derive planning intelligence".
+- `docs/manifest-schema.md` — `§Sign-off rendering` bumped to "Three rules" (rule 3); `§Autopilot`
+  gains an "Assumption validation stop" mandatory-pause row.
+
 ## [0.12.0] — 2026-07-05 — Delivery intelligence (release / deploy / rollback / migration)
 
 Runs gain an optional, post-`done` **delivery** phase. `/feature-flow:ff-deliver` assembles a

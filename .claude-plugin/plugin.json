@@ -1,7 +1,7 @@
 {
   "name": "feature-flow",
   "description": "Composable, durable, verifying workflow for feature development and bug fixing — two tracks, one spine, real verification.",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "author": { "name": "Rohit Sharma", "email": "rohitsharma9646@gmail.com" },
   "repository": "https://github.com/rohitsharma9646/feature-flow",
   "license": "MIT"

@@ -15,6 +15,12 @@ to specific ACs; the final task verifies all of them.
 > Every spec AC maps to ≥1 task's `**Covers:**` line. An AC with no task (e.g. already
 > satisfied by an existing test) is listed here as an explicit gap with a one-line reason —
 > never silently uncovered.
+>
+> **Assumption validation (full tier).** Every **unvalidated `validation-required: y`** assumption
+> carried from the signed spec/diagnosis maps to ≥1 task's `**Validates:** Assumption N` line, or is
+> listed here as an explicit named gap — cloning the `**Covers:**` rule (see `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
+> §Assumption records → Actuation 2). A validated or **waived** assumption spawns no task; state
+> "no unvalidated `validation-required: y` assumptions → no validation task" when there are none.
 
 ## Tasks
 
@@ -24,6 +30,7 @@ to specific ACs; the final task verifies all of them.
 - Create / Modify: `<path>`
 
 **Covers:** AC1, AC2   <!-- acceptance criteria from spec.md this task satisfies -->
+**Validates:** Assumption 1   <!-- full tier: unvalidated validation-required:y assumption(s) this task validates; omit if none -->
 
 - [ ] **Step 1:** <bite-sized action>
 - [ ] **Step 2: Verify** — <command + expected output>

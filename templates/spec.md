@@ -22,8 +22,20 @@ approach: <X>" and say why no alternatives applied.>
 
 ## Assumptions (WHAT-changing)
 
-- <Only assumptions that would change scope or acceptance criteria if wrong. Deep risk,
-  pre-mortem, and quality concerns (security/UX/a11y/cost/perf) belong in design/review, not here.>
+Only assumptions that would change scope or acceptance criteria if wrong. Deep risk, pre-mortem, and
+quality concerns (security/UX/a11y/cost/perf) belong in design/review, not here. One row per
+assumption — see `docs/manifest-schema.md §Assumption records` for the contract.
+
+| Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |
+|---|---|---|---|---|
+| <the WHAT-changing assumption> | low / med / high | <why it is believed, or empty> | <what breaks in scope/ACs if false> | y / n |
+
+<!-- Confidence: low / med / high (categorical — no numeric scores). Validation-required: y / n —
+     an author-set flag; a `y` row blocks a clean sign-off until resolved: validated (→ `n`), waived
+     (→ `n`, waiver line is the record), or (full tier) acknowledged as staying open. Only an acknowledged-open row (still `y`, full tier)
+     maps to a plan `**Validates:** Assumption N` task — a validated or waived row spawns none (see
+     §Assumption records → Actuation 1/2). Row order is stable once written: position = N (first data
+     row = Assumption 1). No assumptions → keep the header row and note "none". -->
 
 ## Constraints
 
