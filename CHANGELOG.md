@@ -1,5 +1,66 @@
 # Changelog
 
+## [0.16.0] — 2026-07-06 — Feedback / repair loop (WS-6)
+
+`ff-verify` gains a **bounded one-cycle repair-and-re-verify** on a genuine failure — a transplant
+of the autopilot **fix-and-re-review cycle** (`ff-review`) applied to a verify *failure* instead of
+a review finding. When `manifest.autopilot: true` **and** `tier == "full"` **and** ≥1 contract item
+(an acceptance criterion or bugfix item, **never** a design-time `FS<n>`) is backed by a **captured
+non-success** exit/HTTP/status — a check that actually **ran and failed**, as opposed to a pure
+evidence *gap* with nothing captured — `ff-verify` emits a short repair plan (what failed → smallest
+diagnosis → proposed fix → re-touched ACs), applies the fix inline, and re-verifies **only the named
+re-touched ACs, exactly once**, before the existing evidence-gap stop. A pure gap and a failed
+`FS<n>` are unchanged (wait/waive). Step-by-step and lite tier are byte-for-byte unchanged.
+
+The one-cycle cap is **artifact-resident**: a `## Repair` section in `verify.md` is the durable cycle
+record (exactly as review's `## Resolution`) — a second failure with `## Repair` already present falls
+through to the standard gap-report stop, never a second cycle. The scoped repair re-verify is an
+explicit exception to the "clear `<run dir>/evidence/` at the start of each verify" rule: it preserves
+every un-touched item's captured evidence and only re-runs the named re-touched ACs (a one-clause
+carve-out in `agents/ff-test-runner.md`). **Deliberately reversing the WS-6 plan's literal text, there
+is no `verify.repairCycles` manifest field** — matching the review cap it mirrors and the WS-1/2/4/5
+"no new manifest field" doctrine; `ff-status`/`ff-resume` are unchanged. Additive and non-breaking:
+**no new `manifest.json` field, no `toggles.*` key, no new phase, no new hook.** The one schema
+addition is a §Autopilot mandatory-pauses **row** (capped-then-stop shape, explicitly **not**
+"unconditional") + a mirrored **"Repair-and-re-verify cycle"** subsection. Full tier only;
+`lite-tier-guard.sh` passes unmodified (lite has no design and its evidence-gap stop is untouched).
+
+**Known coverage gap (named, not silent):** the *behavioral* catch has **no automated regression
+guard** — verified by a fresh-session STOP-vs-control self-run (same posture as WS-1 AC13 / WS-2 AC15
+/ WS-4 AC6-AC7 / WS-5 AC7-AC8):
+- **AC13 (fired arm):** a full-tier autopilot run with a seeded failing repairable AC → `ff-verify`
+  emits the repair plan and attempts **exactly one** repair-and-re-verify cycle; if still failing it
+  stops with the gap report and does **not** attempt a second cycle.
+- **AC14 (control arm):** a full-tier autopilot run whose verify passes (or whose only sub-Verified
+  items are pure gaps, not failures) does **not** spuriously trigger a repair cycle.
+
+Re-run the self-run after any edit to the `ff-verify` repair branch or the §Autopilot
+"Repair-and-re-verify cycle" subsection. `repair-loop-guard.sh` and the `repair-gap` eval fixture pin
+only the mechanical structure/wiring.
+
+### Added
+- **`## Autopilot → Verify repair-and-re-verify cycle` row + `**Repair-and-re-verify cycle`
+  subsection** (`docs/manifest-schema.md`) — the capped-then-stop contract mirroring
+  Fix-and-re-review cycle: durable `## Repair` record check, the one-cycle branch, the scoped
+  re-verify + evidence-preservation exception, per-phase cap, no manifest field.
+- **`scripts/checks/repair-loop-guard.sh`** — structural guard: the §Autopilot row (present + **not**
+  "unconditional") + subsection, the `ff-verify.md` branch placement (inside "Refuse premature done",
+  before the fall-through STOP) + full-tier precondition, the scoped-re-verify/evidence-exception
+  strings in `ff-verify.md` + the carve-out in `ff-test-runner.md`, the `## Repair` template headers
+  (digit-free proven by `enforce-gate-guard.sh`'s b-template fixture), the negative no-manifest-field
+  /no-config-toggle check, and per-file dist parity.
+- **`evals/fixtures/repair-gap/`** (`verify.md` first-cycle-available + `verify-capped.md`
+  cap-detectable) + a `scripts/eval.sh` block — pins the mechanical preconditions of the repair
+  actuation. The harness is now **6 fixtures, all green**.
+
+### Changed
+- `commands/ff-verify.md` — the "Refuse premature 'done'" section gains the autopilot
+  repair-and-re-verify branch (before the unchanged fall-through gap-report STOP + waiver).
+- `templates/verify.md` — new `## Repair` section (digit-free, Gate-B-safe).
+- `agents/ff-test-runner.md` — the evidence-clear rule gains the scoped-repair-re-verify carve-out.
+- `docs/manifest-schema.md` — §Autopilot row + "Repair-and-re-verify cycle" subsection.
+- `skills/feature-flow/SKILL.md`, `README.md` — repair-cap doctrine + command-row + status badge.
+
 ## [0.15.0] — 2026-07-06 — Design-time trade-off matrix + devil's advocate (WS-5)
 
 `ff-design` gains a **lean/adaptive trade-off matrix** (`design.md §Trade-off matrix`) — every

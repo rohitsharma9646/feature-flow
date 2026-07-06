@@ -99,3 +99,28 @@ used by checkout + wishlist → Medium">.
 **Waiver (only if user-recorded):** `Evidence gap accepted by user (<date>): <reason>`
 
 **Verdict:** Ready for done | Gap report (blocking)
+
+## Repair
+
+> **Autopilot + full tier only, exactly one cycle.** Present **only** when the one-cycle
+> repair-and-re-verify fired (`docs/manifest-schema.md` §Autopilot, **Repair-and-re-verify
+> cycle**) — omitted on a clean pass, a pure evidence gap, a failed `FS<n>`, a lite-tier run,
+> or step-by-step mode. This section's mere presence **is** the one-cycle cap: a second failure
+> with it already present falls through to the standard gap-report stop, never a second attempt.
+> The unfilled skeleton carries no exit/HTTP/status token, so it still DENIES Gate B on its own.
+
+**Triggering item:** <AC<n> | the failing bugfix item> — <what failed, verbatim>
+**Captured failure:** `<command>` — exit <n> | HTTP <nnn> — <excerpt> (a genuine failure — a check
+that ran and failed, not a pure evidence gap)
+**Diagnosis:** <the smallest plausible root cause>
+**Fix applied:** <what changed, inline — no re-entry to `/feature-flow:ff-implement`>
+**Re-touched items:** <AC<n>, AC<m>, … | the re-touched bugfix item(s)> — every item the fix plausibly re-touches, drawn
+conservatively (when uncertain, include); exactly the set re-verified below. **An item not listed
+here was NOT re-verified** and keeps its prior evidence — omission is an auditable choice, not a
+default.
+**Re-verify outcome:** <per re-touched item: Verified (single-source) | Verified (multi-source) |
+still Partially verified | still Unverified> — every re-touched item at `Verified (single-source)`
+or better clears through to done; any still below it falls through to the gap-report stop.
+
+> Every un-touched contract item's captured evidence is preserved unchanged — an explicit
+> exception to the start-of-verify evidence-clear rule; only the items named above were re-run.

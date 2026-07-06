@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.15.0 · MIT licensed
+> **Status:** v0.16.0 · MIT licensed
 
 ## Why use it
 
@@ -172,7 +172,7 @@ Full contract: `docs/manifest-schema.md` §Knowledge base.
 | `/feature-flow:ff-diagnose` | [bugfix] Reproduce + root-cause, decide hotfix-vs-proper → `diagnosis.md` |
 | `/feature-flow:ff-implement` | [shared] Build from the plan (sign-off gated) / test-first bugfix (RED→GREEN) |
 | `/feature-flow:ff-review` | [shared] Reviewer fan-out → `review.md`; Critical findings block |
-| `/feature-flow:ff-verify` | [shared] Really run tests/build/lint + evidence surfaces; confidence-graded report; gaps block done |
+| `/feature-flow:ff-verify` | [shared] Really run tests/build/lint + evidence surfaces; confidence-graded report; one autopilot repair-and-re-verify cycle on a genuine failure; gaps block done |
 | `/feature-flow:ff-deliver` | [shared] Optional, post-`done`: assemble `delivery.md` (release notes / deploy / rollback / migration / known issues) from upstream artifacts; never blocks done |
 | `/feature-flow:ff-status` | Print a run's track, tier, phase statuses, sign-off, artifacts |
 | `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete phase |

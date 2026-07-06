@@ -107,8 +107,27 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
 
 A contract item is done-eligible only at `Verified (single-source)` or `Verified
 (multi-source)`. If **any** item sits at `Partially verified` or `Unverified`, the run is
-**not done**: render the report anyway (true confidence levels, gaps stated), then **STOP —
-end the turn with the gap report**, shaped:
+**not done** — but first, on autopilot, check whether the bounded one-cycle repair applies.
+
+- **Autopilot repair-and-re-verify cycle** (`manifest.autopilot: true` **and** `tier == "full"`
+  only — mirrors the review cap; step-by-step and lite never enter this bullet). The trigger (a
+  **captured non-success** status on an acceptance criterion or bugfix item — a check that ran and
+  failed, never a pure gap and never a design-time `### FS<n>`), the one-cycle cap, and the
+  fall-through conditions are the canonical **Repair-and-re-verify cycle** contract in
+  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Autopilot — do not restate them here.
+  Operationally: when it applies and `verify.md` has **no** prior `## Repair` section, emit a short
+  repair plan (what failed → smallest diagnosis → proposed fix → the contract items it re-touches,
+  drawn conservatively), apply the fix inline (no re-entry to `/feature-flow:ff-implement`), append
+  the `## Repair` section (`${CLAUDE_PLUGIN_ROOT}/templates/verify.md`), then re-verify **only the
+  named re-touched contract items** (ACs or the bugfix item(s)) by re-dispatching `ff-test-runner`
+  — tell it explicitly this is a **scoped repair re-verify** so it does **not** clear
+  `<run dir>/evidence/` (an explicit **exception to the start-of-verify evidence-clear rule**,
+  preserving every un-touched item's evidence) — mapping its output back onto only those items'
+  blocks, **exactly once**. Every re-touched item clears to `Verified (single-source)` or better and
+  nothing else sits below that floor → proceed to **Update manifest + hand off** below; otherwise
+  fall through to the gap-report STOP below — never a second cycle.
+- **Otherwise (no repair applies, or the one cycle still leaves a gap):** render the report anyway
+  (true confidence levels, gaps stated), then **STOP — end the turn with the gap report**, shaped:
 
 > Verification found evidence gaps — this run is NOT done:
 > - AC<n>: <requirement> — <Partially verified | Unverified> — <what could not be verified, why>

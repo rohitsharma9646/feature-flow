@@ -967,6 +967,7 @@ or self-answers a gate:**
 | Decision conflict stop (`ff-design` vs prior decisions; `ff-implement` vs this run's own decision) | cross-turn | **unconditional** STOP in both modes — autopilot does not auto-resolve or retry (unlike the Critical-review fix cycle); the chain resumes only when the user realigns the approach or replies with an explicit `Decision override by user (<date>): <reason>` — never self-authored — see §Knowledge base → **Decision recall** |
 | Critical-path stop (`ff-implement` vs the plan's derived critical path) | cross-turn | **unconditional** STOP in both modes — autopilot does not auto-resolve or retry (same severity as the Decision conflict stop above); the chain resumes only when the user realigns the work to respect the critical path or replies with an explicit `Critical-path override by user (<date>): <reason>` — recorded in the plan's `## Critical path`, never self-authored — see §Planning intelligence → **Critical-path check** |
 | Critical review block (`ff-review`) | cross-turn | one fix-and-re-review cycle (below), then stop if Criticals remain |
+| Verify repair-and-re-verify cycle (`ff-verify`) | cross-turn | capped — one repair-and-re-verify cycle (below) on a genuine AC/bugfix failure (a captured non-success status), then the Evidence gap stop if it still fails; a pure evidence gap or a failed `FS<n>` never triggers a cycle |
 | Evidence gap stop (`ff-verify`) | cross-turn | any contract item below `Verified (single-source)` blocks `done` — end the turn with the gap report (what could not be verified, why, what evidence is required); autopilot never records a waiver itself; chain resumes on the user's waiver (see §Evidence, Evidence waiver) or a re-run after the gap is addressed |
 | Assumption validation stop (`ff-clarify`; `ff-diagnose` full tier) | cross-turn | an unvalidated `validation-required: y` assumption blocks a clean sign-off — end the turn with the `### Unvalidated assumptions` echo block (which assumptions are still unvalidated); autopilot never records a waiver itself; chain resumes once the user resolves each — validate it, waive it (`Assumption validation waived by user (<date>): <reason>`), or acknowledge it stays open (carried to the plan as a `**Validates:**` task; see §Assumption records → Actuation 1). Same waivable shape as the Evidence-gap-stop row above |
 | KB capture confirm-gate (`ff-verify` feature-terminal / `ff-review` bugfix-terminal), only when `toggles.kb` active | cross-turn | distill candidates, end the turn for the user to accept/edit/reject; never write entries unconfirmed; chain resumes to `currentPhase="done"` on the answer or `ff-resume` — see §Knowledge base |
@@ -986,6 +987,24 @@ findings, fixes applied, outcome), and re-run the review dispatch **once**. A pr
 exists, or Criticals remain after the re-review → emit the standard Critical-block message
 and end the turn. `phases.review.status` stays `in_progress` until the review is clear.
 Zero Critical findings → no cycle; chain proceeds.
+
+**Repair-and-re-verify cycle (verify failure, autopilot + full tier only).** Mirrors the
+Fix-and-re-review cycle above, applied to a genuine verify *failure* instead of a review finding.
+Before starting a cycle, check `verify.md` for an existing `## Repair` section — the verify
+artifact is the durable one-cycle record (it survives session drops), exactly as review's
+`## Resolution`. **No prior cycle AND ≥1 contract item is an acceptance criterion or bugfix item
+(never a design-time `FS<n>`) backed by a captured non-success exit/HTTP/status** (a check that ran
+and failed — not a pure gap with no captured evidence) → emit the repair plan (what failed →
+smallest diagnosis → proposed fix → re-touched contract items, drawn conservatively — when uncertain,
+include), apply the fix inline (no `ff-implement` re-entry), append the `## Repair` record, and
+re-verify **only the named re-touched contract items** (ACs or the bugfix item(s)), **once** — the
+scoped repair re-verify does **not** re-clear `<run dir>/evidence/` (an explicit exception to
+§Evidence, Evidence directory: every un-touched item's evidence is preserved). A prior `## Repair` section exists, a re-touched item
+still fails, the failure is a pure gap or a failed `FS<n>`, or the run is step-by-step / lite tier
+→ fall through to the Evidence gap stop above — never a second cycle. `phases.verify.status` stays
+`in_progress` throughout; the cap is **per-phase** (independent of review's cycle) and carries **no
+manifest field** — the `## Repair` section is the sole record. The waiver is untouched by this
+cycle (it never upgrades confidence; autopilot never records one).
 
 **Run-start procedure (every entry point that creates a manifest: `ff`, and the cold-start
 paths of `ff-explore` / `ff-clarify` / `ff-diagnose`).** The value is resolved
