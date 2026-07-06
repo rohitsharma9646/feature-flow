@@ -76,7 +76,9 @@ diagnosis sign-off gate on your own; never set `signOff.signed` yourself;
 never choose `manifest.autopilot` yourself (config `"ask"` → the value comes only from
 the user's answer, asked **before** the manifest is written); never proceed
 past a not-reproduced diagnosis; never route forward past an unresolved Critical review
-block (autopilot gets exactly one fix-and-re-review cycle, then stops). Honor the STOPs.
+block (autopilot gets exactly one fix-and-re-review cycle, then stops); never attempt a
+second verify repair cycle on a genuine failure (on a full-tier run autopilot gets exactly
+one repair-and-re-verify cycle, then the gap-report stop). Honor the STOPs.
 
 > **Proportional ceremony / don't over-fire.** This is for *non-trivial* work. A genuine
 > one-line typo fix or an obvious, reversible change does not need a full run — just do it

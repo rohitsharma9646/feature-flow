@@ -274,4 +274,52 @@ else
   echo "RED:  design-gap — a precondition failed"
 fi
 
+# --- fixture: repair-gap (WS-6) ---------------------------------------------
+# A PAIR of verify.md fixtures for the one-cycle autopilot repair-and-re-verify: `verify.md` has an
+# AC failing with a CAPTURED non-success status (a genuine failure, not a pure gap) and NO `## Repair`
+# section — the first-cycle-available precondition; `verify-capped.md` is the same failure WITH a
+# `## Repair` section — the cap-detectable precondition (a second cycle must be refused). Asserts the
+# MECHANICAL preconditions of the repair actuation; the SEMANTIC catch (autopilot attempting EXACTLY
+# ONE cycle then stopping, AC13, and a passing verify NOT false-firing a cycle, AC14) is a manual
+# fresh-session self-run, NOT assertable in bash. The 0.16.0 CHANGELOG names that as a known gap.
+echo ""
+echo "fixture: repair-gap"
+rg_start=$fail
+FXR="evals/fixtures/repair-gap/verify.md"
+FXRC="evals/fixtures/repair-gap/verify-capped.md"
+TPL_R="templates/verify.md"
+
+# (1) first-cycle fixture: a genuine failure (captured non-success status), no ## Repair yet
+if [ -f "$FXR" ]; then ok "first-cycle fixture exists ($FXR)"; else err "first-cycle fixture missing ($FXR)"; fi
+grep -qE 'exit [1-9]' "$FXR" 2>/dev/null \
+  && ok "first-cycle fixture carries a captured non-success status — a genuine failure, not a pure gap" \
+  || err "first-cycle fixture must carry a captured non-success exit/HTTP status"
+grep -q '^## Repair' "$FXR" 2>/dev/null \
+  && err "first-cycle fixture must NOT already carry '## Repair' — that presence IS the cap-exhausted case" \
+  || ok "first-cycle fixture has no '## Repair' yet — a first cycle is available"
+
+# (2) capped variant: same failure, WITH a ## Repair section (a second cycle must be refused)
+if [ -f "$FXRC" ]; then ok "capped fixture exists ($FXRC)"; else err "capped fixture missing ($FXRC)"; fi
+grep -q '^## Repair' "$FXRC" 2>/dev/null \
+  && ok "capped fixture carries '## Repair' — the cap is detectable, no second cycle" \
+  || err "capped fixture must carry '## Repair' (the idempotency-detectable case)"
+
+# (3) drift guard: the shipped verify template still defines the sections the fixtures mirror
+for h in '^## Contract mapping' '^## Repair'; do
+  grep -qE "$h" "$TPL_R" 2>/dev/null \
+    && ok "shipped verify template defines '${h#^}' (fixtures not drifted)" \
+    || err "shipped verify template must define '${h#^}' — regenerate the fixtures from $TPL_R"
+done
+
+# (4) the repair-cycle wiring the catch depends on exists in ff-verify
+grep -qiF 'Autopilot repair-and-re-verify cycle' commands/ff-verify.md \
+  && ok "commands/ff-verify.md carries the autopilot repair-and-re-verify branch" \
+  || err "commands/ff-verify.md is missing the autopilot repair-and-re-verify branch"
+
+if [ "$fail" -eq "$rg_start" ]; then
+  echo "PASS: repair-gap (preconditions) — semantic catch is AC13/AC14/manual"
+else
+  echo "RED:  repair-gap — a precondition failed"
+fi
+
 exit "$fail"
