@@ -49,7 +49,7 @@ SCHEMA="docs/manifest-schema.md"
 HEADER='| Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |'
 
 # --- AC1: spec template table ------------------------------------------------
-sp="$(section templates/spec.md '^## Assumptions \(WHAT-changing\)')"
+sp="$(section templates/spec.md '^## Assumptions [(]WHAT-changing[)]')"  # [(] not \( — portable across mawk/gawk (mawk strips \( → regex group, breaking the match; see CI run #21)
 if [ -z "$sp" ]; then
   err "templates/spec.md: missing the '## Assumptions (WHAT-changing)' section"
 else
