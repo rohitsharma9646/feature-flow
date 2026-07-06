@@ -79,6 +79,18 @@ files-to-touch and a verification step:
   fixed RED→GREEN sequence rather than adding a `**Covers:**` line (bugfix has no ACs). A **waived** or
   already-validated assumption spawns no task; when none remain, state "no unvalidated
   `validation-required: y` assumptions → no validation task".
+- **Derive requirement-graph task edges (feature track, full tier):** read the signed spec's
+  `## Requirement graph` table (via `manifest.artifacts.spec`). For each `AC_i depends-on AC_j` edge,
+  every task whose `**Covers:**` line names `AC_i` depends on every task covering `AC_j`; fold these
+  into the `## Dependency graph` written below — **order tasks to satisfy the edges as you decompose**
+  (numbering is an authoring choice, **never** a backward renumber pass over already-written
+  `**Covers:**`/`**Validates:**` tasks), per **Discovery fields → Actuation 2** in
+  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. An edge that cannot be represented as a
+  lower-numbered task dependency — the same task covers both `AC_i` and `AC_j`, or no numbering
+  satisfies it — is recorded as an explicit named gap under the Outcome gate naming the reason (e.g.
+  `AC_i depends-on AC_j: covered by the same Task <n>`), never silently dropped. Absent `## Requirement graph`, or a table
+  with no edges (lite tier, or a pre-WS-7 spec) → "no requirement-graph edges → no derived task
+  dependencies".
 
 **Derive planning intelligence (both tracks — feature and bugfix-full):** after the tasks above
 are decomposed (and, feature track, AC-mapped — nothing to hang a graph on before the tasks

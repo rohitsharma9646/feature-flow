@@ -84,6 +84,17 @@ one-way — full never becomes lite.
    assumption that is load-bearing and still unproven; if the user validates it during this
    interrogation, mark it `n`. Row order is stable once written (position = Assumption N).
 
+**Success metrics & requirement graph (full tier, non-trivial work only).** Once the ACs are locked,
+ask (at most) whether any AC needs a **binary-threshold success metric** — "metric M ≤/≥ T, measured
+by `<method>`", the same binary discipline as an AC; a metric that can't be phrased as a checkable
+threshold is not recorded — and whether any AC's completion **depends on** an earlier AC (a
+`## Requirement graph`, reusing §Planning intelligence's dependency notation, naming only a strictly
+lower-numbered AC). Both optional; write each to its `spec.md` section. This is **not** a fifth beat —
+it rides Beat 3/4 for non-trivial full-tier work only. **Lite tier skips them entirely** — neither
+field is filled or mentioned (see the Lite-tier paragraph above). These feed downstream, not the
+sign-off ask: a metric becomes a `### SM<n>` verify contract item and a graph edge feeds `ff-plan`'s
+task dependencies (§Discovery fields).
+
 The interrogation is an **in-session pause in both modes** — in autopilot, ask the
 questions (AskUserQuestion), then continue writing the spec and proceed to the sign-off
 gate in the same turn once the user answers.
@@ -92,7 +103,8 @@ Then write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`, filling Pro
 outcome, **Solution approaches considered** (chosen + rejected, each justified), Scope,
 **Constraints** (hard limits: compatibility, performance, security, deadlines — from the
 user's answers or `explore.md`), Edge cases, Non-goals, the WHAT-changing **Assumptions**,
-and binary **Acceptance criteria**. Resolve
+and binary **Acceptance criteria** (plus, for non-trivial full-tier work only, **Success metrics**
+and a **Requirement graph** — omitted entirely on lite). Resolve
 the spec's path per the **Durable artifact resolution** rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (legacy `paths.spec` → `paths.durable` →
 sandbox `<run dir>/spec.md`; **create the target directory if absent**). Record the resolved

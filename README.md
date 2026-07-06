@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.16.0 · MIT licensed
+> **Status:** v0.17.0 · MIT licensed
 
 ## Why use it
 
@@ -68,12 +68,12 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 | Phase | What happens | Artifact |
 |---|---|---|
 | **explore** | Read-only agents map the codebase | `explore.md` |
-| **clarify** | Challenges the premise, locks acceptance criteria, asks you to **sign off** | `spec.md` |
+| **clarify** | Challenges the premise, locks acceptance criteria, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
 | **design** | Architect agents fan out (minimal / clean / pragmatic); scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
 | **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
 | **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
 | **review** | Reviewer agents report issues; a Critical finding blocks the run | `review.md` |
-| **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion (and full-tier design failure scenarios) to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
+| **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion (plus full-tier design failure scenarios and spec success metrics) to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
 
 Every stop ends with a progress strip, e.g.
 `explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify`.
