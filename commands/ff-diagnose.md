@@ -94,6 +94,13 @@ stated reason makes the hotfix right). This solution-horizon decision is require
 the answer is "proper fix only". If a hotfix is recommended, record what the proper fix
 *would* be as a follow-up so it doesn't calcify.
 
+**Assumptions (full tier only).** On the **full** tier, record every WHAT-changing assumption behind
+the chosen fix approach as a **row** in the diagnosis `## Assumptions` table — all five fields
+(`Statement`, `Confidence` `low|med|high`, `Basis / evidence`, `If-wrong impact`, `Validation-required`
+`y|n`) — per **Assumption records** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; set
+`Validation-required: y` on any load-bearing, still-unproven assumption. On the **lite** tier, **skip
+this entirely** — a lite bug has no sign-off gate to echo into, so it carries no assumptions table.
+
 ## Set the tier
 
 - **lite** — trivial/obvious bug (clear one-spot fix, low blast radius): a *confirmed*
@@ -130,9 +137,26 @@ on the fix approach.** The sign-off ask presents the diagnosis's chosen fix appr
 contract items (root cause, fix surface, regression-test plan) **verbatim, as a grouped
 checklist — never a blockquote wall** — see **Sign-off rendering** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is a hard turn-end **in both
-modes**: autopilot never bypasses it and never sets `signOff.signed` itself. Do **not**
+modes**: autopilot never bypasses it and never sets `signOff.signed` itself.
+
+**Unvalidated-assumptions echo (the actuation).** Before presenting the ask, read the diagnosis's
+`## Assumptions` table (resolved via `manifest.artifacts.diagnosis`) and collect every row whose
+`Validation-required` is `y` and is still unvalidated. Render them per **Sign-off rendering rule 3** —
+a **distinct `### Unvalidated assumptions` block after** the contract checklist, never folded into the
+checkboxes — and the block **blocks a clean sign-off**: do **not** set `signOff.signed = true` while
+any such assumption remains **unresolved** — each must be validated (mark it `n`), waived (also mark
+it `n`), or explicitly **acknowledged by the user as staying open** (row stays `y`, carried to the plan as a
+`**Validates:**` task per §Assumption records → Actuation 2); when there are none it states
+`_None unvalidated._` (clean ask, never false-fired). The waiver is the verbatim, **user-authored**
+line `Assumption validation waived by user (<date>): <reason>` recorded in the diagnosis — **never
+assistant-authored, never dated by the assistant, and autopilot never records it** (mirrors the
+Evidence waiver); it does not change the recorded `Confidence`. See **Assumption records** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+
+Do **not**
 plan, implement, or mark sign-off yourself. When the user
-confirms (this or a later turn), set `signOff.signed = true` and `signOff.date`, update the
+confirms (this or a later turn) — every unvalidated `validation-required: y` assumption having been
+validated, waived, or acknowledged-open — set `signOff.signed = true` and `signOff.date`, update the
 diagnosis `User signed off:` line to `yes (<date>)`, and set
 `phases.diagnose = { status: "complete", artifact: "<resolved diagnosis path>" }` — then **re-read
 `manifest.autopilot` from the manifest on disk** (the confirmation arrives in a fresh turn;

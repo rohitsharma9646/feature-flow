@@ -77,6 +77,12 @@ one-way — full never becomes lite.
    becomes a binary acceptance criterion.
 4. **Assumptions that change the WHAT** — surface only assumptions that would alter the spec.
    Deep risk / pre-mortem and quality dimensions are **not** clarify's job (see the router above).
+   Write **each surviving assumption as a table row** in the spec's `## Assumptions (WHAT-changing)`
+   section — all five fields (`Statement`, `Confidence` `low|med|high`, `Basis / evidence`,
+   `If-wrong impact`, `Validation-required` `y|n`), never a free-text bullet — per **Assumption
+   records** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Set `Validation-required: y` on any
+   assumption that is load-bearing and still unproven; if the user validates it during this
+   interrogation, mark it `n`. Row order is stable once written (position = Assumption N).
 
 The interrogation is an **in-session pause in both modes** — in autopilot, ask the
 questions (AskUserQuestion), then continue writing the spec and proceed to the sign-off
@@ -106,8 +112,30 @@ presents the spec's `## Acceptance criteria` **verbatim, as a grouped checklist 
 blockquote wall** — see **Sign-off rendering** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is
 a hard turn-end **in both modes**: autopilot never bypasses it and never sets
-`signOff.signed` itself. Do not design, plan, or implement, and do not mark sign-off
-yourself. When the user confirms (this or a later turn), set `signOff.signed = true` and
+`signOff.signed` itself.
+
+**Unvalidated-assumptions echo (the actuation).** Before presenting the ask, read the spec's
+`## Assumptions (WHAT-changing)` table (resolved via `manifest.artifacts.spec`) and collect every
+row whose `Validation-required` is `y` **and** is still unvalidated. Render them per **Sign-off
+rendering rule 3** — a **distinct `### Unvalidated assumptions` block after** the AC checklist, never
+folded into the `- [ ] AC<n>` boxes — and the block **blocks a clean sign-off**: do **not** set
+`signOff.signed = true` while any such assumption remains **unresolved** — each must be validated
+(mark it `n`), waived (also mark it `n` — the waiver line is the audit trail), or (**full tier only**) explicitly **acknowledged by the user as staying open**
+(the row stays `y` and is carried to the full-tier plan as a `**Validates:**` task per §Assumption
+records → Actuation 2). On a **lite** feature (no plan phase) exit (c) is unavailable — resolve via
+validate or waive only.
+When there are
+none (or none are `y`), the block states `_None unvalidated._` — a **clean** sign-off ask, never a
+false-fired block. The trigger/scope/waiver live in **Assumption records**
+(`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`); this echo is its Evidence-gap-stop-shaped sign-off
+half — **not** a do-not-contradict STOP. The waiver is the verbatim, **user-authored** line
+`Assumption validation waived by user (<date>): <reason>` recorded in the spec — **never
+assistant-authored, never dated by the assistant, and autopilot never records it** (mirrors the
+Evidence waiver); a waiver does not change the assumption's recorded `Confidence`.
+
+Do not design, plan, or implement, and do not mark sign-off
+yourself. When the user confirms (this or a later turn) — every unvalidated `validation-required: y`
+assumption having been validated, waived, or acknowledged-open — set `signOff.signed = true` and
 `signOff.date`, and update the spec's Sign-off line to `yes (<date>)` — then **re-read
 `manifest.autopilot` from the manifest on disk** (the confirmation arrives in a fresh turn;
 never assume the mode from memory) and continue per the Update-manifest section below.

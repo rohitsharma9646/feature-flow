@@ -61,6 +61,22 @@ recommendation is "proper fix only".)
   (incident pressure, explicit "quick fix" request, documented out-of-scope) makes the
   hotfix right. If a hotfix is chosen, the proper fix is recorded as a follow-up below.
 
+## Assumptions
+
+> **Full tier only.** A trivial (`lite`) bug has no sign-off gate (`n/a (lite)`), so it carries no
+> assumptions table — skip this section entirely. On the **full** tier, record every WHAT-changing
+> assumption behind the fix approach as a row — see `docs/manifest-schema.md §Assumption records`.
+
+| Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |
+|---|---|---|---|---|
+| <the assumption behind the fix approach> | low / med / high | <why it is believed, or empty> | <what breaks if false> | y / n |
+
+<!-- Confidence: low / med / high (categorical — no numeric scores). Validation-required: y / n —
+     an author-set flag; a `y` row blocks a clean sign-off until resolved: validated (→ `n`), waived
+     (→ `n`), or acknowledged as staying open (full-tier bugfix → maps to a plan `**Validates:** Assumption N`
+     task; a validated or waived row spawns none). Row order is
+     stable once written: position = N (first data row = Assumption 1). -->
+
 ## Fix surface
 
 - Files / functions the fix must touch: `<path:symbol>` …

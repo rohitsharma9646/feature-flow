@@ -68,6 +68,17 @@ files-to-touch and a verification step:
   task (e.g. satisfied by an existing test), record it as an explicit gap in the Outcome gate
   with a one-line reason — never leave an AC silently uncovered. (A full-tier **bugfix** has
   no spec/ACs — its contract is the diagnosis — so this mapping does not apply there.)
+- **Map every unvalidated assumption (full tier — both tracks):** read the signed
+  spec's `## Assumptions (WHAT-changing)` table (feature, via `manifest.artifacts.spec`) or the
+  diagnosis's `## Assumptions` table (full bugfix, via `manifest.artifacts.diagnosis`). For **each
+  still-unvalidated `validation-required: y`** assumption carried forward, emit a **validation task**
+  carrying a `**Validates:** Assumption N` line (or record it as an explicit named gap in the Outcome
+  gate) — cloning the `**Covers:**` discipline, per **Assumption records → Actuation 2** in
+  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. A validation task logically precedes the tasks that
+  depend on the assumption (lower-numbered invariant); on the full-tier **bugfix** fold it into the
+  fixed RED→GREEN sequence rather than adding a `**Covers:**` line (bugfix has no ACs). A **waived** or
+  already-validated assumption spawns no task; when none remain, state "no unvalidated
+  `validation-required: y` assumptions → no validation task".
 
 **Derive planning intelligence (both tracks — feature and bugfix-full):** after the tasks above
 are decomposed (and, feature track, AC-mapped — nothing to hang a graph on before the tasks

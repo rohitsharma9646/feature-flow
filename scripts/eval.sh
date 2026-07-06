@@ -121,4 +121,56 @@ else
   echo "RED:  delivery-gap — a precondition failed"
 fi
 
+# --- fixture: assumption-gap (WS-4) -----------------------------------------
+# A spec whose §Assumptions table carries ONE unvalidated `validation-required: y` row — the
+# exact hole ff-clarify's sign-off echo must surface as a `### Unvalidated assumptions` block
+# that blocks a clean sign-off. Asserts the MECHANICAL preconditions of the sign-off-echo
+# actuation; the SEMANTIC catch (the echo actually rendering + blocking on a live sign-off) is
+# AC6/AC7 — a manual STOP-vs-control self-run, NOT assertable in bash. The 0.13.0 CHANGELOG
+# names that as a known coverage gap.
+echo ""
+echo "fixture: assumption-gap"
+ag_start=$fail
+FXA="evals/fixtures/assumption-gap/spec.md"
+TPL_S="templates/spec.md"
+HDR='| Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |'
+
+# (1) fixture spec exists and is a well-formed 5-column assumptions table
+if [ -f "$FXA" ]; then ok "fixture spec exists ($FXA)"; else err "fixture spec missing ($FXA)"; fi
+grep -qF "$HDR" "$FXA" 2>/dev/null \
+  && ok "fixture carries the 5-column assumptions header" \
+  || err "fixture must carry the 5-column assumptions header"
+
+# (2) the deliberate hole: at least one assumption row is flagged Validation-required = y
+#     (a still-unvalidated required assumption — what the sign-off echo must surface).
+asec="$(awk '/^## Assumptions/{s=1;next} /^## /{s=0} s' "$FXA" 2>/dev/null)"
+printf '%s\n' "$asec" | grep -qE '\|[[:space:]]*y[[:space:]]*\|[[:space:]]*$' \
+  && ok "fixture has an unvalidated 'validation-required: y' row — the gap is present" \
+  || err "fixture §Assumptions must carry a row whose Validation-required is 'y' (the gap)"
+
+# (3) drift guard: the SHIPPED spec template still defines the section + header the fixture
+#     mirrors, so a template restructure the fixture no longer matches is caught (not a stale pass).
+grep -qE '^## Assumptions \(WHAT-changing\)' "$TPL_S" 2>/dev/null \
+  && ok "shipped template still defines '## Assumptions (WHAT-changing)' (fixture not drifted)" \
+  || err "shipped template no longer has '## Assumptions (WHAT-changing)' — regenerate from $TPL_S"
+grep -qF "$HDR" "$TPL_S" 2>/dev/null \
+  && ok "shipped template still carries the 5-column header (fixture not drifted)" \
+  || err "shipped template no longer carries the 5-column assumptions header — regenerate from $TPL_S"
+
+# (4) the sign-off-echo + waiver wiring the catch depends on exists in both producers
+for cmd in commands/ff-clarify.md commands/ff-diagnose.md; do
+  tr '\n' ' ' < "$cmd" | grep -qiF 'Unvalidated-assumptions echo' \
+    && ok "$cmd carries the unvalidated-assumptions echo instruction" \
+    || err "$cmd is missing the unvalidated-assumptions echo instruction"
+  grep -qF 'Assumption validation waived by user (<date>): <reason>' "$cmd" \
+    && ok "$cmd carries the verbatim waiver line" \
+    || err "$cmd is missing the verbatim waiver line"
+done
+
+if [ "$fail" -eq "$ag_start" ]; then
+  echo "PASS: assumption-gap (preconditions) — semantic catch is AC6/AC7/manual"
+else
+  echo "RED:  assumption-gap — a precondition failed"
+fi
+
 exit "$fail"
