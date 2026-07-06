@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.14.0 · MIT licensed
+> **Status:** v0.15.0 · MIT licensed
 
 ## Why use it
 
@@ -69,11 +69,11 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 |---|---|---|
 | **explore** | Read-only agents map the codebase | `explore.md` |
 | **clarify** | Challenges the premise, locks acceptance criteria, asks you to **sign off** | `spec.md` |
-| **design** | Architect agents fan out (minimal / clean / pragmatic); you pick | `design.md` |
+| **design** | Architect agents fan out (minimal / clean / pragmatic); scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
 | **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
 | **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
 | **review** | Reviewer agents report issues; a Critical finding blocks the run | `review.md` |
-| **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
+| **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion (and full-tier design failure scenarios) to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
 
 Every stop ends with a progress strip, e.g.
 `explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify`.
@@ -167,7 +167,7 @@ Full contract: `docs/manifest-schema.md` §Knowledge base.
 | `/feature-flow:ff "<request>"` | Entry point: classify, create the run, ask autopilot vs step-by-step, start phase 1 |
 | `/feature-flow:ff-explore` | [feature] Fan out read-only explorers → `explore.md` |
 | `/feature-flow:ff-clarify` | [feature] Grill requirements, write `spec.md`, collect sign-off |
-| `/feature-flow:ff-design` | [feature] Architect fan-out, record the chosen design → `design.md` |
+| `/feature-flow:ff-design` | [feature] Architect fan-out + lean trade-off matrix + devil's-advocate pass, record the chosen design → `design.md` |
 | `/feature-flow:ff-plan` | [shared] Decompose into a phased `plan.md` with an Outcome gate |
 | `/feature-flow:ff-diagnose` | [bugfix] Reproduce + root-cause, decide hotfix-vs-proper → `diagnosis.md` |
 | `/feature-flow:ff-implement` | [shared] Build from the plan (sign-off gated) / test-first bugfix (RED→GREEN) |

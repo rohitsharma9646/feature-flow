@@ -43,6 +43,18 @@ Confidence ladder.
 - **Confidence:** <one of the four levels>
 - **Gap (only if below Verified):** <what's missing, why, what evidence is required>
 
+**Feature track, full tier only** — plus one block per named failure scenario from `design.md`'s
+`## Devil's advocate → ### Failure scenarios` (resolved via `manifest.artifacts.design`; absent
+design, a lite run, or a design naming none → no FS blocks, not an empty section):
+
+### FS1: <failure scenario verbatim>
+- **Method:** <evidence kinds used, or "manual — unverified">
+- **Evidence:**
+  - `<command>` — exit <n> | HTTP <nnn> — <excerpt>
+  - artifact: `evidence/<kind>-<n>-<desc>.<ext>` (if any)
+- **Confidence:** <one of the four levels>
+- **Gap (only if below Verified):** <what's missing, why, what evidence is required>
+
 **Bugfix track** — same block shape for each item:
 
 ### Bug no longer reproduces

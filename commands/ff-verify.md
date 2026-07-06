@@ -37,6 +37,13 @@ ask open-endedly: if the resolved spec is missing on the feature track, **STOP**
 user to run `/feature-flow:ff-clarify` first; if the resolved diagnosis is missing on the
 bugfix track, **STOP** and tell the user to run `/feature-flow:ff-diagnose` first.
 
+**Also resolve the design (feature track, full tier only), for its failure scenarios.** Read
+`manifest.artifacts.design` the same manifest-first way. **Absent is not an error and never a
+STOP** — a pre-WS-5 run, a lite run (design never runs on lite), and a full-tier design that named
+zero failure scenarios all resolve to "no FS items to map." When present, its `## Devil's advocate
+→ ### Failure scenarios` is the source the contract mapping below reads (§Design trade-offs &
+devil's advocate).
+
 ## Do the work
 
 Read `models.testRunner` from config (`.feature-flow.json` →
@@ -73,6 +80,13 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
 - **Feature track:** map **each acceptance criterion** from the spec (at `artifacts.spec`, as
   resolved in Cold-start) → `pass` / `fail` / `manual-unverified` (with a reason), each backed
   by evidence from the test runner.
+- **Feature track, full tier (`artifacts.design` present):** additionally map **each `**FS<n>:**`
+  bullet** from the design's `## Devil's advocate → ### Failure scenarios` (resolved in Cold-start)
+  into its own `### FS<n>` contract item, **exactly as an acceptance criterion is mapped** — same
+  `pass` / `fail` / `manual-unverified` derivation, the same §Evidence Confidence ladder, and the
+  same evidence-gap stop + waiver line below (there is **no** separate failure-scenario waiver: an
+  unproven FS is `manual-unverified`, identical to a manual AC). Absent `artifacts.design`, or a
+  design naming no scenarios (lite tier, or a pre-WS-5 design) → skip, no FS blocks, no gap.
 - **Bugfix track:** confirm the bug no longer reproduces, and that the regression test
   shows RED (pre-fix) → GREEN (post-fix). Cite the `bugfix.red` / `bugfix.green` evidence
   captured by `/feature-flow:ff-implement` for the pre-fix failure, and the test runner's fresh run for
