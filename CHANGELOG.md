@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.14.0] — 2026-07-06 — Eval harness: WS-2 coverage + non-blocking CI wiring
+
+Closes the eval harness's (WS-8) largest hole and gives it a home in CI. WS-2 Planning
+Intelligence — the highest-value, most-actuating merged workstream — was the only one of
+WS-1/WS-3/WS-4 with **no** eval fixture, so a regression in critical-path derivation had nothing
+pinning it. New `evals/fixtures/planning-gap/` supplies a plan whose stated `## Critical path`
+(`Task 1 → Task 3`) is **hand-authored** and drops the gating `Task 2` its own `## Dependency
+graph` proves `Task 3` depends on — the exact "Derived — never hand-authored" violation the WS-2
+`ff-implement` STOP exists to catch. The new `scripts/eval.sh` block asserts the mechanical
+preconditions: the graph proves the gating dependency, the stated path omits it (the gap is
+present and detectable), a drift guard against `templates/plan.md`, and the derive/STOP wiring in
+`ff-plan.md` / `ff-implement.md §Critical-path check`. The harness is now **4 fixtures, all green**.
+
+`scripts/eval.sh` is now **wired into CI** (`.github/workflows/ci.yml`) as a `continue-on-error`
+**report** step — non-blocking from this release (a RED fixture is visible but never wedges a
+release), to be promoted to blocking at v2.3 by dropping the `continue-on-error` line. This lands
+the plan's "add to CI as a non-blocking report initially" step, so v2.1's actuation claims are
+measured in CI rather than only runnable by hand.
+
+**Known coverage gap (named, not silent):** the *behavioral* catch — `ff-plan` actually deriving
+the path and `ff-implement` actually STOPping on a critical-path skip (AC15) — has no automated
+regression guard; it is a semantic, LLM-judgment behavior verified by a fresh-session
+STOP-vs-control self-run (same posture as WS-1 AC13 / WS-3 AC5 / WS-4 AC6/AC7). The `planning-gap`
+fixture pins only the mechanical preconditions and wiring.
+
+### Added
+- **`evals/fixtures/planning-gap/plan.md`** + a `scripts/eval.sh` block — pins the mechanical
+  preconditions of WS-2's derived-critical-path actuation: gating dependency present in the graph,
+  dropped from the stated path, a drift guard against `templates/plan.md`, and ff-plan/ff-implement wiring.
+- **CI eval step** (`.github/workflows/ci.yml`) — runs `scripts/eval.sh` as a non-blocking
+  `continue-on-error` report after the guard scripts.
+
+### Changed
+- `scripts/eval.sh` — header updated to reflect the CI wiring; adds the fourth (`planning-gap`) fixture.
+
 ## [0.13.0] — 2026-07-06 — Structured assumption records (validation-required → sign-off block → plan task)
 
 Beat-4 assumptions become a **structured 5-column table** — `Statement`, `Confidence` (`low|med|high`),

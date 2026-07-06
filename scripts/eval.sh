@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Eval harness (WS-8) — NON-BLOCKING by design.
 #
-# Lives in scripts/ (NOT scripts/checks/) and is deliberately NOT wired into
-# .github/workflows/ci.yml, so it never gates a release. Run it manually:
+# Lives in scripts/ (NOT scripts/checks/, so the guard loop never runs it as a gate). It IS
+# wired into .github/workflows/ci.yml as a `continue-on-error` REPORT step — a RED fixture is
+# visible but never wedges a release. Promote to blocking (drop that step's continue-on-error)
+# at v2.3 once stable. Run it manually too:
 #     bash scripts/eval.sh
 #
 # It asserts the MECHANICAL PRECONDITIONS of the decision-records actuation — that a
@@ -171,6 +173,65 @@ if [ "$fail" -eq "$ag_start" ]; then
   echo "PASS: assumption-gap (preconditions) — semantic catch is AC6/AC7/manual"
 else
   echo "RED:  assumption-gap — a precondition failed"
+fi
+
+# --- fixture: planning-gap (WS-2) -------------------------------------------
+# A plan whose stated ## Critical path was HAND-AUTHORED and drops a gating task its own
+# ## Dependency graph proves is on the longest chain — the exact hole WS-2's "Derived — never
+# hand-authored" rule exists to prevent. Asserts the MECHANICAL preconditions; the SEMANTIC
+# catch (ff-plan deriving the path / ff-implement STOPping on a skip) is AC15 — a manual live
+# self-run, NOT assertable in bash. The 0.11.0 CHANGELOG names that as a known coverage gap.
+echo ""
+echo "fixture: planning-gap"
+pg_start=$fail
+FXPG="evals/fixtures/planning-gap/plan.md"
+TPL_P="templates/plan.md"
+
+# (1) fixture exists and carries the two sections the critical-path derivation reads
+if [ -f "$FXPG" ]; then ok "fixture plan exists ($FXPG)"; else err "fixture plan missing ($FXPG)"; fi
+dep="$(awk '/^## Dependency graph/{s=1;next} /^## /{s=0} s' "$FXPG" 2>/dev/null)"
+cps="$(awk '/^## Critical path/{s=1;next} /^## /{s=0} s' "$FXPG" 2>/dev/null)"
+printf '%s\n' "$dep" | grep -qE '^\| *Task [0-9]' \
+  && ok "fixture Dependency graph carries Task N rows" \
+  || err "fixture must carry a Dependency graph with Task N rows"
+path="$(printf '%s\n' "$cps" | sed -n 's/^\*\*Path:\*\*[[:space:]]*//p' | head -1)"
+[ -n "$path" ] \
+  && ok "fixture states a critical path ($path)" \
+  || err "fixture §Critical path must carry a '**Path:**' line"
+
+# (2) the deliberate hole: a gating task the graph proves is on the chain is DROPPED from the
+# stated path. The graph makes Task 3 depend on Task 2, yet Task 2 is absent from the stated
+# path — a hand-authored path skipping a gating task, exactly what the derived path would keep.
+printf '%s\n' "$dep" | grep -qE '^\| *Task 3 *\|.*Task 2' \
+  && ok "graph proves Task 3 depends on the gating Task 2" \
+  || err "fixture graph must make Task 3 depend on Task 2 (the gating task the path drops)"
+echo "$path" | grep -qw 'Task 2' \
+  && err "stated critical path must OMIT the gating Task 2 — that omission IS the planning gap" \
+  || ok "stated critical path drops the gating Task 2 — the planning gap is present and detectable"
+
+# (3) drift guard: the shipped plan template still defines the two sections + the derived
+# doctrine the fixture mirrors, so a template restructure the fixture no longer matches is caught.
+for h in '^## Dependency graph' '^## Critical path'; do
+  grep -qE "$h" "$TPL_P" 2>/dev/null \
+    && ok "shipped plan template defines '${h#^## }' (fixture not drifted)" \
+    || err "shipped plan template must define '${h#^## }' — regenerate the fixture from $TPL_P"
+done
+grep -qiF 'never hand-author' "$TPL_P" 2>/dev/null \
+  && ok "shipped plan template states the critical path is derived, never hand-authored" \
+  || err "shipped plan template must state the critical path is derived (never hand-authored)"
+
+# (4) the derive + STOP wiring the catch depends on exists in the commands that must fire it
+grep -qiF 'never hand-author' commands/ff-plan.md \
+  && ok "commands/ff-plan.md instructs deriving the path (never hand-author)" \
+  || err "commands/ff-plan.md is missing the derive-never-hand-author instruction"
+awk '/^## Critical-path check/{s=1;next} /^## /{s=0} s' commands/ff-implement.md | grep -qF 'artifacts.plan' \
+  && ok "commands/ff-implement.md §Critical-path check resolves the path via artifacts.plan" \
+  || err "commands/ff-implement.md §Critical-path check must resolve via artifacts.plan"
+
+if [ "$fail" -eq "$pg_start" ]; then
+  echo "PASS: planning-gap (preconditions) — semantic catch is AC15/manual"
+else
+  echo "RED:  planning-gap — a precondition failed"
 fi
 
 exit "$fail"
