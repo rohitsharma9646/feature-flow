@@ -57,6 +57,41 @@ explicit "manual — unverified" line in `verify.md`.
 - [ ] AC1: <observable, testable statement>
 - [ ] AC2: <observable, testable statement>
 
+## Success metrics
+
+> **Full tier only.** A lite spec omits this section entirely — no placeholder, no warning.
+
+Optional. Each metric is a **binary threshold with a named measurement method** — the same binary,
+checkable discipline as `## Acceptance criteria` above (that section owns the discipline; this is
+**not a divergent grammar**): "metric M ≤/≥ T, measured by `<method>`". A metric that cannot be
+phrased this way is not recorded (rejected during clarify, never a soft/directional statement). An
+SM's number is its row order (first row = SM1), stable once written.
+
+- [ ] SM1: <metric> ≤/≥ <threshold>, measured by `<method>`.
+
+<!-- No metrics → keep the header and note "none". Each becomes a `### SM<n>` ff-verify contract
+     item (docs/manifest-schema.md §Discovery fields → Actuation 1) — same Confidence ladder and
+     Evidence-gap stop as an acceptance criterion. Presence-gated (absent/empty section → no SM
+     blocks), never tier-gated: this template is shared by both tiers. -->
+
+## Requirement graph
+
+> **Full tier only.** A lite spec omits this section entirely — no placeholder, no warning.
+
+Optional. AC-level dependencies, **reusing** `docs/manifest-schema.md` **§Planning intelligence**'s
+dependency notation rather than defining a divergent grammar: one row per dependent AC, `Depends on`
+naming only a strictly **lower-numbered** `AC<n>` (or "— (root)") already defined under
+`## Acceptance criteria` above — never a phantom or higher-numbered AC (so a cycle is unexpressible).
+
+| AC | Depends on |
+|----|------------|
+| AC1 | — (root) |
+| AC2 | AC1 |
+
+<!-- No edges → omit this section (not an all-root table). Feeds ff-plan's task `## Dependency
+     graph` via the **Covers:** map (docs/manifest-schema.md §Discovery fields → Actuation 2); an
+     edge that cannot be represented as a task dependency surfaces as an explicit Outcome-gate gap. -->
+
 ## Sign-off
 
 **User signed off:** no

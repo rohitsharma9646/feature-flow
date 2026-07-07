@@ -21,6 +21,15 @@ to specific ACs; the final task verifies all of them.
 > listed here as an explicit named gap — cloning the `**Covers:**` rule (see `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
 > §Assumption records → Actuation 2). A validated or **waived** assumption spawns no task; state
 > "no unvalidated `validation-required: y` assumptions → no validation task" when there are none.
+>
+> **Requirement-graph coverage (full tier, when the spec has a `## Requirement graph`).** Every spec
+> `AC_i depends-on AC_j` edge that can be represented is folded into `## Dependency graph` below as a
+> task-dependency edge (ordering tasks to satisfy it — see `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
+> §Discovery fields → Actuation 2). An edge whose two ACs are **covered by the same Task** (or that no
+> numbering satisfies) cannot be a task dependency and is listed here as an explicit named gap
+> naming the reason (e.g. `AC_i depends-on AC_j: covered by the same Task <n>`) — never silently
+> dropped. No requirement
+> graph, or one with no edges → this rule does not apply.
 
 ## Tasks
 

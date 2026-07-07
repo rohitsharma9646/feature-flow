@@ -1,5 +1,73 @@
 # Changelog
 
+## [0.17.0] — 2026-07-06 — Discovery field completeness (WS-7)
+
+`spec.md` gains two **optional, full-tier, actuating** discovery fields — closing the RFC's named
+discovery gaps without letting either become a field only a human reads (guardrail #9). **Success
+metrics** are binary-threshold rows ("metric M ≤/≥ T, measured by `<method>`", reusing the
+acceptance-criterion discipline — a metric that can't be phrased as a checkable threshold is rejected
+at clarify). Each becomes its own `### SM<n>` block in `ff-verify`'s contract mapping — mapped
+**exactly as an acceptance criterion** (same Confidence ladder, same waivable Evidence-gap stop), so
+an unproven metric holds the run at the existing stop and blocks `done`. A **requirement graph** is an
+`| AC | Depends on |` table reusing §Planning intelligence's dependency notation (lower-numbered
+invariant, cycle unexpressible); `ff-plan` derives task-dependency edges from it via the `**Covers:**`
+map by **ordering tasks to satisfy the edges as it decomposes** (never a backward renumber pass), and
+an edge that no numbering can represent — the same task covers both ACs — surfaces as an explicit
+named gap under the plan's Outcome gate, never silently dropped. `ff-clarify` prompts for both only on
+**non-trivial full-tier** work; a **lite** spec omits both with no placeholder and no warning
+(presence-gated on the section's rows, never a `tier` read — the `spec.md` template is shared by both
+tiers, unlike the design-only `FS<n>`). Metrics are verify-time items, **not** part of the sign-off
+render — §Sign-off rendering stays "Three rules". `## Stakeholders` was **cut** (no downstream
+consumer). Additive and non-breaking: **no new `manifest.json` field, no `toggles.*` key, no new
+phase, no new hook, no new §Autopilot row, no new waiver line** — both fields ride `manifest.artifacts.spec`,
+and a pre-WS-7 spec resolves/resumes unchanged. Full tier only; `lite-tier-guard.sh` passes unmodified.
+
+**Known coverage gap (named, not silent):** the two *behavioral* catches have **no automated
+regression guard** — verified by a fresh-session fired-vs-control self-run (same posture as WS-1 AC13
+/ WS-2 AC15 / WS-4 AC6-AC7 / WS-5 AC7-AC8 / WS-6 AC13-AC14):
+- **AC6 (fired arm):** a full-tier run whose spec carries an **unproven** `## Success metrics` row →
+  `ff-verify` emits a `### SM<n>` block below `Verified` and holds the run at the Evidence-gap stop
+  (blocks `done`, waivable); a proven metric does not false-fire.
+- **AC8 (fired arm):** a spec whose `## Requirement graph` edge is un-derivable (the same task covers
+  both ACs) → `ff-plan` surfaces the Outcome-gate gap rather than writing an invalid graph; a
+  satisfiable graph does not spuriously gap.
+
+`discovery-fields-guard.sh` and the `discovery-gap` eval fixture pin only the mechanical
+structure/wiring. The eval harness is now **7 fixtures, all green** (still non-blocking in CI).
+
+### Added
+- **`## Discovery fields` canonical section** (`docs/manifest-schema.md`) — Success metrics /
+  Requirement graph field definitions, Actuation 1 (SM<n> → ff-verify, presence-not-tier gating,
+  reuses the Evidence-gap stop) / Actuation 2 (requirement graph → ff-plan task edges,
+  order-at-decomposition, Outcome-gate gap for un-derivable edges), Tier/track scope, v1 non-goals.
+  Plus the §Evidence Confidence-ladder **fourth** contract-item class (success metric).
+- **`## Success metrics` + `## Requirement graph`** (`templates/spec.md`) — optional, full-tier-only
+  banners; binary-threshold discipline (cross-referencing, not diverging from, the AC discipline) and
+  the `| AC | Depends on |` notation reused from §Planning intelligence.
+- **`### SM1:` contract-mapping block** (`templates/verify.md`) — digit-free placeholders mirroring
+  `### FS1:`; Gate-B safety proven by `enforce-gate-guard.sh`'s `b-template` fixture (not re-derived).
+- **`scripts/checks/discovery-fields-guard.sh`** — structural guard: the two spec headers + banners +
+  no-Stakeholders, the binary-threshold + reuse cross-references, the clarify/verify/plan wiring (with
+  `lineno` placement of the ff-plan bullet), the SM1 template block, the plan Outcome-gate gap rule,
+  the schema section + subsections + ladder class, the negative no-new-field / no-new-config-key /
+  no-new-Autopilot-row checks, and per-file dist parity. mawk-portable.
+- **`evals/fixtures/discovery-gap/`** (`spec.md` with a labeled SM row + an `AC2→AC1` edge; `plan.md`
+  dropping the derived `Task 2 → Task 1` edge) + a `scripts/eval.sh` block — pins the mechanical
+  preconditions of both actuations. The harness is now **7 fixtures, all green**.
+
+### Changed
+- `commands/ff-clarify.md` — a full-tier/non-trivial prompt for the two fields (riding Beat 3/4, not a
+  fifth beat), an explicit lite-skip clause, and the spec fill-list extended to name them.
+- `commands/ff-verify.md` — a new contract-mapping bullet turning each `## Success metrics` row into a
+  `### SM<n>` item (presence check, not tier check), between the AC and FS bullets.
+- `commands/ff-plan.md` — a new "Derive requirement-graph task edges" bullet (between "Map every AC"
+  and "Derive planning intelligence") deriving task deps from the spec's requirement graph.
+- `templates/plan.md` — a new Outcome-gate **Requirement-graph coverage** rule bullet; the
+  `## Dependency graph` table is byte-unchanged (derive-don't-widen).
+- `docs/manifest-schema.md` — the §Evidence Confidence-ladder contract-item enumeration.
+- `skills/feature-flow/SKILL.md`, `README.md` — describe the optional success-metrics /
+  requirement-graph capture in *clarify* and their verify/plan actuation in the phase tables.
+
 ## [0.16.0] — 2026-07-06 — Feedback / repair loop (WS-6)
 
 `ff-verify` gains a **bounded one-cycle repair-and-re-verify** on a genuine failure — a transplant

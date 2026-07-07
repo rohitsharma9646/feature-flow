@@ -322,4 +322,62 @@ else
   echo "RED:  repair-gap — a precondition failed"
 fi
 
+# --- fixture: discovery-gap (WS-7) ------------------------------------------
+# A PAIR of fixtures for the two discovery-field actuations: `spec.md` carries a labeled
+# `## Success metrics` row (the thing ff-verify must turn into a `### SM<n>` contract item) and a
+# `## Requirement graph` edge `AC2 depends-on AC1`; `plan.md`'s `## Dependency graph` DROPS the
+# derived `Task 2 → Task 1` edge (Task 2 covers AC2, Task 1 covers AC1) — the hole ff-plan's
+# derivation must catch. Asserts the MECHANICAL preconditions; the SEMANTIC catch (an unproven
+# metric actually blocking `done`, AC6; the dropped edge actually surfacing at the Outcome gate,
+# AC8) is a manual fresh-session self-run, NOT assertable in bash. The 0.17.0 CHANGELOG names it.
+echo ""
+echo "fixture: discovery-gap"
+dv_start=$fail
+FXDS="evals/fixtures/discovery-gap/spec.md"
+FXDP="evals/fixtures/discovery-gap/plan.md"
+TPL_DS="templates/spec.md"
+TPL_DP="templates/plan.md"
+
+# (1) fixture spec exists and carries a labeled Success-metrics row + the AC-edge
+if [ -f "$FXDS" ]; then ok "fixture spec exists ($FXDS)"; else err "fixture spec missing ($FXDS)"; fi
+awk '/^## Success metrics/{s=1;next} /^## /{s=0} s' "$FXDS" 2>/dev/null | grep -qE '^\- \[ \] SM1:' \
+  && ok "fixture carries a labeled 'SM1:' success-metric row — the metric side is present and detectable" \
+  || err "fixture §Success metrics must carry a labeled '- [ ] SM1:' row"
+awk '/^## Requirement graph/{s=1;next} /^## /{s=0} s' "$FXDS" 2>/dev/null | grep -qE '^\| *AC2 *\| *AC1 *\|' \
+  && ok "fixture Requirement graph carries the 'AC2 depends-on AC1' edge" \
+  || err "fixture §Requirement graph must carry the '| AC2 | AC1 |' edge"
+
+# (2) the deliberate hole: the plan's Task 2 (covers AC2) OMITS the Task 1 dependency the spec's
+# AC2->AC1 edge implies — mirrors planning-gap's dropped-gating-task shape.
+dvdep="$(awk '/^## Dependency graph/{s=1;next} /^## /{s=0} s' "$FXDP" 2>/dev/null)"
+if [ -f "$FXDP" ]; then ok "fixture plan exists ($FXDP)"; else err "fixture plan missing ($FXDP)"; fi
+printf '%s\n' "$dvdep" | grep -qE '^\| *Task 2 .*Task 1' \
+  && err "fixture plan's Task 2 row must OMIT the Task 1 dependency the spec's AC2->AC1 edge implies — that omission IS the gap" \
+  || ok "fixture plan drops the AC-derived Task 2 → Task 1 edge — the requirement-graph gap is present and detectable"
+
+# (3) drift guard: the shipped spec/plan templates still define the sections the fixtures mirror,
+# so a template restructure the fixtures no longer match is caught (not a silent stale pass).
+for h in '^## Success metrics' '^## Requirement graph'; do
+  grep -qE "$h" "$TPL_DS" 2>/dev/null \
+    && ok "shipped spec template defines '${h#^## }' (fixture not drifted)" \
+    || err "shipped spec template must define '${h#^## }' — regenerate the fixture from $TPL_DS"
+done
+grep -qE '^## Dependency graph' "$TPL_DP" 2>/dev/null \
+  && ok "shipped plan template defines '## Dependency graph' (fixture not drifted)" \
+  || err "shipped plan template must define '## Dependency graph' — regenerate the fixture from $TPL_DP"
+
+# (4) the SM-mapping + requirement-graph-derivation wiring the catches depend on exists
+grep -qE '### SM<n>' commands/ff-verify.md \
+  && ok "commands/ff-verify.md maps each Success-metrics row into its own SM<n> contract item" \
+  || err "commands/ff-verify.md is missing the '### SM<n>' contract-mapping instruction"
+grep -qiF 'Derive requirement-graph task edges' commands/ff-plan.md \
+  && ok "commands/ff-plan.md carries the requirement-graph task-edge derivation instruction" \
+  || err "commands/ff-plan.md is missing the requirement-graph task-edge derivation instruction"
+
+if [ "$fail" -eq "$dv_start" ]; then
+  echo "PASS: discovery-gap (preconditions) — semantic catch is AC6/AC8/manual"
+else
+  echo "RED:  discovery-gap — a precondition failed"
+fi
+
 exit "$fail"

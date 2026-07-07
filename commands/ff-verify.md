@@ -80,6 +80,16 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
 - **Feature track:** map **each acceptance criterion** from the spec (at `artifacts.spec`, as
   resolved in Cold-start) → `pass` / `fail` / `manual-unverified` (with a reason), each backed
   by evidence from the test runner.
+- **Feature track — success metrics:** additionally map **each row** of the spec's `## Success
+  metrics` (resolved via the already-read `artifacts.spec` — no new pointer) into its own `### SM<n>`
+  contract item, **exactly as an acceptance criterion is mapped** — same `pass` / `fail` /
+  `manual-unverified` derivation, the same §Evidence Confidence ladder, and the same evidence-gap
+  stop + waiver line below (there is **no** separate success-metric waiver: an unproven SM is
+  `manual-unverified`, identical to a manual AC). Absent `## Success metrics`, or a section with no
+  rows (lite tier, or a pre-WS-7 spec) → skip, no SM blocks, no gap. This is a **presence check on
+  the section's rows, not a tier check** — unlike `FS<n>` (gated structurally because the design
+  artifact never exists on lite), the one shared spec template underlies both tiers, so
+  content-absence gates (§Discovery fields → Actuation 1).
 - **Feature track, full tier (`artifacts.design` present):** additionally map **each `**FS<n>:**`
   bullet** from the design's `## Devil's advocate → ### Failure scenarios` (resolved in Cold-start)
   into its own `### FS<n>` contract item, **exactly as an acceptance criterion is mapped** — same
