@@ -36,9 +36,9 @@ jobs:
             echo "::endgroup::"
           done
 
-      # Eval harness (WS-8): a REPORT, not a gate. `continue-on-error` keeps a RED fixture
-      # from wedging a release — non-blocking from v2.1, promote to blocking (drop this line)
-      # at v2.3 once stable. Surfaces behavioral regressions the grep-guards above can't see.
-      - name: Run eval harness (non-blocking)
-        continue-on-error: true
+      # Eval harness (WS-8): a GATE from v2.3. A RED fixture FAILS the build and blocks the
+      # release (promoted from non-blocking once the 7 fixtures were stable). Surfaces the
+      # structural/wiring regressions the grep-guards above can't see. Note: the 8 semantic
+      # STOPs still rely on manual fired-vs-control self-runs — this gate covers structure only.
+      - name: Run eval harness (blocking)
         run: bash scripts/eval.sh
