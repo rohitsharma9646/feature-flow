@@ -46,12 +46,12 @@ supplemental only. They cannot promote a cell to `supported`.
 
 | OS | Architecture | Native package run | Claude package content | Codex package content | State |
 |----|--------------|--------------------|------------------------|-----------------------|-------|
-| Linux | x86-64 | pass (`261cda5d…b19ae5`) | pass | pass | supported |
-| Linux | ARM64 | pass (`f383a93f…07e692`) | pass | pass | supported |
-| macOS | x86-64 | pass (`78dd011e…323b04`) | pass | pass | supported |
-| macOS | ARM64 | pass (`fa173948…daa1d`) | pass | pass | supported |
-| Windows | x86-64 | pass (`c8bc6b40…6f7ae`) | pass | pass | supported |
-| Windows | ARM64 | pass (`335a768d…ae650`) | pass | pass | supported |
+| Linux | x86-64 | pass (`490b5097…157945`) | pass | pass | supported |
+| Linux | ARM64 | pass (`6814f41a…b6b2cb`) | pass | pass | supported |
+| macOS | x86-64 | pass (`e5e375bd…d03cac`) | pass | pass | supported |
+| macOS | ARM64 | pass (`702f497f…279573`) | pass | pass | supported |
+| Windows | x86-64 | pass (`dcb09c9e…1f5ed`) | pass | pass | supported |
+| Windows | ARM64 | pass (`eb532b74…b6844`) | pass | pass | supported |
 
 ## Assumption outcomes
 
@@ -64,11 +64,11 @@ supplemental only. They cannot promote a cell to `supported`.
 ## Native matrix evidence
 
 GitHub Actions run
-[`30002891745`](https://github.com/rohitsharma9646/feature-flow/actions/runs/30002891745)
-executed commit `2a6c40b244afe7ac240263dd8f5462659f4e6b0c` on all six declared runner
-families. Every job passed unit and conformance tests, target package assembly, native packaged
-smoke invocation, and byte comparison of Claude and Codex outputs. The uploaded artifacts record
-the binary digests shown above.
+[`30004115045`](https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045)
+executed commit `e98546d60e3cea184fa6b90b909a8e0915836120` on all six declared runner
+families. Every job passed unit and conformance tests, complete target plugin-package assembly,
+and native byte comparison of source, Claude package, and Codex package outputs for all 12 WP1
+vectors. The uploaded package artifacts record the SHA-256 digests shown above.
 
 The packages are self-contained and their invocation performs no download or dependency
 installation. The matrix does not claim marketplace installation, host activation, signing, or
