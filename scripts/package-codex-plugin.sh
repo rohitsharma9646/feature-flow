@@ -26,9 +26,10 @@ Options:
   --dry-run        Print the copy plan without writing files.
   -h, --help       Show this help.
 
-The package intentionally includes only Codex runtime content:
+The package intentionally includes Codex runtime content:
   .codex-plugin, skills, commands, agents, templates, config,
-  docs/manifest-schema.md, docs/grilling-playbook.md, README.md, LICENSE
+  schemas, integrity protocol assets, docs, README.md, LICENSE.
+Target-native binaries are added by scripts/build-integrity-packages.sh.
 USAGE
 }
 
@@ -84,6 +85,8 @@ REQUIRED_PATHS=(
   "agents"
   "templates"
   "config"
+  "schemas"
+  "integrity/protocol"
   "docs/manifest-schema.md"
   "docs/grilling-playbook.md"
   "README.md"

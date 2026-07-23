@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-23",
+  "decisionRule": {
+    "supportedRequires": [
+      "native-target-package-execution",
+      "offline-invocation",
+      "stdin-stdout-fidelity",
+      "exit-transport",
+      "claude-package-content-parity",
+      "codex-package-content-parity"
+    ],
+    "supplementalOnly": [
+      "cross-compilation",
+      "emulation",
+      "direct-source-execution",
+      "installed-host-adapter-invocation-before-wp4"
+    ]
+  },
+  "sources": [
+    {
+      "id": "anthropic-plugin-reference",
+      "authority": "Anthropic",
+      "url": "https://code.claude.com/docs/en/plugins-reference",
+      "supports": [
+        "claude-plugin-bin-directory",
+        "claude-plugin-root-bundled-binaries"
+      ]
+    },
+    {
+      "id": "anthropic-hooks-reference",
+      "authority": "Anthropic",
+      "url": "https://code.claude.com/docs/en/hooks",
+      "supports": [
+        "claude-exec-form-hooks",
+        "windows-real-executable-invocation",
+        "windows-shell-fallback"
+      ]
+    },
+    {
+      "id": "openai-codex-plugins",
+      "authority": "OpenAI",
+      "url": "https://help.openai.com/en/articles/20001256-plugins-in-codex/",
+      "supports": [
+        "codex-plugin-skills",
+        "codex-plugin-apps",
+        "codex-plugin-app-templates"
+      ],
+      "doesNotEstablish": [
+        "target-selected-native-binary-packages",
+        "native-binary-signing-policy",
+        "native-binary-path-resolution",
+        "native-binary-preflight-invocation"
+      ]
+    },
+    {
+      "id": "github-hosted-runners",
+      "authority": "GitHub",
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "supports": [
+        "generic-linux-macos-windows-runners",
+        "generic-x86-64-arm64-runner-options"
+      ],
+      "limitations": [
+        "runner-availability-is-not-installed-host-plugin-evidence",
+        "some-arm64-offerings-are-public-preview"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "id": "linux-x86_64",
+      "os": "linux",
+      "architecture": "x86_64",
+      "state": "supported",
+      "nativeExecution": [{
+        "capturedAt": "2026-07-23T11:17:51Z",
+        "kernel": "Linux 6.17.0-1028-oem",
+        "binarySha256": "0bafeebdcb30c6a4e7f52063baca98ea3a72139bd48e3a8909795644cf5d5360",
+        "result": "pass"
+      }],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    },
+    {"id":"linux-arm64","os":"linux","architecture":"arm64","state":"candidate","nativeExecution":[],"claudePackageEvidence":[],"codexPackageEvidence":[]},
+    {"id":"macos-x86_64","os":"macos","architecture":"x86_64","state":"candidate","nativeExecution":[],"claudePackageEvidence":[],"codexPackageEvidence":[]},
+    {"id":"macos-arm64","os":"macos","architecture":"arm64","state":"candidate","nativeExecution":[],"claudePackageEvidence":[],"codexPackageEvidence":[]},
+    {"id":"windows-x86_64","os":"windows","architecture":"x86_64","state":"candidate","nativeExecution":[],"claudePackageEvidence":[],"codexPackageEvidence":[]},
+    {"id":"windows-arm64","os":"windows","architecture":"arm64","state":"candidate","nativeExecution":[],"claudePackageEvidence":[],"codexPackageEvidence":[]}
+  ],
+  "summary": {
+    "candidateTargets": 5,
+    "supportedTargets": 1,
+    "unsupportedTargets": 0,
+    "evidenceGapTargets": 0,
+    "assumption1": "validation-path-established",
+    "assumption2": "validation-path-established",
+    "gate": "implementation-unblocked",
+    "scopeRevisionApprovedByUser": "approve scope revision",
+    "installedHostAdapterMatrixOwner": "WP4"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "candidate",
+  "targets": [
+    {"id":"linux-x86_64","os":"linux","architecture":"x86_64","executable":"ff-integrity-classify","state":"supported"},
+    {"id":"linux-arm64","os":"linux","architecture":"arm64","executable":"ff-integrity-classify","state":"candidate"},
+    {"id":"macos-x86_64","os":"macos","architecture":"x86_64","executable":"ff-integrity-classify","state":"candidate"},
+    {"id":"macos-arm64","os":"macos","architecture":"arm64","executable":"ff-integrity-classify","state":"candidate"},
+    {"id":"windows-x86_64","os":"windows","architecture":"x86_64","executable":"ff-integrity-classify.exe","state":"candidate"},
+    {"id":"windows-arm64","os":"windows","architecture":"arm64","executable":"ff-integrity-classify.exe","state":"candidate"}
+  ]
+}

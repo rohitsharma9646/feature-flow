@@ -1,0 +1,23 @@
+{
+  "catalogVersion": 1,
+  "diagnostics": [
+    {"code":"FFI_INVALID_JSON","severity":"error","meaning":"Manifest bytes are invalid JSON or the root is not an object.","remediation":"Restore valid object JSON from evidence or an authorized snapshot."},
+    {"code":"FFI_SCHEMA_INVALID","severity":"error","meaning":"A current-version manifest fails structural validation.","remediation":"Repair the structural field through an authorized recovery procedure."},
+    {"code":"FFI_SCHEMA_VERSION_UNSUPPORTED","severity":"error","meaning":"The explicit schema version is not supported by this kernel.","remediation":"Use a compatible kernel or registered migration."},
+    {"code":"FFI_LEGACY_MIGRATION_REQUIRED","severity":"error","meaning":"The manifest is legacy and requires explicit migration before mutation.","remediation":"Run read-only diagnosis and an explicit migration preview."},
+    {"code":"FFI_ENUM_INVALID","severity":"error","meaning":"A structural enum value is invalid.","remediation":"Use a value allowed by Manifest v1."},
+    {"code":"FFI_IDENTITY_MISSING","severity":"error","meaning":"A required protocol identity field is missing.","remediation":"Use an authorized recovery or migration procedure."},
+    {"code":"FFI_ARTIFACT_POINTER_MISSING","severity":"error","meaning":"A required canonical artifact pointer is absent or unresolved.","remediation":"Restore the canonical artifact pointer through an authorized procedure."},
+    {"code":"FFI_ARTIFACT_PATH_ESCAPE","severity":"error","meaning":"An artifact or evidence pointer escapes an approved root.","remediation":"Use a contained logical pointer under an approved root."},
+    {"code":"FFI_ARTIFACT_MIRROR_MISMATCH","severity":"error","meaning":"A phase display mirror disagrees with the canonical artifact pointer.","remediation":"Reconcile the mirror to the canonical pointer without changing its target."},
+    {"code":"FFI_MIGRATION_AMBIGUOUS","severity":"error","meaning":"Legacy intent cannot be safely projected into Manifest v1.","remediation":"Resolve the ambiguity explicitly before migration."},
+    {"code":"FFI_MIGRATION_POINTER_DRIFT","severity":"error","meaning":"An artifact pointer target changes during migration.","remediation":"Abort migration and preserve the source bytes."},
+    {"code":"FFI_REVISION_UNSUPPORTED","severity":"error","meaning":"A code revision cannot be established.","remediation":"Restore the required repository capability before mutation."},
+    {"code":"FFI_REVISION_SCOPE_DRIFT","severity":"error","meaning":"A changed path is not classified by the declared revision scope.","remediation":"Classify the path explicitly before continuing."},
+    {"code":"FFI_REVISION_MISMATCH","severity":"error","meaning":"Stored and observed code revisions differ.","remediation":"Re-run assurance on the observed revision."},
+    {"code":"FFI_ATTESTATION_STALE","severity":"error","meaning":"An assurance result covers a different code revision.","remediation":"Record new assurance for the observed revision."},
+    {"code":"FFI_TERMINAL_INCONSISTENT","severity":"error","meaning":"The run claims done without satisfying terminal convergence.","remediation":"Reopen the required assurance phase and converge on one revision."},
+    {"code":"FFI_LOCK_STALE","severity":"warning","meaning":"An advisory lock exceeds the freshness policy.","remediation":"Inspect ownership before clearing or replacing the lock."},
+    {"code":"FFI_CAPABILITY_DEGRADED","severity":"warning/error","meaning":"A required host capability is unavailable.","remediation":"Restore the capability; mutation treats this diagnostic as an error."}
+  ]
+}

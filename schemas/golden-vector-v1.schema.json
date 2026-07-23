@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/golden-vector-v1.schema.json",
+  "type": "object",
+  "required": ["vectorVersion", "vectors"],
+  "properties": {
+    "vectorVersion": {"const": 1},
+    "vectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "protocolVersion", "inputRef", "expectedClassification", "expectedDiagnosticCodes", "applicability", "sourcePackageParity"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^M-[A-Z0-9-]+$"},
+          "protocolVersion": {"const": 1},
+          "inputRef": {"type": "string", "pattern": "^manifests/[a-z0-9-]+\\.(json|raw)$"},
+          "expectedClassification": {"enum": ["CURRENT_STRUCTURAL_VALID", "LEGACY_UNVERSIONED", "UNSUPPORTED_FUTURE", "CORRUPT", "CURRENT_STRUCTURAL_INVALID", "UNSUPPORTED_OLD"]},
+          "expectedDiagnosticCodes": {"type": "array", "items": {"type": "string", "pattern": "^FFI_[A-Z0-9_]+$"}},
+          "applicability": {"type": "array", "minItems": 1, "items": {"enum": ["WP1", "WP2", "WP3", "WP4"]}},
+          "sourcePackageParity": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

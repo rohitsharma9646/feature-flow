@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/manifest-v1.schema.json",
+  "title": "Feature Flow Manifest v1",
+  "type": "object",
+  "required": ["schemaVersion", "slug", "runId", "track", "tier", "createdAt", "updatedAt", "closedAt", "autopilot", "currentPhase", "phases", "signOff", "lock", "artifacts", "code", "assurance", "migration"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "slug": {"type": "string", "minLength": 1},
+    "runId": {"type": "string", "minLength": 1},
+    "track": {"enum": ["feature", "bugfix"]},
+    "tier": {"enum": ["full", "lite"]},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "updatedAt": {"type": "string", "format": "date-time"},
+    "closedAt": {"type": ["string", "null"], "format": "date-time"},
+    "autopilot": {"type": "boolean"},
+    "currentPhase": {"enum": ["explore", "clarify", "design", "plan", "diagnose", "implement", "review", "verify", "done", "abandoned"]},
+    "phases": {
+      "type": "object",
+      "properties": {
+        "explore": {"$ref": "#/$defs/phase"},
+        "clarify": {"$ref": "#/$defs/phase"},
+        "design": {"$ref": "#/$defs/phase"},
+        "plan": {"$ref": "#/$defs/phase"},
+        "diagnose": {"$ref": "#/$defs/phase"},
+        "implement": {"$ref": "#/$defs/phase"},
+        "review": {"$ref": "#/$defs/phase"},
+        "verify": {"$ref": "#/$defs/phase"},
+        "deliver": {"$ref": "#/$defs/phase"}
+      },
+      "additionalProperties": false
+    },
+    "signOff": {"$ref": "#/$defs/signOff"},
+    "lock": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/lock"}]},
+    "bugfix": {"$ref": "#/$defs/bugfix"},
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/pointer"}
+    },
+    "code": {"$ref": "#/$defs/code"},
+    "assurance": {"$ref": "#/$defs/assurance"},
+    "migration": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/migration"}]}
+  },
+  "$defs": {
+    "pointer": {"type": "string", "minLength": 1},
+    "phase": {
+      "type": "object",
+      "required": ["status", "artifact"],
+      "properties": {
+        "status": {"enum": ["pending", "in_progress", "complete"]},
+        "artifact": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "lock": {
+      "type": "object",
+      "required": ["owner", "acquiredAt"],
+      "properties": {
+        "owner": {"type": "string", "minLength": 1},
+        "acquiredAt": {"type": "string", "format": "date-time"}
+      },
+      "additionalProperties": false
+    },
+    "testEvidence": {
+      "type": "object",
+      "required": ["command", "exit", "evidence"],
+      "properties": {
+        "command": {"type": "string", "minLength": 1},
+        "exit": {"type": "integer"},
+        "evidence": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "bugfix": {
+      "type": "object",
+      "properties": {
+        "red": {"$ref": "#/$defs/testEvidence"},
+        "green": {"$ref": "#/$defs/testEvidence"}
+      },
+      "additionalProperties": false
+    },
+    "actor": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["user", "agent", "system"]},
+        "id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "signOff": {
+      "type": "object",
+      "required": ["required", "signed", "date", "actor", "evidenceRef"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "signed": {"type": "boolean"},
+        "date": {"type": ["string", "null"], "format": "date"},
+        "actor": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/actor"}]},
+        "evidenceRef": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "revision": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["status", "algorithm", "id", "computedAt"],
+          "properties": {
+            "status": {"const": "ready"},
+            "algorithm": {"const": "ff-code-revision-v1"},
+            "id": {"type": "string", "pattern": "^ffr1:[0-9a-f]+$"},
+            "computedAt": {"type": "string", "format": "date-time"}
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["status", "diagnostic"],
+          "properties": {
+            "status": {"const": "unsupported"},
+            "diagnostic": {"const": "FFI_REVISION_UNSUPPORTED"}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "code": {
+      "type": "object",
+      "required": ["baseline", "scope", "revision"],
+      "properties": {
+        "baseline": {"$ref": "#/$defs/baseline"},
+        "scope": {"$ref": "#/$defs/scope"},
+        "revision": {"$ref": "#/$defs/revision"}
+      },
+      "additionalProperties": false
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["repositoryKind", "repositoryIdentity", "worktreeIdentity", "head", "startSnapshotDigest"],
+      "properties": {
+        "repositoryKind": {"enum": ["git", "non-git"]},
+        "repositoryIdentity": {"type": "string", "minLength": 1},
+        "worktreeIdentity": {"type": "string", "minLength": 1},
+        "head": {"type": ["string", "null"]},
+        "startSnapshotDigest": {"$ref": "#/$defs/digest"}
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": ["trackedPaths", "includedUntrackedPaths", "exclusions"],
+      "properties": {
+        "trackedPaths": {"type": "array", "items": {"type": "string"}},
+        "includedUntrackedPaths": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "reason", "baselineStateDigest"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "reason": {"type": "string", "minLength": 1},
+              "baselineStateDigest": {"$ref": "#/$defs/digest"}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "attestation": {
+      "type": "object",
+      "required": ["kind", "status", "codeRevision", "producer", "recordedAt", "evidenceRefs"],
+      "properties": {
+        "kind": {"enum": ["review", "verification"]},
+        "status": {"enum": ["passed", "failed", "unavailable"]},
+        "codeRevision": {"type": "string", "pattern": "^ffr1:[0-9a-f]+$"},
+        "producer": {"$ref": "#/$defs/actor"},
+        "recordedAt": {"type": "string", "format": "date-time"},
+        "evidenceRefs": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "assurance": {
+      "type": "object",
+      "required": ["review", "verification"],
+      "properties": {
+        "review": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/attestation"}]},
+        "verification": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/attestation"}]}
+      },
+      "additionalProperties": false
+    },
+    "migration": {
+      "type": "object",
+      "required": ["sourceVersion", "sourceDigest", "migratedAt", "toolVersion"],
+      "properties": {
+        "sourceVersion": {"type": "integer"},
+        "sourceDigest": {"$ref": "#/$defs/digest"},
+        "migratedAt": {"type": "string", "format": "date-time"},
+        "toolVersion": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"track": {"const": "feature"}, "tier": {"const": "full"}}, "required": ["track", "tier"]},
+      "then": {
+        "properties": {
+          "signOff": {"properties": {"required": {"const": true}}},
+          "currentPhase": {"enum": ["explore", "clarify", "design", "plan", "implement", "review", "verify", "done", "abandoned"]},
+          "phases": {"propertyNames": {"enum": ["explore", "clarify", "design", "plan", "implement", "review", "verify", "deliver"]}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"track": {"const": "feature"}, "tier": {"const": "lite"}}, "required": ["track", "tier"]},
+      "then": {
+        "properties": {
+          "signOff": {"properties": {"required": {"const": true}}},
+          "currentPhase": {"enum": ["explore", "clarify", "implement", "review", "verify", "done", "abandoned"]},
+          "phases": {"propertyNames": {"enum": ["explore", "clarify", "implement", "review", "verify", "deliver"]}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"track": {"const": "bugfix"}}, "required": ["track"]},
+      "then": {
+        "properties": {
+          "currentPhase": {"enum": ["diagnose", "plan", "implement", "verify", "review", "done", "abandoned"]},
+          "phases": {"propertyNames": {"enum": ["diagnose", "plan", "implement", "verify", "review", "deliver"]}}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "vectorVersion": 1,
+  "vectors": [
+    {"id":"M-CURRENT-FEATURE","protocolVersion":1,"inputRef":"manifests/current-feature.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1"],"sourcePackageParity":true},
+    {"id":"M-CURRENT-BUGFIX","protocolVersion":1,"inputRef":"manifests/current-bugfix.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1"],"sourcePackageParity":true},
+    {"id":"M-LEGACY","protocolVersion":1,"inputRef":"manifests/legacy.json","expectedClassification":"LEGACY_UNVERSIONED","expectedDiagnosticCodes":["FFI_LEGACY_MIGRATION_REQUIRED"],"applicability":["WP1","WP2"],"sourcePackageParity":true},
+    {"id":"M-CORRUPT","protocolVersion":1,"inputRef":"manifests/corrupt.raw","expectedClassification":"CORRUPT","expectedDiagnosticCodes":["FFI_INVALID_JSON"],"applicability":["WP1","WP2"],"sourcePackageParity":true},
+    {"id":"M-FUTURE","protocolVersion":1,"inputRef":"manifests/future.json","expectedClassification":"UNSUPPORTED_FUTURE","expectedDiagnosticCodes":["FFI_SCHEMA_VERSION_UNSUPPORTED"],"applicability":["WP1","WP2"],"sourcePackageParity":true},
+    {"id":"M-ENUM","protocolVersion":1,"inputRef":"manifests/enum.json","expectedClassification":"CURRENT_STRUCTURAL_INVALID","expectedDiagnosticCodes":["FFI_ENUM_INVALID"],"applicability":["WP1"],"sourcePackageParity":true},
+    {"id":"M-MIRROR","protocolVersion":1,"inputRef":"manifests/mirror.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1","WP3"],"sourcePackageParity":true},
+    {"id":"M-TERMINAL","protocolVersion":1,"inputRef":"manifests/terminal.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1","WP3"],"sourcePackageParity":true},
+    {"id":"M-LOCKED","protocolVersion":1,"inputRef":"manifests/locked.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1","WP2"],"sourcePackageParity":true},
+    {"id":"M-OLD-UNSUPPORTED","protocolVersion":1,"inputRef":"manifests/old-unsupported.json","expectedClassification":"UNSUPPORTED_OLD","expectedDiagnosticCodes":["FFI_SCHEMA_VERSION_UNSUPPORTED"],"applicability":["WP1","WP2"],"sourcePackageParity":true},
+    {"id":"M-CURRENT-SEMANTIC","protocolVersion":1,"inputRef":"manifests/current-semantic.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1","WP3"],"sourcePackageParity":true},
+    {"id":"M-PATH-TRAVERSAL","protocolVersion":1,"inputRef":"manifests/path-traversal.json","expectedClassification":"CURRENT_STRUCTURAL_VALID","expectedDiagnosticCodes":[],"applicability":["WP1","WP2"],"sourcePackageParity":true}
+  ]
+}
