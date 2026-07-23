@@ -123,7 +123,11 @@ copy_path() {
   mkdir -p "$(dirname "$dest")"
   if [[ -d "$src" ]]; then
     mkdir -p "$dest"
-    rsync -a --delete "$src/" "$dest/"
+    if command -v rsync >/dev/null 2>&1; then
+      rsync -a --delete "$src/" "$dest/"
+    else
+      cp -R "$src/." "$dest/"
+    fi
   else
     cp -p "$src" "$dest"
   fi
