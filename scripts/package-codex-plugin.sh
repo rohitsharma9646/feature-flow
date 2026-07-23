@@ -26,9 +26,10 @@ Options:
   --dry-run        Print the copy plan without writing files.
   -h, --help       Show this help.
 
-The package intentionally includes only Codex runtime content:
+The package intentionally includes Codex runtime content:
   .codex-plugin, skills, commands, agents, templates, config,
-  docs/manifest-schema.md, docs/grilling-playbook.md, README.md, LICENSE
+  schemas, integrity protocol assets, docs, README.md, LICENSE.
+Target-native binaries are added by scripts/build-integrity-packages.sh.
 USAGE
 }
 
@@ -90,7 +91,13 @@ REQUIRED_PATHS=(
   "LICENSE"
 )
 
-for rel in "${REQUIRED_PATHS[@]}"; do
+ASSET_FILES=(
+  "schemas/manifest-v1.schema.json"
+  "schemas/golden-vector-v1.schema.json"
+  "integrity/protocol/v1/diagnostics.json"
+)
+
+for rel in "${REQUIRED_PATHS[@]}" "${ASSET_FILES[@]}"; do
   [[ -e "$REPO_ROOT/$rel" ]] || die "required path missing: $rel"
 done
 
@@ -116,13 +123,20 @@ copy_path() {
   mkdir -p "$(dirname "$dest")"
   if [[ -d "$src" ]]; then
     mkdir -p "$dest"
-    rsync -a --delete "$src/" "$dest/"
+    if command -v rsync >/dev/null 2>&1; then
+      rsync -a --delete "$src/" "$dest/"
+    else
+      cp -R "$src/." "$dest/"
+    fi
   else
     cp -p "$src" "$dest"
   fi
 }
 
 for rel in "${REQUIRED_PATHS[@]}"; do
+  copy_path "$rel"
+done
+for rel in "${ASSET_FILES[@]}"; do
   copy_path "$rel"
 done
 
@@ -132,6 +146,10 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
       die "forbidden path copied into package: $forbidden"
     fi
   done
+  if find "$OUTPUT/schemas" "$OUTPUT/integrity/protocol" -type f -name '*.go' -print -quit |
+      grep -q .; then
+    die "Go source copied into runtime-only schema/protocol assets"
+  fi
 fi
 
 if [[ "$INSTALL_LINK" -eq 1 ]]; then

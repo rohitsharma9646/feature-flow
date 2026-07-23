@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "supported",
+  "targets": [
+    {"id":"linux-x86_64","os":"linux","architecture":"x86_64","goos":"linux","goarch":"amd64","runner":"ubuntu-latest","executable":"ff-integrity-classify","state":"supported"},
+    {"id":"linux-arm64","os":"linux","architecture":"arm64","goos":"linux","goarch":"arm64","runner":"ubuntu-24.04-arm","executable":"ff-integrity-classify","state":"supported"},
+    {"id":"macos-x86_64","os":"macos","architecture":"x86_64","goos":"darwin","goarch":"amd64","runner":"macos-15-intel","executable":"ff-integrity-classify","state":"supported"},
+    {"id":"macos-arm64","os":"macos","architecture":"arm64","goos":"darwin","goarch":"arm64","runner":"macos-latest","executable":"ff-integrity-classify","state":"supported"},
+    {"id":"windows-x86_64","os":"windows","architecture":"x86_64","goos":"windows","goarch":"amd64","runner":"windows-latest","executable":"ff-integrity-classify.exe","state":"supported"},
+    {"id":"windows-arm64","os":"windows","architecture":"arm64","goos":"windows","goarch":"arm64","runner":"windows-11-arm","executable":"ff-integrity-classify.exe","state":"supported"}
+  ]
+}

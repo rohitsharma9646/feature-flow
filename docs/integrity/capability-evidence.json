@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-23",
+  "decisionRule": {
+    "supportedRequires": [
+      "native-target-package-execution",
+      "offline-invocation",
+      "stdin-stdout-fidelity",
+      "exit-transport",
+      "claude-package-content-parity",
+      "codex-package-content-parity"
+    ],
+    "supplementalOnly": [
+      "cross-compilation",
+      "emulation",
+      "direct-source-execution",
+      "installed-host-adapter-invocation-before-wp4"
+    ]
+  },
+  "sources": [
+    {
+      "id": "anthropic-plugin-reference",
+      "authority": "Anthropic",
+      "url": "https://code.claude.com/docs/en/plugins-reference",
+      "supports": [
+        "claude-plugin-bin-directory",
+        "claude-plugin-root-bundled-binaries"
+      ]
+    },
+    {
+      "id": "anthropic-hooks-reference",
+      "authority": "Anthropic",
+      "url": "https://code.claude.com/docs/en/hooks",
+      "supports": [
+        "claude-exec-form-hooks",
+        "windows-real-executable-invocation",
+        "windows-shell-fallback"
+      ]
+    },
+    {
+      "id": "openai-codex-plugins",
+      "authority": "OpenAI",
+      "url": "https://help.openai.com/en/articles/20001256-plugins-in-codex/",
+      "supports": [
+        "codex-plugin-skills",
+        "codex-plugin-apps",
+        "codex-plugin-app-templates"
+      ],
+      "doesNotEstablish": [
+        "target-selected-native-binary-packages",
+        "native-binary-signing-policy",
+        "native-binary-path-resolution",
+        "native-binary-preflight-invocation"
+      ]
+    },
+    {
+      "id": "github-hosted-runners",
+      "authority": "GitHub",
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "supports": [
+        "generic-linux-macos-windows-runners",
+        "generic-x86-64-arm64-runner-options"
+      ],
+      "limitations": [
+        "runner-availability-is-not-installed-host-plugin-evidence",
+        "some-arm64-offerings-are-public-preview"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "id": "linux-x86_64",
+      "os": "linux",
+      "architecture": "x86_64",
+      "state": "supported",
+      "nativeExecution": [{
+        "capturedAt": "2026-07-23T11:42:34Z",
+        "runner": "ubuntu-latest",
+        "runId": 30004115045,
+        "jobId": 89195981622,
+        "jobUrl": "https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045/job/89195981622",
+        "commit": "e98546d60e3cea184fa6b90b909a8e0915836120",
+        "artifactSha256": "490b5097fedda7b57753cd2dc336ccdc01a2715790274cb28aab639a5d157945",
+        "invocation": "all 12 vectors via source, packaged Claude, and packaged Codex executables",
+        "runtimeDownloads": "none",
+        "signatureStatus": "unsigned-wp1-payload",
+        "stdoutParity": "pass",
+        "stderr": "empty",
+        "exit": 0,
+        "result": "pass"
+      }],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    },
+    {
+      "id": "linux-arm64",
+      "os": "linux",
+      "architecture": "arm64",
+      "state": "supported",
+      "nativeExecution": [{"capturedAt":"2026-07-23T11:42:30Z","runner":"ubuntu-24.04-arm","runId":30004115045,"jobId":89195981621,"jobUrl":"https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045/job/89195981621","commit":"e98546d60e3cea184fa6b90b909a8e0915836120","artifactSha256":"6814f41a0b5c248f0a8a62e5cde66cddf2e7d8ca9c4cb3fc1f8c24e2b3b6b2cb","invocation":"all 12 vectors via source, packaged Claude, and packaged Codex executables","runtimeDownloads":"none","signatureStatus":"unsigned-wp1-payload","stdoutParity":"pass","stderr":"empty","exit":0,"result":"pass"}],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    },
+    {
+      "id": "macos-x86_64",
+      "os": "macos",
+      "architecture": "x86_64",
+      "state": "supported",
+      "nativeExecution": [{"capturedAt":"2026-07-23T11:42:45Z","runner":"macos-15-intel","runId":30004115045,"jobId":89195981587,"jobUrl":"https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045/job/89195981587","commit":"e98546d60e3cea184fa6b90b909a8e0915836120","artifactSha256":"e5e375bd20e0990249f62ae560e3928c4304f4d725f20a15ad7f9a6ee2d03cac","invocation":"all 12 vectors via source, packaged Claude, and packaged Codex executables","runtimeDownloads":"none","signatureStatus":"unsigned-wp1-payload","stdoutParity":"pass","stderr":"empty","exit":0,"result":"pass"}],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    },
+    {
+      "id": "macos-arm64",
+      "os": "macos",
+      "architecture": "arm64",
+      "state": "supported",
+      "nativeExecution": [{"capturedAt":"2026-07-23T11:42:36Z","runner":"macos-latest","runId":30004115045,"jobId":89195981636,"jobUrl":"https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045/job/89195981636","commit":"e98546d60e3cea184fa6b90b909a8e0915836120","artifactSha256":"702f497f92c50797611b5824efe5e344d4e1452bef95e173a9bb590696279573","invocation":"all 12 vectors via source, packaged Claude, and packaged Codex executables","runtimeDownloads":"none","signatureStatus":"unsigned-wp1-payload","stdoutParity":"pass","stderr":"empty","exit":0,"result":"pass"}],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    },
+    {
+      "id": "windows-x86_64",
+      "os": "windows",
+      "architecture": "x86_64",
+      "state": "supported",
+      "nativeExecution": [{"capturedAt":"2026-07-23T11:43:18Z","runner":"windows-latest","runId":30004115045,"jobId":89195981591,"jobUrl":"https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045/job/89195981591","commit":"e98546d60e3cea184fa6b90b909a8e0915836120","artifactSha256":"dcb09c9ede3ea9616d419166025b8913cd2007c766e826f8118959c11961f5ed","invocation":"all 12 vectors via source, packaged Claude, and packaged Codex executables","runtimeDownloads":"none","signatureStatus":"unsigned-wp1-payload","stdoutParity":"pass","stderr":"empty","exit":0,"result":"pass"}],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    },
+    {
+      "id": "windows-arm64",
+      "os": "windows",
+      "architecture": "arm64",
+      "state": "supported",
+      "nativeExecution": [{"capturedAt":"2026-07-23T11:43:17Z","runner":"windows-11-arm","runId":30004115045,"jobId":89195981590,"jobUrl":"https://github.com/rohitsharma9646/feature-flow/actions/runs/30004115045/job/89195981590","commit":"e98546d60e3cea184fa6b90b909a8e0915836120","artifactSha256":"eb532b747f9113218714faced7467105891f622e4f0c9a8b9dfa89cb778b6844","invocation":"all 12 vectors via source, packaged Claude, and packaged Codex executables","runtimeDownloads":"none","signatureStatus":"unsigned-wp1-payload","stdoutParity":"pass","stderr":"empty","exit":0,"result":"pass"}],
+      "claudePackageEvidence": [{"layoutParity":"pass","smoke":"pass"}],
+      "codexPackageEvidence": [{"layoutParity":"pass","smoke":"pass"}]
+    }
+  ],
+  "summary": {
+    "candidateTargets": 0,
+    "supportedTargets": 6,
+    "unsupportedTargets": 0,
+    "evidenceGapTargets": 0,
+    "assumption1": "validation-path-established",
+    "assumption2": "validation-path-established",
+    "gate": "supported-matrix-complete",
+    "scopeRevisionApprovedByUser": "approve scope revision",
+    "installedHostAdapterMatrixOwner": "WP4"
+  }
+}
