@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math/big"
 	"strings"
 
+	protocolv1 "github.com/rohitsharma9646/feature-flow/integrity/protocol/v1"
 	"github.com/rohitsharma9646/feature-flow/schemas"
 	jsonschema "github.com/santhosh-tekuri/jsonschema/v6"
 )
@@ -18,7 +20,7 @@ func one(class ManifestClass, code string) Result {
 	if code == "FFI_SCHEMA_VERSION_UNSUPPORTED" || code == "FFI_LEGACY_MIGRATION_REQUIRED" {
 		pointer = "/schemaVersion"
 	}
-	return Result{ProtocolVersion: 1, Classification: class, Diagnostics: []Diagnostic{diagnostic(code, pointer)}}
+	return Result{ProtocolVersion: protocolv1.ProtocolVersion, Classification: class, Diagnostics: []Diagnostic{diagnostic(code, pointer)}}
 }
 
 func Classify(raw []byte) Result {
@@ -40,17 +42,18 @@ func Classify(raw []byte) Result {
 	n, ok := version.(json.Number)
 	if !ok || strings.ContainsAny(n.String(), ".eE") {
 		d := diagnostic("FFI_SCHEMA_INVALID", "/schemaVersion")
-		return Result{1, CurrentStructuralInvalid, []Diagnostic{d}}
+		return Result{protocolv1.ProtocolVersion, CurrentStructuralInvalid, []Diagnostic{d}}
 	}
-	v, err := n.Int64()
-	if err != nil {
+	var v big.Int
+	if _, ok := v.SetString(n.String(), 10); !ok {
 		d := diagnostic("FFI_SCHEMA_INVALID", "/schemaVersion")
-		return Result{1, CurrentStructuralInvalid, []Diagnostic{d}}
+		return Result{protocolv1.ProtocolVersion, CurrentStructuralInvalid, []Diagnostic{d}}
 	}
-	if v > 1 {
+	manifestVersion := big.NewInt(protocolv1.ManifestVersion)
+	if v.Cmp(manifestVersion) > 0 {
 		return one(UnsupportedFuture, "FFI_SCHEMA_VERSION_UNSUPPORTED")
 	}
-	if v < 1 {
+	if v.Cmp(manifestVersion) < 0 {
 		return one(UnsupportedOld, "FFI_SCHEMA_VERSION_UNSUPPORTED")
 	}
 	compiler := jsonschema.NewCompiler()
@@ -65,11 +68,11 @@ func Classify(raw []byte) Result {
 	}
 	if err := schema.Validate(value); err != nil {
 		if ve := new(jsonschema.ValidationError); errors.As(err, &ve) {
-			return Result{1, CurrentStructuralInvalid, schemaDiagnostics(ve)}
+			return Result{protocolv1.ProtocolVersion, CurrentStructuralInvalid, schemaDiagnostics(ve)}
 		}
 		return one(CurrentStructuralInvalid, "FFI_SCHEMA_INVALID")
 	}
-	return Result{ProtocolVersion: 1, Classification: CurrentStructuralValid, Diagnostics: []Diagnostic{}}
+	return Result{ProtocolVersion: protocolv1.ProtocolVersion, Classification: CurrentStructuralValid, Diagnostics: []Diagnostic{}}
 }
 
 func jsonPointer(parts []string) string {

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	protocolv1 "github.com/rohitsharma9646/feature-flow/integrity/protocol/v1"
 	"github.com/rohitsharma9646/feature-flow/schemas"
 	jsonschema "github.com/santhosh-tekuri/jsonschema/v6"
 )
@@ -17,7 +18,7 @@ func TestAllVectors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if index.VectorVersion != 1 || len(index.Vectors) != 12 {
+	if index.VectorVersion != protocolv1.GoldenVectorVersion || len(index.Vectors) != 12 {
 		t.Fatalf("version=%d vectors=%d", index.VectorVersion, len(index.Vectors))
 	}
 	seen := map[string]bool{}

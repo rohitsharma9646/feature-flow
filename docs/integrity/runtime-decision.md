@@ -36,10 +36,12 @@ package-content parity are WP1; installed-host adapter activation is WP4.
 
 - Stdin-only classifier; no filename or write API.
 - Public diagnostics are catalogue-owned, never validator-native.
-- macOS/Windows signing behavior must be captured by native target evidence.
+- WP1 records unsigned native execution explicitly. Marketplace signing, notarization, and
+  reputation behavior are installed-host release concerns owned by WP4.
 - Every toolchain or dependency upgrade replays byte-golden vectors.
 
 ## Reopen conditions
 
-Reopen if the validator fails conformance, a declared target cannot execute, package layouts cannot
-preserve assets, or signing/offline distribution is infeasible.
+Reopen WP1 if the validator fails conformance, a declared target cannot execute, or package layouts
+cannot preserve assets. WP4 must reopen release readiness if signing or installed-host offline
+distribution is infeasible.

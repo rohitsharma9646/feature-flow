@@ -6,17 +6,23 @@ on:
   pull_request:
 
 jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: targets
+        shell: bash
+        run: |
+          matrix="$(jq -c '{include: [.targets[] | select(.state == "supported") | {target: .id, runner: .runner}]}' release/targets.json)"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
   native-package:
+    needs: inventory
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - {target: linux-x86_64, runner: ubuntu-latest}
-          - {target: linux-arm64, runner: ubuntu-24.04-arm}
-          - {target: macos-x86_64, runner: macos-15-intel}
-          - {target: macos-arm64, runner: macos-latest}
-          - {target: windows-x86_64, runner: windows-latest}
-          - {target: windows-arm64, runner: windows-11-arm}
+      matrix: ${{ fromJSON(needs.inventory.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -30,17 +36,9 @@ jobs:
       - name: Assemble target packages
         shell: bash
         run: bash scripts/build-integrity-packages.sh "${{ matrix.target }}"
-      - name: Native packaged smoke
+      - name: Native full source/package conformance
         shell: bash
-        run: |
-          case "${{ runner.os }}" in
-            Windows) exe="dist/integrity/${{ matrix.target }}/claude/bin/ff-integrity-classify.exe" ;;
-            *) exe="dist/integrity/${{ matrix.target }}/claude/bin/ff-integrity-classify"; chmod +x "$exe" ;;
-          esac
-          "$exe" < integrity/testdata/manifests/current-feature.json > source.out
-          codex_exe="${exe/\\/claude\\//\\/codex\\/}"
-          "$codex_exe" < integrity/testdata/manifests/current-feature.json > codex.out
-          cmp source.out codex.out
+        run: bash scripts/check-integrity-package-conformance.sh "${{ matrix.target }}"
       - uses: actions/upload-artifact@v4
         with:
           name: integrity-${{ matrix.target }}

@@ -17,7 +17,8 @@ func TestClassificationBranches(t *testing.T) {
 		{"bool invalid", `{"schemaVersion":true}`, CurrentStructuralInvalid},
 		{"decimal invalid", `{"schemaVersion":1.0}`, CurrentStructuralInvalid},
 		{"exponent invalid", `{"schemaVersion":1e0}`, CurrentStructuralInvalid},
-		{"overflow invalid", `{"schemaVersion":999999999999999999999999}`, CurrentStructuralInvalid},
+		{"arbitrarily large future", `{"schemaVersion":999999999999999999999999}`, UnsupportedFuture},
+		{"arbitrarily small old", `{"schemaVersion":-999999999999999999999999}`, UnsupportedOld},
 		{"future", `{"schemaVersion":2}`, UnsupportedFuture},
 		{"old", `{"schemaVersion":0}`, UnsupportedOld},
 		{"current invalid", `{"schemaVersion":1}`, CurrentStructuralInvalid},
@@ -45,7 +46,7 @@ func FuzzClassifierDeterministic(f *testing.F) {
 		`{}`,
 		`{"schemaVersion":1}`,
 		`{"schemaVersion":2}`,
-		validFeature,
+		string(fixture(f, "current-feature.json")),
 	} {
 		f.Add([]byte(seed))
 	}

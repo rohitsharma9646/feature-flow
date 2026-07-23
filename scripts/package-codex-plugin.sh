@@ -85,15 +85,19 @@ REQUIRED_PATHS=(
   "agents"
   "templates"
   "config"
-  "schemas"
-  "integrity/protocol"
   "docs/manifest-schema.md"
   "docs/grilling-playbook.md"
   "README.md"
   "LICENSE"
 )
 
-for rel in "${REQUIRED_PATHS[@]}"; do
+ASSET_FILES=(
+  "schemas/manifest-v1.schema.json"
+  "schemas/golden-vector-v1.schema.json"
+  "integrity/protocol/v1/diagnostics.json"
+)
+
+for rel in "${REQUIRED_PATHS[@]}" "${ASSET_FILES[@]}"; do
   [[ -e "$REPO_ROOT/$rel" ]] || die "required path missing: $rel"
 done
 
@@ -128,6 +132,9 @@ copy_path() {
 for rel in "${REQUIRED_PATHS[@]}"; do
   copy_path "$rel"
 done
+for rel in "${ASSET_FILES[@]}"; do
+  copy_path "$rel"
+done
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
   for forbidden in .git .feature-flow .claude-plugin hooks scripts tests node_modules; do
@@ -135,6 +142,10 @@ if [[ "$DRY_RUN" -eq 0 ]]; then
       die "forbidden path copied into package: $forbidden"
     fi
   done
+  if find "$OUTPUT/schemas" "$OUTPUT/integrity/protocol" -type f -name '*.go' -print -quit |
+      grep -q .; then
+    die "Go source copied into runtime-only schema/protocol assets"
+  fi
 fi
 
 if [[ "$INSTALL_LINK" -eq 1 ]]; then

@@ -4,15 +4,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 target="${1:-}"
-case "$target" in
-  linux-x86_64) goos=linux; goarch=amd64; exe=ff-integrity-classify ;;
-  linux-arm64) goos=linux; goarch=arm64; exe=ff-integrity-classify ;;
-  macos-x86_64) goos=darwin; goarch=amd64; exe=ff-integrity-classify ;;
-  macos-arm64) goos=darwin; goarch=arm64; exe=ff-integrity-classify ;;
-  windows-x86_64) goos=windows; goarch=amd64; exe=ff-integrity-classify.exe ;;
-  windows-arm64) goos=windows; goarch=arm64; exe=ff-integrity-classify.exe ;;
-  *) echo "usage: $0 <linux-x86_64|linux-arm64|macos-x86_64|macos-arm64|windows-x86_64|windows-arm64>" >&2; exit 2 ;;
-esac
+[[ -n "$target" ]] || { echo "usage: $0 <target>" >&2; exit 2; }
+IFS=$'\t' read -r goos goarch exe < <(
+  go run ./cmd/ff-integrity-target release/targets.json "$target"
+)
+[[ -n "$goos" && -n "$goarch" && -n "$exe" ]] ||
+  { echo "target metadata is incomplete: $target" >&2; exit 2; }
 
 output="dist/integrity/$target"
 rm -rf "$output"
@@ -38,10 +35,46 @@ cp integrity/testdata/manifests/current-feature.json "$output/payload/integrity/
   done
 ) > "$output/checksums.sha256"
 
+bash scripts/package-codex-plugin.sh --output "$output/codex"
+
+claude_paths=(
+  ".claude-plugin"
+  "skills"
+  "commands"
+  "agents"
+  "templates"
+  "config"
+  "hooks"
+  "docs/manifest-schema.md"
+  "docs/grilling-playbook.md"
+  "README.md"
+  "LICENSE"
+)
+mkdir -p "$output/claude"
+for rel in "${claude_paths[@]}"; do
+  mkdir -p "$output/claude/$(dirname "$rel")"
+  cp -R "$rel" "$output/claude/$rel"
+done
+
 for host in claude codex; do
-  mkdir -p "$output/$host"
   cp -R "$output/payload/." "$output/$host/"
 done
 
-diff -qr "$output/claude" "$output/codex"
-echo "PASS: assembled $target Claude/Codex payloads are byte-identical"
+for rel in \
+  "bin/$exe" \
+  "schemas/manifest-v1.schema.json" \
+  "schemas/golden-vector-v1.schema.json" \
+  "integrity/protocol/v1/diagnostics.json" \
+  "integrity/testdata/smoke/current-feature.json"; do
+  cmp "$output/claude/$rel" "$output/codex/$rel"
+done
+
+test -f "$output/claude/.claude-plugin/plugin.json"
+test -f "$output/codex/.codex-plugin/plugin.json"
+if find "$output/claude/schemas" "$output/claude/integrity/protocol" \
+    "$output/codex/schemas" "$output/codex/integrity/protocol" \
+    -type f -name '*.go' -print -quit | grep -q .; then
+  echo "FAIL: Go source leaked into a runtime package" >&2
+  exit 1
+fi
+echo "PASS: assembled installable $target Claude/Codex packages with byte-identical integrity payloads"

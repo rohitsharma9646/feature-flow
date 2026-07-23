@@ -48,7 +48,7 @@
       "required": ["status", "artifact"],
       "properties": {
         "status": {"enum": ["pending", "in_progress", "complete"]},
-        "artifact": {"type": ["string", "null"]}
+        "artifact": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/pointer"}]}
       },
       "additionalProperties": false
     },
@@ -101,6 +101,7 @@
       "additionalProperties": false
     },
     "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "revisionId": {"type": "string", "pattern": "^ffr1:[0-9a-f]{64}$"},
     "revision": {
       "oneOf": [
         {
@@ -109,16 +110,18 @@
           "properties": {
             "status": {"const": "ready"},
             "algorithm": {"const": "ff-code-revision-v1"},
-            "id": {"type": "string", "pattern": "^ffr1:[0-9a-f]+$"},
+            "id": {"$ref": "#/$defs/revisionId"},
             "computedAt": {"type": "string", "format": "date-time"}
           },
           "additionalProperties": false
         },
         {
           "type": "object",
-          "required": ["status", "diagnostic"],
+          "required": ["status", "algorithm", "id", "diagnostic"],
           "properties": {
             "status": {"const": "unsupported"},
+            "algorithm": {"const": "ff-code-revision-v1"},
+            "id": {"type": "null"},
             "diagnostic": {"const": "FFI_REVISION_UNSUPPORTED"}
           },
           "additionalProperties": false
@@ -169,16 +172,42 @@
       },
       "additionalProperties": false
     },
+    "producer": {
+      "type": "object",
+      "required": ["kind", "host", "id"],
+      "properties": {
+        "kind": {"enum": ["agent", "human", "ci"]},
+        "host": {"enum": ["claude-code", "codex", "ci", "other"]},
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "invalidation": {
+      "type": "object",
+      "required": ["reason", "detectedAt", "fromRevision", "toRevision"],
+      "properties": {
+        "reason": {"enum": ["implementation_change", "review_repair", "verification_repair", "scope_change", "observed_mismatch"]},
+        "detectedAt": {"type": "string", "format": "date-time"},
+        "fromRevision": {"$ref": "#/$defs/revisionId"},
+        "toRevision": {"$ref": "#/$defs/revisionId"}
+      },
+      "additionalProperties": false
+    },
     "attestation": {
       "type": "object",
-      "required": ["kind", "status", "codeRevision", "producer", "recordedAt", "evidenceRefs"],
+      "required": ["attestationId", "kind", "status", "codeRevision", "producer", "recordedAt", "artifact", "evidenceRefs", "invalidation", "supersedes"],
       "properties": {
+        "attestationId": {"type": "string", "minLength": 1},
         "kind": {"enum": ["review", "verification"]},
         "status": {"enum": ["passed", "failed", "unavailable"]},
-        "codeRevision": {"type": "string", "pattern": "^ffr1:[0-9a-f]+$"},
-        "producer": {"$ref": "#/$defs/actor"},
+        "codeRevision": {"$ref": "#/$defs/revisionId"},
+        "producer": {"$ref": "#/$defs/producer"},
         "recordedAt": {"type": "string", "format": "date-time"},
-        "evidenceRefs": {"type": "array", "items": {"type": "string"}}
+        "artifact": {"type": "string", "minLength": 1},
+        "evidenceRefs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "invalidation": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/invalidation"}]},
+        "supersedes": {"type": ["string", "null"], "minLength": 1}
       },
       "additionalProperties": false
     },
@@ -186,19 +215,33 @@
       "type": "object",
       "required": ["review", "verification"],
       "properties": {
-        "review": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/attestation"}]},
-        "verification": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/attestation"}]}
+        "review": {
+          "anyOf": [
+            {"type": "null"},
+            {"allOf": [{"$ref": "#/$defs/attestation"}, {"properties": {"kind": {"const": "review"}}}]}
+          ]
+        },
+        "verification": {
+          "anyOf": [
+            {"type": "null"},
+            {"allOf": [{"$ref": "#/$defs/attestation"}, {"properties": {"kind": {"const": "verification"}}}]}
+          ]
+        }
       },
       "additionalProperties": false
     },
     "migration": {
       "type": "object",
-      "required": ["sourceVersion", "sourceDigest", "migratedAt", "toolVersion"],
+      "required": ["from", "to", "sourceDigest", "sourceSnapshot", "migratorVersion", "migratedAt", "legacyUnknownPointers", "legacyTerminal"],
       "properties": {
-        "sourceVersion": {"type": "integer"},
+        "from": {"const": "legacy-unversioned"},
+        "to": {"const": 1},
         "sourceDigest": {"$ref": "#/$defs/digest"},
+        "sourceSnapshot": {"$ref": "#/$defs/pointer"},
+        "migratorVersion": {"type": "string", "minLength": 1},
         "migratedAt": {"type": "string", "format": "date-time"},
-        "toolVersion": {"type": "string", "minLength": 1}
+        "legacyUnknownPointers": {"type": "array", "items": {"type": "string"}},
+        "legacyTerminal": {"type": "boolean"}
       },
       "additionalProperties": false
     }
@@ -225,11 +268,22 @@
       }
     },
     {
-      "if": {"properties": {"track": {"const": "bugfix"}}, "required": ["track"]},
+      "if": {"properties": {"track": {"const": "bugfix"}, "tier": {"const": "full"}}, "required": ["track", "tier"]},
       "then": {
         "properties": {
+          "signOff": {"properties": {"required": {"const": true}}},
           "currentPhase": {"enum": ["diagnose", "plan", "implement", "verify", "review", "done", "abandoned"]},
           "phases": {"propertyNames": {"enum": ["diagnose", "plan", "implement", "verify", "review", "deliver"]}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"track": {"const": "bugfix"}, "tier": {"const": "lite"}}, "required": ["track", "tier"]},
+      "then": {
+        "properties": {
+          "signOff": {"properties": {"required": {"const": false}}},
+          "currentPhase": {"enum": ["diagnose", "implement", "verify", "review", "done", "abandoned"]},
+          "phases": {"propertyNames": {"enum": ["diagnose", "implement", "verify", "review", "deliver"]}}
         }
       }
     }
