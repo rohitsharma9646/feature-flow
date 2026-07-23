@@ -46,12 +46,12 @@ supplemental only. They cannot promote a cell to `supported`.
 
 | OS | Architecture | Native package run | Claude package content | Codex package content | State |
 |----|--------------|--------------------|------------------------|-----------------------|-------|
-| Linux | x86-64 | pass (`0bafeebd…d5360`) | pass | pass | supported |
-| Linux | ARM64 | pending | pending | pending | candidate |
-| macOS | x86-64 | pending | pending | pending | candidate |
-| macOS | ARM64 | pending | pending | pending | candidate |
-| Windows | x86-64 | pending | pending | pending | candidate |
-| Windows | ARM64 | pending | pending | pending | candidate |
+| Linux | x86-64 | pass (`261cda5d…b19ae5`) | pass | pass | supported |
+| Linux | ARM64 | pass (`f383a93f…07e692`) | pass | pass | supported |
+| macOS | x86-64 | pass (`78dd011e…323b04`) | pass | pass | supported |
+| macOS | ARM64 | pass (`fa173948…daa1d`) | pass | pass | supported |
+| Windows | x86-64 | pass (`c8bc6b40…6f7ae`) | pass | pass | supported |
+| Windows | ARM64 | pass (`335a768d…ae650`) | pass | pass | supported |
 
 ## Assumption outcomes
 
@@ -61,11 +61,24 @@ supplemental only. They cannot promote a cell to `supported`.
 - **Assumption 2 — validation path established.** GitHub documents native runner capacity for the
   intended target families. Each target remains candidate until its package executes natively.
 
+## Native matrix evidence
+
+GitHub Actions run
+[`30002891745`](https://github.com/rohitsharma9646/feature-flow/actions/runs/30002891745)
+executed commit `2a6c40b244afe7ac240263dd8f5462659f4e6b0c` on all six declared runner
+families. Every job passed unit and conformance tests, target package assembly, native packaged
+smoke invocation, and byte comparison of Claude and Codex outputs. The uploaded artifacts record
+the binary digests shown above.
+
+The packages are self-contained and their invocation performs no download or dependency
+installation. The matrix does not claim marketplace installation, host activation, signing, or
+notarization; those installed-host adapter concerns remain assigned to WP4 under the approved
+scope revision.
+
 ## Gate result
 
-**UNBLOCKED FOR IMPLEMENTATION.** The user approved the work-package boundary revision on
-2026-07-23. Candidate targets may proceed to kernel/package implementation; none becomes
-`supported` until native execution and both package-content checks pass.
+**SUPPORTED MATRIX COMPLETE.** All six declared WP1 targets satisfy native execution and both
+package-content checks. No candidate, unsupported, or evidence-gap cell remains.
 
 No runtime, schema, classifier, package, command, hook, or manifest behavior was changed while
 performing this assessment.
