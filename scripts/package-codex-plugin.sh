@@ -94,7 +94,10 @@ REQUIRED_PATHS=(
 ASSET_FILES=(
   "schemas/manifest-v1.schema.json"
   "schemas/golden-vector-v1.schema.json"
+  "schemas/doctor-result-v1.schema.json"
+  "schemas/migration-plan-v1.schema.json"
   "integrity/protocol/v1/diagnostics.json"
+  "integrity/testdata/legacy/inventory-v1.json"
 )
 
 for rel in "${REQUIRED_PATHS[@]}" "${ASSET_FILES[@]}"; do

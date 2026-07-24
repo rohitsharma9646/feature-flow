@@ -18,6 +18,12 @@
     {"code":"FFI_ATTESTATION_STALE","severity":"error","meaning":"An assurance result covers a different code revision.","remediation":"Record new assurance for the observed revision."},
     {"code":"FFI_TERMINAL_INCONSISTENT","severity":"error","meaning":"The run claims done without satisfying terminal convergence.","remediation":"Reopen the required assurance phase and converge on one revision."},
     {"code":"FFI_LOCK_STALE","severity":"warning","meaning":"An advisory lock exceeds the freshness policy.","remediation":"Inspect ownership before clearing or replacing the lock."},
-    {"code":"FFI_CAPABILITY_DEGRADED","severity":"warning/error","meaning":"A required host capability is unavailable.","remediation":"Restore the capability; mutation treats this diagnostic as an error."}
+    {"code":"FFI_CAPABILITY_DEGRADED","severity":"warning/error","meaning":"A required host capability is unavailable.","remediation":"Restore the capability; mutation treats this diagnostic as an error."},
+    {"code":"FFI_OBSERVATION_FAILED","severity":"error","meaning":"A required run observation could not be completed.","remediation":"Restore read access and retry the read-only operation."},
+    {"code":"FFI_MIGRATION_PLAN_STALE","severity":"error","meaning":"The current migration plan differs from the reviewed plan.","remediation":"Run a new preview and review its digest before applying."},
+    {"code":"FFI_MIGRATION_APPLY_FAILED","severity":"error","meaning":"Migration could not publish the canonical manifest.","remediation":"Inspect recovery metadata; the legacy manifest remains authoritative."},
+    {"code":"FFI_MIGRATION_ORPHAN_SNAPSHOT","severity":"warning","meaning":"A source snapshot remains after canonical publication failed.","remediation":"Retain it as evidence or remove it after verifying the legacy manifest."},
+    {"code":"FFI_MIGRATION_SNAPSHOT_COLLISION","severity":"error","meaning":"A content-addressed snapshot path contains different bytes.","remediation":"Stop and investigate migration evidence corruption."},
+    {"code":"FFI_TERMINAL_CONFIRMATION_REQUIRED","severity":"error","meaning":"Migrating a terminal legacy run requires explicit reopen confirmation.","remediation":"Review the reopen behavior and pass the dedicated confirmation flag."}
   ]
 }

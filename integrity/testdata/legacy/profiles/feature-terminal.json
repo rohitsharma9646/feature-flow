@@ -1,0 +1,1 @@
+{"slug":"legacy-terminal","track":"feature","tier":"full","autopilot":false,"currentPhase":"done","phases":{"review":{"status":"complete","artifact":"review.md"},"verify":{"status":"complete","artifact":"verify.md"}},"signOff":{"required":true,"signed":true,"date":"2026-01-01"},"artifacts":{"review":"review.md","verify":"verify.md"}}

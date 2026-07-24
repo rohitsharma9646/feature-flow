@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"math/big"
 	"strings"
 
+	"github.com/rohitsharma9646/feature-flow/integrity/jsonstrict"
 	protocolv1 "github.com/rohitsharma9646/feature-flow/integrity/protocol/v1"
 	"github.com/rohitsharma9646/feature-flow/schemas"
 	jsonschema "github.com/santhosh-tekuri/jsonschema/v6"
@@ -27,7 +27,7 @@ func Classify(raw []byte) Result {
 	if len(raw) > MaxManifestBytes {
 		return one(Corrupt, "FFI_INVALID_JSON")
 	}
-	value, err := decodeStrict(raw)
+	value, err := jsonstrict.Decode(raw)
 	if err != nil {
 		return one(Corrupt, "FFI_INVALID_JSON")
 	}
@@ -85,74 +85,4 @@ func jsonPointer(parts []string) string {
 		escaped[i] = strings.ReplaceAll(part, "/", "~1")
 	}
 	return "/" + strings.Join(escaped, "/")
-}
-
-func decodeStrict(raw []byte) (any, error) {
-	check := json.NewDecoder(bytes.NewReader(raw))
-	check.UseNumber()
-	if err := checkJSONValue(check); err != nil {
-		return nil, err
-	}
-	if _, err := check.Token(); err != io.EOF {
-		return nil, errors.New("trailing JSON")
-	}
-	dec := json.NewDecoder(bytes.NewReader(raw))
-	dec.UseNumber()
-	var value any
-	if err := dec.Decode(&value); err != nil {
-		return nil, err
-	}
-	if err := dec.Decode(new(any)); err != io.EOF {
-		return nil, errors.New("trailing JSON")
-	}
-	return value, nil
-}
-
-func checkJSONValue(dec *json.Decoder) error {
-	token, err := dec.Token()
-	if err != nil {
-		return err
-	}
-	delim, ok := token.(json.Delim)
-	if !ok {
-		return nil
-	}
-	switch delim {
-	case '{':
-		seen := make(map[string]struct{})
-		for dec.More() {
-			keyToken, err := dec.Token()
-			if err != nil {
-				return err
-			}
-			key, ok := keyToken.(string)
-			if !ok {
-				return errors.New("object key is not a string")
-			}
-			if _, exists := seen[key]; exists {
-				return errors.New("duplicate object key")
-			}
-			seen[key] = struct{}{}
-			if err := checkJSONValue(dec); err != nil {
-				return err
-			}
-		}
-		end, err := dec.Token()
-		if err != nil || end != json.Delim('}') {
-			return errors.New("unterminated object")
-		}
-	case '[':
-		for dec.More() {
-			if err := checkJSONValue(dec); err != nil {
-				return err
-			}
-		}
-		end, err := dec.Token()
-		if err != nil || end != json.Delim(']') {
-			return errors.New("unterminated array")
-		}
-	default:
-		return errors.New("unexpected delimiter")
-	}
-	return nil
 }

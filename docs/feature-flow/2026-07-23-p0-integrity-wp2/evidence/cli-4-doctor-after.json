@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "status": "clean",
+  "exitCode": 0,
+  "runs": [
+    {
+      "slug": "legacy",
+      "logicalPath": "legacy/manifest.json",
+      "classification": "CURRENT_STRUCTURAL_VALID",
+      "diagnostics": []
+    }
+  ]
+}

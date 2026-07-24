@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/doctor-result-v1.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "status", "exitCode", "runs"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "status": {"enum": ["clean", "blocking-integrity", "invocation-failure", "io-failure", "observation-failure"]},
+    "exitCode": {"enum": [0, 1, 2]},
+    "runs": {"type": "array"}
+  },
+  "additionalProperties": false
+}

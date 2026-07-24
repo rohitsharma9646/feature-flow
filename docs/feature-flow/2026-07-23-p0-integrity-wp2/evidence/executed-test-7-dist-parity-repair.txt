@@ -1,0 +1,2 @@
+ok:   checked 45 packaged files (0 drifted, 0 orphaned)
+PASS: dist parity guard (45 files in sync)

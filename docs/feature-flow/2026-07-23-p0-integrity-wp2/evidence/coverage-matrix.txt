@@ -1,0 +1,55 @@
+Feature Flow ff-test-runner coverage matrix
+Run: p0-integrity-wp2
+Tier: full
+
+executed-test
+- go test ./... in golang:1.26.5 Linux container: PASS (exit 0)
+- go test -race ./... in golang:1.26.5 Linux container: PASS (exit 0)
+- repository shell guards in complete Go+jq+rg environment: FAIL (exit 1)
+  18 of 19 guards passed; dist-parity-guard failed on stale legacy inventory copy.
+- scripts/eval.sh: PASS (exit 0); semantic catches explicitly remain manual per harness output.
+- WP2 conformance: PASS (exit 0)
+- linux-x86_64 package conformance: PASS (exit 0)
+
+build/static-analysis
+- go vet ./... in golang:1.26.5 Linux container: PASS (exit 0)
+- linux-x86_64 package assembly: PASS (exit 0)
+- linux-x86_64 cross-build: PASS (exit 0)
+- linux-arm64 cross-build: PASS (exit 0)
+- macos-x86_64 cross-build: PASS (exit 0)
+- macos-arm64 cross-build: PASS (exit 0)
+- windows-x86_64 cross-build: PASS (exit 0)
+- windows-arm64 cross-build: PASS (exit 0)
+  Cross-builds are compilation evidence only, not native execution.
+
+cli-output
+- Disposable Linux CLI doctor before migration: EXPECTED BLOCKING (exit 1)
+- Disposable Linux CLI migration preview: PASS/ready (exit 0)
+- Disposable Linux CLI migration apply: PASS/applied (exit 0)
+- Disposable Linux CLI doctor after migration: PASS/clean (exit 0)
+- Disposable Linux CLI second apply: PASS/already-current (exit 0)
+
+before/after
+- Legacy manifest captured before apply.
+- Canonical manifest and byte-exact source snapshot captured after apply.
+- File lists and SHA-256 values captured before, after apply, and after second apply.
+
+e2e/browser
+- N/A: no browser or UI surface detected for the integrity kernel/CLI.
+
+http/api
+- N/A: no HTTP service or API surface detected.
+
+db
+- N/A: no database surface detected.
+
+logs
+- N/A as an independent runtime surface: command stdout/stderr is embedded in literal records.
+
+Native target execution
+- linux-x86_64: gathered in Docker (tests, race, vet, CLI, package assembly/conformance).
+- linux-arm64: unavailable locally; cross-build only. Evidence gap.
+- macos-x86_64: unavailable locally; cross-build only. Evidence gap.
+- macos-arm64: unavailable locally; cross-build only. Evidence gap.
+- windows-x86_64: unavailable locally; cross-build only. Evidence gap.
+- windows-arm64: unavailable locally; cross-build only. Evidence gap.

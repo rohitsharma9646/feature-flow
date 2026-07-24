@@ -1,0 +1,147 @@
+kind: cli-output, before/after
+fixture: disposable container path /tmp/tmp.ls2wQWfvF5
+
+=== BEFORE ===
+legacy/manifest.json
+f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c  /tmp/tmp.ls2wQWfvF5/legacy/manifest.json
+
+=== DOCTOR BEFORE ===
+command: /tmp/ff-integrity doctor --root <fixture> --format json legacy
+exit_status: 1
+{
+  "schemaVersion": 1,
+  "status": "blocking-integrity",
+  "exitCode": 1,
+  "runs": [
+    {
+      "slug": "legacy",
+      "logicalPath": "legacy/manifest.json",
+      "classification": "LEGACY_UNVERSIONED",
+      "migrationStatus": "ready",
+      "diagnostics": [
+        {
+          "code": "FFI_LEGACY_MIGRATION_REQUIRED",
+          "severity": "error",
+          "jsonPointer": "/schemaVersion",
+          "message": "The manifest is legacy and requires explicit migration before mutation.",
+          "remediation": "Run read-only diagnosis and an explicit migration preview."
+        }
+      ]
+    }
+  ]
+}
+
+=== PREVIEW ===
+command: /tmp/ff-integrity migrate --root <fixture> --to 1 --dry-run --format json legacy
+exit_status: 0
+{
+  "schemaVersion": 1,
+  "status": "ready",
+  "sourceDigest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+  "profileId": "legacy-minimal-feature-v0",
+  "runId": "ffrun1:c0167e1cb03b1fd71e6b0e16c36a5e284c625995189065304e70045014edfb88",
+  "proposed": {
+    "artifacts": {},
+    "assurance": {
+      "review": null,
+      "verification": null
+    },
+    "autopilot": false,
+    "closedAt": null,
+    "code": {
+      "baseline": {
+        "head": null,
+        "repositoryIdentity": "ff-bootstrap-repository-v1:1b6268b49e60a939c9074dc53beddf9c349ab36229746d58ac040de706638008",
+        "repositoryKind": "non-git",
+        "startSnapshotDigest": "sha256:3a2fdd13d4ba4b74c5f1dd12754432f9e52a9ca5546f87bc181c5ed2f5e6575b",
+        "worktreeIdentity": "ff-bootstrap-worktree-v1:a5388e4a607b5928e0ea66efd7fd11a453c9cc8cbac8d3404d9eb1dfe3d87116"
+      },
+      "revision": {
+        "algorithm": "ff-code-revision-v1",
+        "diagnostic": "FFI_REVISION_UNSUPPORTED",
+        "id": null,
+        "status": "unsupported"
+      },
+      "scope": {
+        "exclusions": [],
+        "includedUntrackedPaths": [],
+        "trackedPaths": []
+      }
+    },
+    "createdAt": "1970-01-01T00:00:00Z",
+    "currentPhase": "implement",
+    "lock": null,
+    "migration": null,
+    "phases": {},
+    "runId": "ffrun1:c0167e1cb03b1fd71e6b0e16c36a5e284c625995189065304e70045014edfb88",
+    "schemaVersion": 1,
+    "signOff": {
+      "actor": null,
+      "date": null,
+      "evidenceRef": null,
+      "required": true,
+      "signed": false
+    },
+    "slug": "legacy",
+    "tier": "full",
+    "track": "feature",
+    "updatedAt": "1970-01-01T00:00:00Z"
+  },
+  "legacyUnknownPointers": [],
+  "requiresTerminalConfirmation": false,
+  "applyFinalizers": [
+    {
+      "field": "/migration/migratedAt",
+      "source": "apply-commit-clock"
+    }
+  ],
+  "diagnostics": [],
+  "planDigest": "sha256:00bf254408cf67d91cca17d48adecda4a787f9da4c9cd162ad2e3a302256cf7c"
+}
+
+=== APPLY ===
+command: /tmp/ff-integrity migrate --root <fixture> --to 1 --apply --expect-plan sha256:00bf254408cf67d91cca17d48adecda4a787f9da4c9cd162ad2e3a302256cf7c --format json legacy
+exit_status: 0
+{
+  "status": "applied",
+  "planDigest": "sha256:00bf254408cf67d91cca17d48adecda4a787f9da4c9cd162ad2e3a302256cf7c",
+  "snapshot": "migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json",
+  "diagnostics": []
+}
+
+=== AFTER APPLY ===
+legacy/manifest.json
+legacy/migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json
+203c14a17d046f871339d27452cb5ae249eedc39eb33149b01f192d90cd5b1da  /tmp/tmp.ls2wQWfvF5/legacy/manifest.json
+f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c  /tmp/tmp.ls2wQWfvF5/legacy/migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json
+
+=== DOCTOR AFTER ===
+command: /tmp/ff-integrity doctor --root <fixture> --format json legacy
+exit_status: 0
+{
+  "schemaVersion": 1,
+  "status": "clean",
+  "exitCode": 0,
+  "runs": [
+    {
+      "slug": "legacy",
+      "logicalPath": "legacy/manifest.json",
+      "classification": "CURRENT_STRUCTURAL_VALID",
+      "diagnostics": []
+    }
+  ]
+}
+
+=== IDEMPOTENT SECOND APPLY ===
+command: /tmp/ff-integrity migrate --root <fixture> --to 1 --apply --expect-plan sha256:00bf254408cf67d91cca17d48adecda4a787f9da4c9cd162ad2e3a302256cf7c --format json legacy
+exit_status: 0
+{
+  "status": "already-current",
+  "diagnostics": []
+}
+
+=== AFTER SECOND APPLY ===
+legacy/manifest.json
+legacy/migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json
+203c14a17d046f871339d27452cb5ae249eedc39eb33149b01f192d90cd5b1da  /tmp/tmp.ls2wQWfvF5/legacy/manifest.json
+f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c  /tmp/tmp.ls2wQWfvF5/legacy/migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json

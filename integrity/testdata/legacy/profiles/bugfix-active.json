@@ -1,0 +1,1 @@
+{"slug":"legacy-bugfix","track":"bugfix","tier":"full","autopilot":false,"currentPhase":"implement","phases":{},"signOff":{"required":true,"signed":true,"date":"2026-01-01"},"artifacts":{},"bugfix":{"red":{"command":"test","exit":1,"evidence":"red"},"green":{"command":"test","exit":0,"evidence":"green"}}}

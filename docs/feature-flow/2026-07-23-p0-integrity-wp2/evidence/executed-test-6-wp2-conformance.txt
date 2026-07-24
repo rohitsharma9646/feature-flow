@@ -1,0 +1,26 @@
+kind: executed-test
+command: docker run --rm -v /home/netzwelt/feature-flow:/src:ro -e GOFLAGS=-buildvcs=false golang:1.26.5 bash -c "apt-get update && apt-get install -y jq git && cp -a /src/. /work && cd /work && git config --global --add safe.directory /work && bash scripts/check-integrity-wp2-conformance.sh"
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+debconf: unable to initialize frontend: Teletype
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Noninteractive
+go: downloading golang.org/x/sys v0.34.0
+go: downloading github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
+go: downloading golang.org/x/text v0.14.0
+ok  	github.com/rohitsharma9646/feature-flow/integrity/jsonstrict	0.002s
+?   	github.com/rohitsharma9646/feature-flow/integrity/diagnostics	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/integrity/pathpolicy	0.005s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/observe	0.002s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/doctor	0.007s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/migration	0.021s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/storage	0.192s
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity	0.029s
+exit status 1
+PASS: WP2 doctor and migration conformance
+
+exit_status: 0

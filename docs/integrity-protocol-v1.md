@@ -55,3 +55,23 @@ must not emit migration, repository, artifact, assurance, terminal, or host-adap
 WP1 accepts at most 4 MiB of manifest bytes. Oversized input is classified as corrupt with
 `FFI_INVALID_JSON`. The limit is deterministic and independent of host memory. A later protocol
 major may replace this rule only with new golden vectors and an explicit compatibility note.
+
+## WP2 operation envelopes
+
+Doctor result and migration-plan envelopes are independently versioned at `schemaVersion: 1` and
+validated by `schemas/doctor-result-v1.schema.json` and
+`schemas/migration-plan-v1.schema.json`. They consume but do not extend the classifier contract.
+
+Doctor human and JSON output are renderings of the same typed result. Public diagnostics come from
+the v1 catalogue; logical run paths may be emitted, but raw host errors and untrusted absolute
+paths are not protocol data.
+
+Migration plans are canonical JSON. Their `planDigest` is SHA-256 over the complete plan with the
+digest field empty. The only value intentionally finalized during apply is
+`/migration/migratedAt`, declared in `applyFinalizers` as `apply-commit-clock`. Apply must require
+the reviewed digest, recompute the plan from fresh source and pointer observations, and refuse any
+drift before writing.
+
+WP2 bootstrap identity and revision limitations are normative in
+`docs/integrity/bootstrap-v1.md`. Doctor/migration invocation, retention, and recovery behavior are
+documented in `docs/integrity/wp2-operations.md`.

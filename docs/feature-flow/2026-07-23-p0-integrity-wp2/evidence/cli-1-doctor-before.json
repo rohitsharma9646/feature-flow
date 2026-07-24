@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "status": "blocking-integrity",
+  "exitCode": 1,
+  "runs": [
+    {
+      "slug": "legacy",
+      "logicalPath": "legacy/manifest.json",
+      "classification": "LEGACY_UNVERSIONED",
+      "migrationStatus": "ready",
+      "diagnostics": [
+        {
+          "code": "FFI_LEGACY_MIGRATION_REQUIRED",
+          "severity": "error",
+          "jsonPointer": "/schemaVersion",
+          "message": "The manifest is legacy and requires explicit migration before mutation.",
+          "remediation": "Run read-only diagnosis and an explicit migration preview."
+        }
+      ]
+    }
+  ]
+}

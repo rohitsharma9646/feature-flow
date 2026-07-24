@@ -213,6 +213,22 @@ Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 `paths.spec` / `paths.plan` also exist as legacy per-artifact overrides — see
 `docs/manifest-schema.md` for those and the full resolution rules.
 
+## Native integrity operations
+
+Complete Claude and Codex packages include a directly invocable `ff-integrity` binary:
+
+```sh
+ff-integrity doctor <slug> --format human
+ff-integrity doctor --all --format json
+ff-integrity migrate <slug> --to 1 --dry-run --format json
+ff-integrity migrate <slug> --to 1 --apply --expect-plan sha256:<reviewed-digest>
+```
+
+Doctor and preview are strictly read-only. Apply is explicit, retains the exact legacy bytes, and
+refuses source, profile, plan, or artifact-pointer drift. Terminal runs additionally require
+`--confirm-reopen-terminal`. Existing Feature Flow commands and hooks do not invoke these
+operations automatically. See `docs/integrity/wp2-operations.md`.
+
 ## Troubleshooting
 
 - **Commands not found after install** — fully restart Claude. `/clear` doesn't reload plugins.

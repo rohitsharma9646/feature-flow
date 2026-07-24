@@ -1,0 +1,6 @@
+{
+  "status": "applied",
+  "planDigest": "sha256:00bf254408cf67d91cca17d48adecda4a787f9da4c9cd162ad2e3a302256cf7c",
+  "snapshot": "migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json",
+  "diagnostics": []
+}

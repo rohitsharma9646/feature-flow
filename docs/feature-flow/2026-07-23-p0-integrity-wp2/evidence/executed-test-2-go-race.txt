@@ -1,0 +1,23 @@
+kind: executed-test
+command: docker run --rm -v /home/netzwelt/feature-flow:/src:ro golang:1.26.5 bash -c "cp -a /src/. /work && cd /work && go test -race ./..."
+go: downloading github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
+go: downloading golang.org/x/sys v0.34.0
+go: downloading golang.org/x/text v0.14.0
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity	1.066s
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity-classify	1.034s
+?   	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity-inventory	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity-target	1.016s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/classifier	1.279s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/conformance	1.135s
+?   	github.com/rohitsharma9646/feature-flow/integrity/diagnostics	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/integrity/doctor	1.038s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/jsonstrict	1.014s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/migration	1.092s
+?   	github.com/rohitsharma9646/feature-flow/integrity/migration/v0	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/integrity/observe	1.020s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/pathpolicy	1.017s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/protocol/v1	1.015s
+ok  	github.com/rohitsharma9646/feature-flow/integrity/storage	1.583s
+ok  	github.com/rohitsharma9646/feature-flow/schemas	1.044s
+
+exit_status: 0
