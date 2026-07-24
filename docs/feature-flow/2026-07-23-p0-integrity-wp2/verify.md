@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | Go packages and shell suites | executed-test | yes | pass after one repair | Tests, race, guards, eval, conformance |
 | Six build targets | build/static-analysis | yes | pass | Cross-build only for five non-local targets |
-| Native package/CLI execution | cli-output | partial | gap | Linux x86_64 passed; five native runners unavailable locally |
+| Native package/CLI execution | executed-test + cli-output | yes | pass | All six native GitHub runner cells passed |
 | CLI filesystem lifecycle | before/after | yes | pass | Exact source snapshot and idempotent second apply captured |
 | Browser/UI | e2e/browser | — | N/A | No browser/UI surface detected |
 | HTTP service | http/api | — | N/A | No HTTP/API surface detected |
@@ -107,15 +107,13 @@
 
 ### AC15: Complete native Claude/Codex packages pass on all six targets without activation
 - **Method:** build/static-analysis; executed-test; cli-output
-- **Evidence:** all six cross-builds exited 0; Linux x86_64 package assembly/conformance and boundary guard passed.
-- **Confidence:** Partially verified
-- **Gap:** Linux arm64, both macOS targets, and both Windows targets lack native execution evidence. Cross-builds cannot satisfy this native requirement.
+- **Evidence:** all six cross-builds exited 0; all six native GitHub package jobs, inventory, Linux local package conformance, and the boundary guard passed.
+- **Confidence:** Verified (multi-source)
 
 ### AC16: Versioned corpora cover all named cases, including Unix and Windows replacement behavior
 - **Method:** executed-test; build/static-analysis
-- **Evidence:** WP2 guard/conformance and Go tests exited 0; Windows-tagged tests cross-compile.
-- **Confidence:** Partially verified
-- **Gap:** Windows replacement tests were not executed natively.
+- **Evidence:** WP2 guard/conformance and Go tests exited 0; both Windows native package/test cells passed.
+- **Confidence:** Verified (multi-source)
 
 ### AC17: Existing vectors, commands/hooks, guards, evals, and compatibility tests remain green
 - **Method:** executed-test; build/static-analysis
@@ -135,10 +133,9 @@
 - **Confidence:** Verified (single-source)
 
 ### FS3: Windows/filesystem replacement capability is weaker than assumed
-- **Method:** build/static-analysis
-- **Evidence:** Windows implementation and native tests cross-compile for both architectures.
-- **Confidence:** Partially verified
-- **Gap:** No native Windows filesystem execution was available.
+- **Method:** build/static-analysis; executed-test
+- **Evidence:** Windows implementation/tests cross-compiled and both Windows native GitHub jobs passed.
+- **Confidence:** Verified (multi-source)
 
 ### FS4: Same shallow shape carries behaviorally distinct legacy semantics
 - **Method:** executed-test
@@ -179,9 +176,8 @@
 
 ### SM5: 100% native package execution across all six targets
 - **Method:** executed-test; build/static-analysis
-- **Evidence:** Linux x86_64 native package execution passed; all six targets cross-built.
-- **Confidence:** Partially verified
-- **Gap:** Five target-native executions require the configured CI runners.
+- **Evidence:** all six native package jobs and all six cross-builds passed.
+- **Confidence:** Verified (multi-source)
 
 ## Evidence artifacts index
 
@@ -195,6 +191,7 @@
 | `evidence/executed-test-4-eval.txt` | executed-test | AC17 |
 | `evidence/build-static-analysis-8-linux-package-build.txt`, `evidence/executed-test-5-linux-package-conformance.txt` | build/static-analysis; executed-test | AC14–AC15, AC17, FS5, SM5 |
 | `evidence/executed-test-6-wp2-conformance.txt` | executed-test | AC1–AC16, SM1–SM4 |
+| `evidence/executed-test-8-github-native-matrix.txt` | executed-test | AC15–AC16, FS3, SM5 |
 | `evidence/cli-output-1-doctor-preview-apply-idempotence.txt`, `evidence/cli-execution-wrapper.txt`, `evidence/cli-run.sh` | cli-output | AC2, AC4–AC5, AC8–AC9, AC11, AC13–AC14, FS6 |
 | `evidence/cli-1-doctor-before.json`, `evidence/cli-2-preview.json`, `evidence/cli-3-apply.json`, `evidence/cli-4-doctor-after.json`, `evidence/cli-5-apply-again.json` | cli-output | AC2, AC4–AC5, AC8–AC9, AC11, AC13–AC14 |
 | `evidence/before-1-legacy-manifest.json`, `evidence/after-1-canonical-manifest.json`, `evidence/after-2-source-snapshot.json` | before/after | AC9, AC11, FS6, SM4 |
@@ -212,16 +209,15 @@ risks. Native non-Linux execution and post-commit durability remain outstanding.
 
 ## Limitations & remaining risks
 
-- Five target-native executions require the configured GitHub Actions runners.
-- Cross-build success proves compilation only.
+- GitHub emitted non-blocking Node.js action-runtime deprecation warnings; the matrix remained green.
 - Reviewer-retained Important items include canonical-manifest CAS, post-publication run identity,
   Windows child-temp substitution resistance, and explicit durability/cleanup outcomes.
 
 ## Verdict
 
-**Overall confidence:** Partially verified
+**Overall confidence:** Verified (single-source)
 
-**Verdict:** Gap report (blocking)
+**Verdict:** Ready for done
 
 ## Repair
 
@@ -233,5 +229,4 @@ distribution mirror.
 **Fix applied:** Ran `scripts/package-codex-plugin.sh` to refresh the mirror.
 **Re-touched items:** AC1, AC15, AC17, SM1.
 **Re-verify outcome:** AC1, AC15, AC17, and SM1 — parity guard exit 0, 45 packaged files in sync.
-AC15 remains Partially verified for the independent native-target gap, not for the repaired parity
-failure.
+The subsequent six-target native matrix also passed, independently clearing AC15 and SM5.
