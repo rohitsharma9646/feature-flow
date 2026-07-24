@@ -39,6 +39,7 @@
     },
     "code": {"$ref": "#/$defs/code"},
     "assurance": {"$ref": "#/$defs/assurance"},
+    "assuranceRegistry": {"$ref": "#/$defs/assuranceRegistry"},
     "migration": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/migration"}]}
   },
   "$defs": {
@@ -237,6 +238,36 @@
             {"type": "null"},
             {"allOf": [{"$ref": "#/$defs/attestation"}, {"properties": {"kind": {"const": "verification"}}}]}
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "assuranceRegistryEntry": {
+      "type": "object",
+      "required": ["bundle", "digest", "pointer", "contentDigest"],
+      "properties": {
+        "bundle": {"type": "string", "pattern": "^revision/assurance-v1-[0-9a-f]{64}\\.json$"},
+        "digest": {"$ref": "#/$defs/digest"},
+        "pointer": {"$ref": "#/$defs/pointer"},
+        "contentDigest": {"$ref": "#/$defs/digest"},
+        "kind": {"type": "string", "minLength": 1},
+        "status": {"const": "passed"}
+      },
+      "additionalProperties": false
+    },
+    "assuranceRegistry": {
+      "type": "object",
+      "required": ["artifacts", "evidence"],
+      "properties": {
+        "artifacts": {
+          "type": "object",
+          "propertyNames": {"minLength": 1},
+          "additionalProperties": {"$ref": "#/$defs/assuranceRegistryEntry"}
+        },
+        "evidence": {
+          "type": "object",
+          "propertyNames": {"pattern": "^evidence:[A-Za-z0-9._:-]+$"},
+          "additionalProperties": {"$ref": "#/$defs/assuranceRegistryEntry"}
         }
       },
       "additionalProperties": false

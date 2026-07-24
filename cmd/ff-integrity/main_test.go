@@ -8,6 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/rohitsharma9646/feature-flow/integrity/assurance"
+	"github.com/rohitsharma9646/feature-flow/integrity/classifier"
+	"github.com/rohitsharma9646/feature-flow/integrity/revision/gitobserve"
+	"github.com/rohitsharma9646/feature-flow/integrity/wp3"
 )
 
 func TestDoctorAndPreviewDoNotWrite(t *testing.T) {
@@ -98,4 +104,254 @@ func TestBaselineAndObserveDirectOperations(t *testing.T) {
 		!strings.Contains(observed.String(), `"ffr1:`) {
 		t.Fatalf("observe exit=%d stdout=%s stderr=%s", exit, observed.String(), stderr.String())
 	}
+}
+
+func TestBaselineAndObserveAuthoritativeRunOperations(t *testing.T) {
+	repository := t.TempDir()
+	for _, args := range [][]string{
+		{"init", "-q"},
+		{"config", "user.email", "test@example.test"},
+		{"config", "user.name", "Test"},
+	} {
+		if output, err := exec.Command("git", append([]string{"-C", repository}, args...)...).CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v %s", args, err, output)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(repository, "owned.txt"), []byte("base"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, args := range [][]string{{"add", "."}, {"commit", "-qm", "base"}} {
+		if output, err := exec.Command("git", append([]string{"-C", repository}, args...)...).CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v %s", args, err, output)
+		}
+	}
+	runDir := filepath.Join(t.TempDir(), "run")
+	if err := os.Mkdir(runDir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := os.ReadFile("../../integrity/testdata/manifests/current-feature.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var initial map[string]any
+	if err := json.Unmarshal(manifest, &initial); err != nil {
+		t.Fatal(err)
+	}
+	initial["artifacts"].(map[string]any)["review"] = "review.md"
+	initial["artifacts"].(map[string]any)["verify"] = "verify.md"
+	initial["artifacts"].(map[string]any)["reviewEvidence"] = "review-evidence.txt"
+	initial["artifacts"].(map[string]any)["verificationEvidence"] = "verification-evidence.txt"
+	manifest, _ = json.Marshal(initial)
+	if err := os.WriteFile(filepath.Join(runDir, "manifest.json"), manifest, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for name, content := range map[string]string{
+		"review.md": "review artifact", "verify.md": "verification artifact",
+		"review-evidence.txt": "review evidence", "verification-evidence.txt": "verification evidence",
+	} {
+		if err := os.WriteFile(filepath.Join(runDir, name), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(repository, name), []byte("repository decoy"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	scope := filepath.Join(t.TempDir(), "scope.json")
+	if err := os.WriteFile(scope, []byte(`{"trackedPaths":["owned.txt"],"includedUntrackedPaths":[],"exclusions":[]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	if exit := run([]string{"baseline", "--repo", repository, "--run", runDir, "--input", scope}, &stdout, &stderr); exit != 0 {
+		t.Fatalf("baseline exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	var state map[string]any
+	raw, _ := os.ReadFile(filepath.Join(runDir, "manifest.json"))
+	if err := json.Unmarshal(raw, &state); err != nil {
+		t.Fatal(err)
+	}
+	artifacts := state["artifacts"].(map[string]any)
+	if !strings.HasPrefix(artifacts["revisionBaseline"].(string), "revision/baseline-v1-") {
+		t.Fatalf("baseline pointer not registered: %#v", artifacts)
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"baseline", "--repo", repository, "--run", runDir, "--input", scope}, &stdout, &stderr); exit != 1 {
+		t.Fatalf("repeated baseline should be refused, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"observe", "--repo", repository, "--run", runDir}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"status": "ready"`) {
+		t.Fatalf("observe exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	if err := os.WriteFile(filepath.Join(repository, "owned.txt"), []byte("unbracketed"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	staleRequest := writeRunAttestationRequest(t, "review", "review-0", nil)
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"attest", "--run", runDir, "--repo", repository, "--input", staleRequest}, &stdout, &stderr); exit != 1 {
+		t.Fatalf("stale attest should be refused, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	if err := os.WriteFile(filepath.Join(repository, "owned.txt"), []byte("base"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	attestationIDs := map[string]string{}
+	for _, kind := range []string{"review", "verification"} {
+		request := writeRunAttestationRequest(t, kind, kind+"-1", nil)
+		stdout.Reset()
+		stderr.Reset()
+		if exit := run([]string{"attest", "--run", runDir, "--repo", repository, "--input", request}, &stdout, &stderr); exit != 0 {
+			current, _ := os.ReadFile(filepath.Join(runDir, "manifest.json"))
+			t.Fatalf("%s attest exit=%d stdout=%s stderr=%s classification=%#v manifest=%s", kind, exit, stdout.String(), stderr.String(), classifier.Classify(current), current)
+		}
+		var recorded struct {
+			Attestation struct {
+				ID string `json:"attestationId"`
+			} `json:"Attestation"`
+		}
+		if err := json.Unmarshal(stdout.Bytes(), &recorded); err != nil || recorded.Attestation.ID == "" {
+			t.Fatalf("decode attestation: %v %s", err, stdout.String())
+		}
+		attestationIDs[kind] = recorded.Attestation.ID
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"converge", "--run", runDir, "--repo", repository, "--propose-done"}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"allowed": false`) {
+		t.Fatalf("incomplete run should not converge, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	raw, _ = os.ReadFile(filepath.Join(runDir, "manifest.json"))
+	if err := json.Unmarshal(raw, &state); err != nil {
+		t.Fatal(err)
+	}
+	state["currentPhase"] = "verify"
+	state["signOff"].(map[string]any)["signed"] = true
+	state["signOff"].(map[string]any)["date"] = "2026-07-24"
+	for _, phase := range []string{"explore", "clarify", "design", "plan", "implement", "review", "verify"} {
+		artifact := any(nil)
+		if phase == "review" {
+			artifact = "review.md"
+		}
+		if phase == "verify" {
+			artifact = "verify.md"
+		}
+		state["phases"].(map[string]any)[phase] = map[string]any{"status": "complete", "artifact": artifact}
+	}
+	raw, _ = json.Marshal(state)
+	if err := os.WriteFile(filepath.Join(runDir, "manifest.json"), raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"converge", "--run", runDir, "--repo", repository, "--propose-done"}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"allowed": true`) {
+		t.Fatalf("complete run should converge, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	reviewArtifact := filepath.Join(runDir, "review.md")
+	reviewRaw, err := os.ReadFile(reviewArtifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(reviewArtifact, []byte("tampered artifact"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"converge", "--run", runDir, "--repo", repository, "--propose-done"}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"allowed": false`) {
+		t.Fatalf("tampered artifact should deny convergence, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	if err := os.WriteFile(reviewArtifact, reviewRaw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	raw, _ = os.ReadFile(filepath.Join(runDir, "manifest.json"))
+	if err := json.Unmarshal(raw, &state); err != nil {
+		t.Fatal(err)
+	}
+	registry := state["assuranceRegistry"].(map[string]any)["artifacts"].(map[string]any)
+	var bundlePath string
+	for _, value := range registry {
+		bundlePath = value.(map[string]any)["bundle"].(string)
+		break
+	}
+	bundleFile := filepath.Join(runDir, filepath.FromSlash(bundlePath))
+	bundleRaw, err := os.ReadFile(bundleFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(bundleFile, []byte("tampered"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"converge", "--run", runDir, "--repo", repository, "--propose-done"}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"allowed": false`) {
+		t.Fatalf("tampered evidence should deny convergence, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	if err := os.WriteFile(bundleFile, bundleRaw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := wp3.RunMutationRun(
+		runDir, repository, "implementation_change", gitobserve.DefaultLimits(),
+		time.Date(2026, 7, 24, 1, 0, 0, 0, time.UTC),
+		func() error {
+			return os.WriteFile(filepath.Join(repository, "owned.txt"), []byte("changed"), 0o600)
+		},
+	); err != nil {
+		t.Fatal(err)
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"converge", "--run", runDir, "--repo", repository, "--propose-done"}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"allowed": false`) {
+		t.Fatalf("stale converge exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	for _, kind := range []string{"review", "verification"} {
+		previous := attestationIDs[kind]
+		self := writeRunAttestationRequest(t, kind, kind+"-1", &previous)
+		stdout.Reset()
+		stderr.Reset()
+		if exit := run([]string{"attest", "--run", runDir, "--repo", repository, "--input", self}, &stdout, &stderr); exit != 1 {
+			t.Fatalf("self-superseding %s attest should fail, exit=%d stdout=%s stderr=%s", kind, exit, stdout.String(), stderr.String())
+		}
+		request := writeRunAttestationRequest(t, kind, kind+"-2", &previous)
+		stdout.Reset()
+		stderr.Reset()
+		if exit := run([]string{"attest", "--run", runDir, "--repo", repository, "--input", request}, &stdout, &stderr); exit != 0 {
+			t.Fatalf("superseding %s attest exit=%d stdout=%s stderr=%s", kind, exit, stdout.String(), stderr.String())
+		}
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if exit := run([]string{"converge", "--run", runDir, "--repo", repository, "--propose-done"}, &stdout, &stderr); exit != 0 ||
+		!strings.Contains(stdout.String(), `"allowed": true`) {
+		t.Fatalf("superseded assurances should converge, exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+}
+
+func writeRunAttestationRequest(t *testing.T, kind, key string, supersedes *string) string {
+	t.Helper()
+	request := wp3.RunAttestationRequest{
+		Kind: assurance.Kind(kind), Status: assurance.StatusPassed,
+		Producer: wp3TestProducer(), RecordedAt: time.Date(2026, 7, 24, 0, 0, 0, 0, time.UTC),
+		ArtifactKey: map[string]string{"review": "review", "verification": "verify"}[kind],
+		Evidence: []wp3.RunEvidence{{
+			ArtifactKey: kind + "Evidence", Kind: "executed-test", Status: "passed",
+		}},
+		Supersedes: supersedes, SemanticValid: true, IdempotencyKey: key,
+	}
+	raw, err := json.Marshal(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), kind+".json")
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func wp3TestProducer() assurance.Producer {
+	return assurance.Producer{Kind: "ci", Host: "ci", ID: "test"}
 }

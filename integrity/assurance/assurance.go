@@ -38,8 +38,8 @@ func Record(existing *Attestation, request RecordRequest) (RecordResult, error) 
 	return RecordResult{Outcome: OutcomeRecorded, Attestation: next}, nil
 }
 
-func EffectivePass(attestation *Attestation, currentRevision string, references ReferenceSet) bool {
-	if attestation == nil || attestation.Status != StatusPassed ||
+func EffectivePass(attestation *Attestation, expectedKind Kind, currentRevision string, references ReferenceSet) bool {
+	if attestation == nil || attestation.Kind != expectedKind || attestation.Status != StatusPassed ||
 		attestation.CodeRevision != currentRevision ||
 		!digest.ValidRevisionID(currentRevision) ||
 		!references.Artifacts[attestation.Artifact] {
@@ -72,8 +72,8 @@ func Converge(input ConvergenceInput) ConvergenceResult {
 	if input.EvidenceGap {
 		codes = append(codes, "FFI_ATTESTATION_STALE")
 	}
-	if !EffectivePass(input.Review, input.ObservedRevision, input.References) ||
-		!EffectivePass(input.Verification, input.ObservedRevision, input.References) {
+	if !EffectivePass(input.Review, KindReview, input.ObservedRevision, input.References) ||
+		!EffectivePass(input.Verification, KindVerification, input.ObservedRevision, input.References) {
 		codes = append(codes, "FFI_ATTESTATION_STALE")
 	}
 	codes = uniqueSorted(codes)

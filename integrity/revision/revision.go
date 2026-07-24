@@ -29,7 +29,7 @@ func Compute(input Descriptor) (Result, error) {
 
 func canonicalDescriptor(input Descriptor) (map[string]any, error) {
 	if input.RepositoryIdentity == "" || input.WorktreeIdentity == "" ||
-		input.BaselineHead == "" || !digest.Valid(input.StartSnapshotDigest) {
+		!validGitOID(input.BaselineHead) || !digest.Valid(input.StartSnapshotDigest) {
 		return nil, errors.New("revision identity or baseline is invalid")
 	}
 	scope, scopePaths, err := canonicalScope(input.Scope)
@@ -126,6 +126,11 @@ func canonicalScope(input Scope) (map[string]any, map[string]struct{}, error) {
 }
 
 func validateEntry(entry Entry) error {
+	for _, oid := range []*string{entry.BaselineBlob, entry.IndexBlob} {
+		if oid != nil && !validGitOID(*oid) {
+			return errors.New("invalid Git object ID")
+		}
+	}
 	switch entry.Kind {
 	case KindFile:
 		if entry.Mode != "100644" && entry.Mode != "100755" {
@@ -153,6 +158,18 @@ func validateEntry(entry Entry) error {
 		}
 	}
 	return nil
+}
+
+func validGitOID(value string) bool {
+	if len(value) != 40 && len(value) != 64 {
+		return false
+	}
+	for _, character := range value {
+		if (character < '0' || character > '9') && (character < 'a' || character > 'f') {
+			return false
+		}
+	}
+	return true
 }
 
 func normalizePath(value string) (string, error) {

@@ -16,6 +16,7 @@ type runFS interface {
 	RemoveSnapshot(name string) error
 	EnsureRevision() error
 	PublishRevision(name string, raw []byte) (bool, error)
+	ReadRevision(name string, max int64) ([]byte, error)
 	WriteManifestTemp(raw []byte) (string, error)
 	RemoveManifestTemp(name string) error
 	ReplaceManifest(name string) error

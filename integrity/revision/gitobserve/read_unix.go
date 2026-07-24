@@ -58,8 +58,11 @@ func observeWorktree(root, name string, max int64) (revision.EntryKind, string, 
 		}
 		file := os.NewFile(uintptr(fd), base)
 		defer file.Close()
+		var opened unix.Stat_t
 		info, statErr := file.Stat()
-		if statErr != nil || info.Size() > max {
+		if statErr != nil || unix.Fstat(fd, &opened) != nil || info.Size() > max ||
+			opened.Dev != stat.Dev || opened.Ino != stat.Ino ||
+			opened.Mode != stat.Mode || opened.Size != stat.Size {
 			return "", "", nil, nil, 0, errors.New("FFI_REVISION_UNSUPPORTED")
 		}
 		raw, readErr := io.ReadAll(io.LimitReader(file, max+1))
@@ -75,4 +78,42 @@ func observeWorktree(root, name string, max int64) (revision.EntryKind, string, 
 	default:
 		return "", "", nil, nil, 0, errors.New("FFI_REVISION_UNSUPPORTED")
 	}
+}
+
+func readArtifact(root, name string, max int64) ([]byte, error) {
+	rootFD, err := unix.Open(root, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+	if err != nil {
+		return nil, errors.New("FFI_REVISION_UNSUPPORTED")
+	}
+	defer unix.Close(rootFD)
+	parts := strings.Split(filepath.ToSlash(name), "/")
+	current := rootFD
+	for _, component := range parts[:len(parts)-1] {
+		next, openErr := unix.Openat(current, component, unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+		if current != rootFD {
+			unix.Close(current)
+		}
+		if openErr != nil {
+			return nil, errors.New("FFI_REVISION_UNSUPPORTED")
+		}
+		current = next
+	}
+	if current != rootFD {
+		defer unix.Close(current)
+	}
+	fd, err := unix.Openat(current, parts[len(parts)-1], unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+	if err != nil {
+		return nil, errors.New("FFI_REVISION_UNSUPPORTED")
+	}
+	file := os.NewFile(uintptr(fd), name)
+	defer file.Close()
+	info, err := file.Stat()
+	if err != nil || !info.Mode().IsRegular() || info.Size() > max {
+		return nil, errors.New("FFI_REVISION_UNSUPPORTED")
+	}
+	raw, err := io.ReadAll(io.LimitReader(file, max+1))
+	if err != nil || int64(len(raw)) > max {
+		return nil, errors.New("FFI_REVISION_UNSUPPORTED")
+	}
+	return raw, nil
 }

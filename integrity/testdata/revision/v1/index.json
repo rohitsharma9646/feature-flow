@@ -14,7 +14,10 @@
     {"id":"scope-authorization","kind":"scope","test":"TestScopeReconciliationRequiresAuthorization"},
     {"id":"route-convergence","kind":"convergence","test":"TestEveryRouteUsesIdenticalConvergenceDecision"},
     {"id":"tier-readiness","kind":"readiness","test":"TestReadinessIsTierInvariant"},
-    {"id":"direct-baseline-observe","kind":"cli","test":"TestBaselineAndObserveDirectOperations"}
+    {"id":"direct-baseline-observe","kind":"cli","test":"TestBaselineAndObserveDirectOperations"},
+    {"id":"authoritative-run-convergence","kind":"cli","test":"TestBaselineAndObserveAuthoritativeRunOperations"},
+    {"id":"mid-observation-mutation","kind":"race","test":"TestStableSnapshotRejectsMidObservationMutation"},
+    {"id":"windows-relative-ancestor","kind":"race","test":"TestWindowsRelativeHandlesBlockAncestorSwap"}
   ],
   "platformDispositions": {
     "unixSymlinkTarget": "supported",

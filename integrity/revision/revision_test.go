@@ -9,8 +9,8 @@ func TestComputeCanonicalizesScopeAndEntries(t *testing.T) {
 	input := fixture()
 	input.Scope.TrackedPaths = []string{"b.go", "a.go"}
 	input.Entries = []Entry{
-		{Path: "b.go", Kind: KindFile, Mode: "100644", IndexBlob: ptr("b")},
-		{Path: "a.go", Kind: KindFile, Mode: "100644", IndexBlob: ptr("a"), WorktreeDigest: ptr("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")},
+		{Path: "b.go", Kind: KindFile, Mode: "100644", IndexBlob: ptr("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")},
+		{Path: "a.go", Kind: KindFile, Mode: "100644", IndexBlob: ptr("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), WorktreeDigest: ptr("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")},
 	}
 	first, err := Compute(input)
 	if err != nil {
@@ -37,7 +37,7 @@ func TestComputeChangedDimensionsChangeRevision(t *testing.T) {
 		"worktree content": func(value *Descriptor) {
 			value.Entries[0].WorktreeDigest = ptr("sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
 		},
-		"index blob": func(value *Descriptor) { value.Entries[0].IndexBlob = ptr("next-index") },
+		"index blob": func(value *Descriptor) { value.Entries[0].IndexBlob = ptr("dddddddddddddddddddddddddddddddddddddddd") },
 		"mode":       func(value *Descriptor) { value.Entries[0].Mode = "100755" },
 		"scope": func(value *Descriptor) {
 			value.Scope.TrackedPaths = append(value.Scope.TrackedPaths, "future.go")
@@ -49,7 +49,7 @@ func TestComputeChangedDimensionsChangeRevision(t *testing.T) {
 				BaselineStateDigest: "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
 			}}
 		},
-		"baseline head":       func(value *Descriptor) { value.BaselineHead = "next-head" },
+		"baseline head":       func(value *Descriptor) { value.BaselineHead = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" },
 		"repository identity": func(value *Descriptor) { value.RepositoryIdentity = "next-repo" },
 		"worktree identity":   func(value *Descriptor) { value.WorktreeIdentity = "next-worktree" },
 	}
@@ -77,6 +77,8 @@ func TestComputeRejectsInvalidOrDuplicatePaths(t *testing.T) {
 		"scope conflict": func(d *Descriptor) {
 			d.Scope.IncludedUntrackedPaths = append(d.Scope.IncludedUntrackedPaths, "a.go")
 		},
+		"malformed baseline blob": func(d *Descriptor) { d.Entries[0].BaselineBlob = ptr("not-an-oid") },
+		"malformed index blob":    func(d *Descriptor) { d.Entries[0].IndexBlob = ptr("ABCDEF0123456789ABCDEF0123456789ABCDEF01") },
 	} {
 		t.Run(name, func(t *testing.T) {
 			value := fixture()
@@ -92,12 +94,12 @@ func fixture() Descriptor {
 	return Descriptor{
 		RepositoryIdentity:  "repo-id",
 		WorktreeIdentity:    "worktree-id",
-		BaselineHead:        "0123456789abcdef",
+		BaselineHead:        "0123456789abcdef0123456789abcdef01234567",
 		StartSnapshotDigest: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
 		Scope:               Scope{TrackedPaths: []string{"a.go"}},
 		Entries: []Entry{{
-			Path: "a.go", Kind: KindFile, Mode: "100644", BaselineBlob: ptr("base"),
-			IndexBlob:      ptr("index"),
+			Path: "a.go", Kind: KindFile, Mode: "100644", BaselineBlob: ptr("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+			IndexBlob:      ptr("cccccccccccccccccccccccccccccccccccccccc"),
 			WorktreeDigest: ptr("sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
 		}},
 	}

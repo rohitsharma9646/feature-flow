@@ -35,18 +35,21 @@ func TestEffectivePassIgnoresInvalidationAnnotation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !EffectivePass(&recorded.Attestation, revisionA, validRefs()) {
+	if !EffectivePass(&recorded.Attestation, KindReview, revisionA, validRefs()) {
 		t.Fatal("passing current attestation was ineffective")
 	}
 	recorded.Attestation.Invalidation = &Invalidation{
 		Reason: "observed_mismatch", DetectedAt: time.Unix(1, 0).UTC(),
 		FromRevision: revisionA, ToRevision: revisionB,
 	}
-	if !EffectivePass(&recorded.Attestation, revisionA, validRefs()) {
+	if !EffectivePass(&recorded.Attestation, KindReview, revisionA, validRefs()) {
 		t.Fatal("annotation invalidated unchanged revision")
 	}
-	if EffectivePass(&recorded.Attestation, revisionB, validRefs()) {
+	if EffectivePass(&recorded.Attestation, KindReview, revisionB, validRefs()) {
 		t.Fatal("stale attestation was effective")
+	}
+	if EffectivePass(&recorded.Attestation, KindVerification, revisionA, validRefs()) {
+		t.Fatal("review attestation satisfied verification")
 	}
 }
 
@@ -71,6 +74,28 @@ func TestConvergeRequiresSameCurrentRevisionAndValidEvidence(t *testing.T) {
 	})
 	if denied.Allowed || len(denied.Codes) == 0 {
 		t.Fatalf("expected stable denial, got %#v", denied)
+	}
+}
+
+func TestConvergeRejectsDuplicatedOrSwappedAttestationKinds(t *testing.T) {
+	review, _ := Record(nil, validRequest(KindReview))
+	verify, _ := Record(nil, validRequest(KindVerification))
+	base := ConvergenceInput{
+		ManifestValid: true, ProposedDone: true, RevisionReady: true,
+		StoredRevision: revisionA, ObservedRevision: revisionA, References: validRefs(),
+	}
+	for name, pair := range map[string][2]*Attestation{
+		"review in both slots":       {&review.Attestation, &review.Attestation},
+		"verification in both slots": {&verify.Attestation, &verify.Attestation},
+		"swapped kinds":              {&verify.Attestation, &review.Attestation},
+	} {
+		t.Run(name, func(t *testing.T) {
+			input := base
+			input.Review, input.Verification = pair[0], pair[1]
+			if result := Converge(input); result.Allowed {
+				t.Fatal("convergence accepted invalid attestation kinds")
+			}
+		})
 	}
 }
 

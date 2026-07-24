@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -44,16 +45,65 @@ func run(args []string, stdout, stderr writer) int {
 	case "revision":
 		return runJSONOperation(args[1:], stdout, stderr, computeRevision)
 	case "baseline":
-		return runRepositoryOperation(args[1:], stdout, stderr, captureBaseline)
+		return runRepositoryOperation(args[1:], stdout, stderr, true, true, func(repository, runDir string, raw []byte) (any, error) {
+			if runDir != "" {
+				var scope revision.Scope
+				if err := strictUnmarshal(raw, &scope); err != nil {
+					return nil, err
+				}
+				return wp3.CaptureRun(runDir, repository, scope, gitobserve.DefaultLimits(), time.Now().UTC())
+			}
+			return captureBaseline(repository, raw)
+		})
 	case "observe":
-		return runRepositoryOperation(args[1:], stdout, stderr, observeRevision)
+		return runRepositoryOperation(args[1:], stdout, stderr, false, false, func(repository, runDir string, raw []byte) (any, error) {
+			if runDir != "" {
+				return wp3.ObserveRun(runDir, repository, gitobserve.DefaultLimits(), time.Now().UTC())
+			}
+			return observeRevision(repository, raw)
+		})
 	case "attest":
+		if hasFlag(args[1:], "--run") {
+			return runStateOperation(args[1:], stdout, stderr, true, true, func(runDir, repository string, raw []byte) (any, error) {
+				var request wp3.RunAttestationRequest
+				if err := strictUnmarshal(raw, &request); err != nil {
+					return nil, err
+				}
+				return wp3.RecordRunAttestation(
+					runDir, repository, configuredDurableRoot(repository),
+					gitobserve.DefaultLimits(), request,
+				)
+			})
+		}
 		return runJSONOperation(args[1:], stdout, stderr, recordAttestation)
 	case "mutation":
+		if hasFlag(args[1:], "--run") {
+			return runMutationCommand(args[1:], stdout, stderr)
+		}
 		return runJSONOperation(args[1:], stdout, stderr, reconcileMutation)
 	case "scope":
+		if hasFlag(args[1:], "--run") {
+			return runStateOperation(args[1:], stdout, stderr, true, true, func(runDir, repository string, raw []byte) (any, error) {
+				var request struct {
+					Authorized       bool           `json:"authorized"`
+					ExpectedRevision string         `json:"expectedRevision"`
+					DetectedAt       time.Time      `json:"detectedAt"`
+					Scope            revision.Scope `json:"scope"`
+				}
+				if err := strictUnmarshal(raw, &request); err != nil {
+					return nil, err
+				}
+				return wp3.ReconcileScopeRun(runDir, repository, wp3.ScopeRequest{
+					Authorized: request.Authorized, ExpectedRevision: request.ExpectedRevision,
+					DetectedAt: request.DetectedAt,
+				}, request.Scope, gitobserve.DefaultLimits())
+			})
+		}
 		return runJSONOperation(args[1:], stdout, stderr, reconcileScope)
 	case "converge":
+		if hasFlag(args[1:], "--run") {
+			return runConvergeCommand(args[1:], stdout, stderr)
+		}
 		return runJSONOperation(args[1:], stdout, stderr, converge)
 	default:
 		fmt.Fprintln(stderr, "unknown command")
@@ -61,27 +111,137 @@ func run(args []string, stdout, stderr writer) int {
 	}
 }
 
-func runRepositoryOperation(args []string, stdout, stderr writer, operation func(string, []byte) (any, error)) int {
+func runConvergeCommand(args []string, stdout, stderr writer) int {
+	flags := flag.NewFlagSet("authoritative convergence", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	runDir := flags.String("run", "", "trusted Feature Flow run directory")
+	repository := flags.String("repo", "", "trusted Git worktree")
+	proposedDone := flags.Bool("propose-done", false, "evaluate an explicit done transition")
+	format := flags.String("format", "json", "human or json")
+	if err := flags.Parse(args); err != nil || *runDir == "" || *repository == "" ||
+		(*format != "human" && *format != "json") || len(flags.Args()) != 0 {
+		fmt.Fprintln(stderr, "converge requires --run, --repo, and an optional --propose-done")
+		return 2
+	}
+	result, err := wp3.ConvergeRun(
+		*runDir, *repository, configuredDurableRoot(*repository),
+		gitobserve.DefaultLimits(), *proposedDone,
+	)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	if err := renderDirect(stdout, result, *format); err != nil {
+		return 2
+	}
+	return 0
+}
+
+func runMutationCommand(args []string, stdout, stderr writer) int {
+	flags := flag.NewFlagSet("authoritative mutation", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	runDir := flags.String("run", "", "trusted Feature Flow run directory")
+	repository := flags.String("repo", "", "trusted Git worktree")
+	reason := flags.String("reason", "", "implementation_change, review_repair, verification_repair, or scope_change")
+	format := flags.String("format", "json", "human or json")
+	if err := flags.Parse(args); err != nil || *runDir == "" || *repository == "" ||
+		*reason == "" || (*format != "human" && *format != "json") || len(flags.Args()) == 0 {
+		fmt.Fprintln(stderr, "mutation requires --run, --repo, --reason, and a command after --")
+		return 2
+	}
+	commandArgs := flags.Args()
+	result, err := wp3.RunMutationRun(
+		*runDir, *repository, *reason, gitobserve.DefaultLimits(), time.Now().UTC(),
+		func() error {
+			command := exec.Command(commandArgs[0], commandArgs[1:]...)
+			command.Dir = *repository
+			command.Stdout = os.Stderr
+			command.Stderr = os.Stderr
+			return command.Run()
+		},
+	)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	if err := renderDirect(stdout, result, *format); err != nil {
+		return 2
+	}
+	return 0
+}
+
+func runStateOperation(args []string, stdout, stderr writer, requireInput, requireRepository bool, operation func(string, string, []byte) (any, error)) int {
+	flags := flag.NewFlagSet("authoritative run operation", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	runDir := flags.String("run", "", "trusted Feature Flow run directory")
+	repository := flags.String("repo", "", "trusted Git worktree")
+	input := flags.String("input", "", "bounded JSON request file")
+	format := flags.String("format", "json", "human or json")
+	if err := flags.Parse(args); err != nil || *runDir == "" ||
+		(*repository == "" && requireRepository) || (*input == "" && requireInput) ||
+		(*format != "human" && *format != "json") || len(flags.Args()) != 0 {
+		fmt.Fprintln(stderr, "invalid authoritative run operation")
+		return 2
+	}
+	var raw []byte
+	if *input != "" {
+		info, err := os.Stat(*input)
+		if err != nil || !info.Mode().IsRegular() || info.Size() > classifierLimit() {
+			fmt.Fprintln(stderr, "input unavailable or exceeds limit")
+			return 2
+		}
+		raw, err = os.ReadFile(*input)
+		if err != nil {
+			return 2
+		}
+	}
+	result, err := operation(*runDir, *repository, raw)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	if err := renderDirect(stdout, result, *format); err != nil {
+		return 2
+	}
+	return 0
+}
+
+func hasFlag(args []string, target string) bool {
+	for _, arg := range args {
+		if arg == target || strings.HasPrefix(arg, target+"=") {
+			return true
+		}
+	}
+	return false
+}
+
+func runRepositoryOperation(args []string, stdout, stderr writer, requireRunInput, allowRunInput bool, operation func(string, string, []byte) (any, error)) int {
 	flags := flag.NewFlagSet("repository integrity operation", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	input := flags.String("input", "", "bounded JSON request file")
 	repository := flags.String("repo", "", "trusted Git worktree")
+	runDir := flags.String("run", "", "trusted Feature Flow run directory (authoritative mode)")
 	format := flags.String("format", "json", "human or json")
-	if err := flags.Parse(args); err != nil || *input == "" || *repository == "" ||
+	if err := flags.Parse(args); err != nil || *repository == "" || (*input == "" && *runDir == "") ||
+		(*runDir != "" && requireRunInput && *input == "") ||
+		(*runDir != "" && !allowRunInput && *input != "") ||
 		(*format != "human" && *format != "json") || len(flags.Args()) != 0 {
-		fmt.Fprintln(stderr, "operation requires --repo <worktree> --input <json-file>")
+		fmt.Fprintln(stderr, "operation requires --repo <worktree>; use --run for authoritative state")
 		return 2
 	}
-	info, err := os.Stat(*input)
-	if err != nil || !info.Mode().IsRegular() || info.Size() > classifierLimit() {
-		fmt.Fprintln(stderr, "input unavailable or exceeds limit")
-		return 2
+	var raw []byte
+	if *input != "" {
+		info, err := os.Stat(*input)
+		if err != nil || !info.Mode().IsRegular() || info.Size() > classifierLimit() {
+			fmt.Fprintln(stderr, "input unavailable or exceeds limit")
+			return 2
+		}
+		raw, err = os.ReadFile(*input)
+		if err != nil {
+			return 2
+		}
 	}
-	raw, err := os.ReadFile(*input)
-	if err != nil {
-		return 2
-	}
-	result, err := operation(*repository, raw)
+	result, err := operation(*repository, *runDir, raw)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1

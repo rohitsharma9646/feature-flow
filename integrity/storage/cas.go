@@ -23,6 +23,7 @@ type RevisionCASRequest struct {
 	ArtifactName           string
 	Artifact               []byte
 	ArtifactDigest         string
+	ArtifactPrefix         string
 }
 
 type RevisionCASResult struct {
@@ -35,7 +36,14 @@ type RevisionCASResult struct {
 // canonical manifest. A losing CAS can leave only a content-addressed,
 // non-authoritative artifact.
 func PublishRevisionCAS(runDir string, request RevisionCASRequest) RevisionCASResult {
-	expectedName := "baseline-v1-" + strings.TrimPrefix(request.ArtifactDigest, "sha256:") + ".json"
+	prefix := request.ArtifactPrefix
+	if prefix == "" {
+		prefix = "baseline-v1-"
+	}
+	if prefix != "baseline-v1-" && prefix != "assurance-v1-" {
+		return RevisionCASResult{Status: CASRefused}
+	}
+	expectedName := prefix + strings.TrimPrefix(request.ArtifactDigest, "sha256:") + ".json"
 	if !digest.Valid(request.ExpectedManifestDigest) || !digest.Valid(request.ArtifactDigest) ||
 		digest.RawSHA256(request.Artifact) != request.ArtifactDigest ||
 		request.ArtifactName != expectedName || filepath.Base(request.ArtifactName) != request.ArtifactName ||
