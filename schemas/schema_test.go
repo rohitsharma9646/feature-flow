@@ -26,4 +26,6 @@ func compile(t *testing.T, uri string, raw []byte) {
 func TestSchemasCompileAsDraft2020(t *testing.T) {
 	compile(t, "https://feature-flow.dev/schemas/manifest-v1.schema.json", ManifestV1)
 	compile(t, "https://feature-flow.dev/schemas/golden-vector-v1.schema.json", GoldenVectorV1)
+	compile(t, "https://feature-flow.dev/schemas/doctor-result-v1.schema.json", DoctorResultV1)
+	compile(t, "https://feature-flow.dev/schemas/migration-plan-v1.schema.json", MigrationPlanV1)
 }

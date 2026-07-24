@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"id":"D-CLEAN-CURRENT","input":"../../../manifests/current-feature.json","expectedExit":0},
+    {"id":"D-LEGACY","input":"../../../manifests/legacy.json","expectedExit":1},
+    {"id":"D-CORRUPT","input":"../../../manifests/corrupt.raw","expectedExit":1},
+    {"id":"D-FUTURE","input":"../../../manifests/future.json","expectedExit":1},
+    {"id":"D-CURRENT-INVALID","input":"../../../manifests/enum.json","expectedExit":1},
+    {"id":"D-UNSUPPORTED-OLD","input":"../../../manifests/old-unsupported.json","expectedExit":1}
+  ]
+}

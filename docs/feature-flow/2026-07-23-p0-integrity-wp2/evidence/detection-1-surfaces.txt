@@ -1,0 +1,49 @@
+Detected files and scripts
+Go modules: go.mod
+Shell guards/evals:
+scripts/build-integrity-packages.sh
+scripts/check-integrity-package-conformance.sh
+scripts/check-integrity-wp2-conformance.sh
+scripts/checks/assumption-guard.sh
+scripts/checks/decision-record-guard.sh
+scripts/checks/delivery-guard.sh
+scripts/checks/design-tradeoff-guard.sh
+scripts/checks/discovery-fields-guard.sh
+scripts/checks/dist-parity-guard.sh
+scripts/checks/durable-paths-guard.sh
+scripts/checks/enforce-gate-guard.sh
+scripts/checks/evidence-guard.sh
+scripts/checks/integrity-boundary-guard.sh
+scripts/checks/integrity-conformance-guard.sh
+scripts/checks/integrity-wp2-guard.sh
+scripts/checks/kb-guard.sh
+scripts/checks/lite-tier-guard.sh
+scripts/checks/planning-intelligence-guard.sh
+scripts/checks/repair-loop-guard.sh
+scripts/checks/run-start-ask-guard.sh
+scripts/checks/version-sync-guard.sh
+scripts/eval.sh
+scripts/package-codex-plugin.sh
+
+Package scripts:
+.github/workflows/integrity.yml:35:        run: go test ./...
+.github/workflows/integrity.yml:41:        run: bash scripts/check-integrity-package-conformance.sh "${{ matrix.target }}"
+scripts/check-integrity-wp2-conformance.sh:15:go test ./integrity/jsonstrict ./integrity/diagnostics ./integrity/pathpolicy \
+scripts/eval.sh:8:#     bash scripts/eval.sh
+scripts/eval.sh:28:FX="evals/fixtures/decision-conflict/decision.md"
+scripts/eval.sh:85:FXP="evals/fixtures/delivery-gap/plan.md"
+scripts/eval.sh:136:FXA="evals/fixtures/assumption-gap/spec.md"
+scripts/eval.sh:187:FXPG="evals/fixtures/planning-gap/plan.md"
+scripts/eval.sh:247:FXDG="evals/fixtures/design-gap/design.md"
+scripts/eval.sh:288:FXR="evals/fixtures/repair-gap/verify.md"
+scripts/eval.sh:289:FXRC="evals/fixtures/repair-gap/verify-capped.md"
+scripts/eval.sh:336:FXDS="evals/fixtures/discovery-gap/spec.md"
+scripts/eval.sh:337:FXDP="evals/fixtures/discovery-gap/plan.md"
+scripts/build-integrity-packages.sh:24:CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+scripts/build-integrity-packages.sh:27:CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+scripts/checks/delivery-guard.sh:14:#   AC8      the delivery-gap eval fixture exists.
+scripts/checks/delivery-guard.sh:99:# --- AC8: eval fixture present --------------------------------------------------------------
+scripts/checks/delivery-guard.sh:100:[ -f evals/fixtures/delivery-gap/plan.md ] \
+scripts/checks/delivery-guard.sh:101:  && ok "delivery-gap eval fixture present" \
+scripts/checks/delivery-guard.sh:102:  || err "evals/fixtures/delivery-gap/plan.md must exist (WS-8 fixture for the gap actuation)"
+scripts/checks/integrity-conformance-guard.sh:10:go test ./... || exit 1

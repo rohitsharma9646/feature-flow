@@ -1,0 +1,8 @@
+kind: build/static-analysis
+command: docker run --rm -v /home/netzwelt/feature-flow:/src:ro -e GOOS=darwin -e GOARCH=arm64 golang:1.26.5 bash -c "cp -a /src/. /work && cd /work && CGO_ENABLED=0 go build -buildvcs=false ./cmd/ff-integrity ./cmd/ff-integrity-classify"
+evidence_scope: cross-build only; not native execution
+go: downloading github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
+go: downloading golang.org/x/sys v0.34.0
+go: downloading golang.org/x/text v0.14.0
+
+exit_status: 0

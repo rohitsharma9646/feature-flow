@@ -18,8 +18,8 @@ func TestDiagnosticCatalogue(t *testing.T) {
 	if catalog.CatalogVersion != CatalogVersion {
 		t.Fatalf("catalog version %d", catalog.CatalogVersion)
 	}
-	if len(catalog.Diagnostics) != 18 {
-		t.Fatalf("got %d diagnostics, want 18", len(catalog.Diagnostics))
+	if len(catalog.Diagnostics) != 24 {
+		t.Fatalf("got %d diagnostics, want 24", len(catalog.Diagnostics))
 	}
 	seen := map[string]bool{}
 	for _, item := range catalog.Diagnostics {

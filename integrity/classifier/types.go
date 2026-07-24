@@ -1,5 +1,7 @@
 package classifier
 
+import "github.com/rohitsharma9646/feature-flow/integrity/diagnostics"
+
 type ManifestClass string
 
 const (
@@ -11,13 +13,7 @@ const (
 	UnsupportedOld           ManifestClass = "UNSUPPORTED_OLD"
 )
 
-type Diagnostic struct {
-	Code        string `json:"code"`
-	Severity    string `json:"severity"`
-	JSONPointer string `json:"jsonPointer,omitempty"`
-	Message     string `json:"message"`
-	Remediation string `json:"remediation"`
-}
+type Diagnostic = diagnostics.Diagnostic
 
 type Result struct {
 	ProtocolVersion int           `json:"protocolVersion"`

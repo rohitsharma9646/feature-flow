@@ -1,0 +1,19 @@
+kind: build/static-analysis
+command: docker run --rm -v /home/netzwelt/feature-flow:/src:ro -e GOFLAGS=-buildvcs=false golang:1.26.5 bash -c "apt-get update && apt-get install -y jq ripgrep git && cp -a /src/. /work && cd /work && git config --global --add safe.directory /work && bash scripts/build-integrity-packages.sh linux-x86_64"
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+debconf: unable to initialize frontend: Teletype
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Noninteractive
+go: downloading github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
+go: downloading golang.org/x/text v0.14.0
+go: downloading golang.org/x/sys v0.34.0
+Codex package destination: /work/dist/integrity/linux-x86_64/codex
+Codex package ready.
+PASS: assembled installable linux-x86_64 Claude/Codex packages with byte-identical integrity payloads
+
+exit_status: 0

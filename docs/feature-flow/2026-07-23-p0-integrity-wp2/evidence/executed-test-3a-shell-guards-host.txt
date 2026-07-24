@@ -1,0 +1,573 @@
+kind: executed-test
+command: for guard in scripts/checks/*-guard.sh; do bash "$guard"; done
+
+=== scripts/checks/assumption-guard.sh ===
+ok:   templates/spec.md: Assumptions is the 5-column table
+ok:   templates/diagnosis.md: Assumptions is the identical 5-column table
+ok:   templates/diagnosis.md: Assumptions carries the full-tier-only banner
+ok:   templates/diagnosis.md: '## Assumptions' sits after '## Fix approach' and before '## Fix surface'
+ok:   commands/ff-clarify.md: Beat 4 writes each assumption as a table row
+ok:   commands/ff-clarify.md: names the Validation-required field
+ok:   commands/ff-diagnose.md: full-tier fix-approach step surfaces assumption rows
+ok:   commands/ff-diagnose.md: lite tier explicitly skips the assumptions table
+ok:   docs/manifest-schema.md §Sign-off rendering: is 'Three rules'
+ok:   docs/manifest-schema.md §Sign-off rendering: rule 3 echo is a distinct block, never folded into the AC checkboxes
+ok:   docs/manifest-schema.md §Sign-off rendering: carries a worked '### Unvalidated assumptions' example
+ok:   docs/manifest-schema.md: carries the verbatim waiver line
+ok:   commands/ff-clarify.md: carries the verbatim waiver line
+ok:   commands/ff-diagnose.md: carries the verbatim waiver line
+ok:   docs/manifest-schema.md §Autopilot: has the 'Assumption validation stop' row
+ok:   docs/manifest-schema.md: '## Assumption records' canonical section present
+ok:   docs/manifest-schema.md §Assumption records: '### Row schema' present
+ok:   docs/manifest-schema.md §Assumption records: '### Tier / track scope' present
+ok:   docs/manifest-schema.md §Assumption records: '### Trigger' present
+ok:   docs/manifest-schema.md §Assumption records: '### Actuation 1' present
+ok:   docs/manifest-schema.md §Assumption records: '### Actuation 2' present
+ok:   docs/manifest-schema.md §Assumption records: '### Waiver' present
+ok:   docs/manifest-schema.md §Assumption records: '### v1 non-goals' present
+ok:   docs/manifest-schema.md §Assumption records: Actuation 1 names the third gate exit (acknowledge-open)
+ok:   docs/manifest-schema.md §Assumption records: Waiver marks the row `n` (waived vs acknowledged-open disambiguated on disk)
+ok:   templates/plan.md: documents the '**Validates:** Assumption N' mapping rule
+ok:   templates/plan.md: carries a '**Validates:** Assumption <n>' task example
+ok:   commands/ff-plan.md: emits a '**Validates:** Assumption N' validation task
+ok:   commands/ff-plan.md: assumption-mapping bullet sits between AC-map (66) and Derive planning intelligence (95)
+ok:   dist parity: templates/spec.md
+ok:   dist parity: templates/diagnosis.md
+ok:   dist parity: templates/plan.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-diagnose.md
+ok:   dist parity: commands/ff-plan.md
+PASS: assumption-records guard
+command_exit_status: 0
+
+=== scripts/checks/decision-record-guard.sh ===
+ok:   templates/decision.md: present
+ok:   templates/decision.md: section '## Decision' present
+ok:   templates/decision.md: section '## Context' present
+ok:   templates/decision.md: section '## Options considered' present
+ok:   templates/decision.md: section '## Trade-offs' present
+ok:   templates/decision.md: section '## Chosen \+ rationale' present
+ok:   templates/decision.md: section '## Outcome' present
+ok:   templates/decision.md: section '## Future considerations' present
+ok:   templates/decision.md: carries '**Related ACs:**'
+ok:   templates/decision.md: carries '**Related files:**'
+ok:   templates/decision.md: carries '| Option | Effort | Risk | Reversibility |'
+ok:   templates/decision.md: frontmatter field tags present
+ok:   templates/decision.md: frontmatter field referencedFiles present
+ok:   docs/manifest-schema.md: durable-artifacts list present
+ok:   docs/manifest-schema.md: durable list includes decision
+ok:   docs/manifest-schema.md: disk-inference tuple includes decision
+ok:   docs/manifest-schema.md: documents artifacts.decision
+ok:   docs/manifest-schema.md: artifacts.decision absent-field default documented
+ok:   docs/manifest-schema.md: '### Decision recall' canonical subsection present
+ok:   docs/manifest-schema.md: names the Decision override by user (<date>) recording
+ok:   commands/ff-design.md: records artifacts.decision
+ok:   commands/ff-design.md: writes the decision from templates/decision.md
+ok:   commands/ff-design.md: do-not-contradict STOP instruction present (AC4/AC8)
+ok:   commands/ff-implement.md: do-not-contradict STOP instruction present (AC5/AC8)
+ok:   commands/ff-implement.md: has a '## Decision recall' section
+ok:   commands/ff-implement.md §Decision recall: resolves via artifacts.decision
+ok:   commands/ff-implement.md §Decision recall: cross-run half gates on toggles.kb
+ok:   commands/ff-implement.md §Decision recall: STOP is unconditional in both modes
+ok:   commands/ff-implement.md: '## Decision recall' (78) sits between Cold-start (52) and Do the work (139)
+ok:   commands/ff-clarify.md: lite branch sets artifacts.decision
+ok:   docs/manifest-schema.md §Autopilot: has the Decision conflict stop row
+ok:   docs/manifest-schema.md §Autopilot: Decision conflict stop is unconditional
+ok:   dist parity: templates/decision.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-clarify.md
+PASS: decision-record guard
+command_exit_status: 0
+
+=== scripts/checks/delivery-guard.sh ===
+ok:   templates/delivery.md: six sections present, in order
+ok:   templates/delivery.md: 'Release notes' carries a '> ' source blockquote
+ok:   templates/delivery.md: 'Rollback checklist' carries a '> ' source blockquote
+ok:   templates/delivery.md: 'Known issues' carries a '> ' source blockquote
+ok:   templates/delivery.md: 'Release validation steps' carries a '> ' source blockquote
+ok:   commands/ff-deliver.md: resolves via artifacts.spec
+ok:   commands/ff-deliver.md: resolves via artifacts.plan
+ok:   commands/ff-deliver.md: resolves via artifacts.verify
+ok:   commands/ff-deliver.md: writes phases.deliver
+ok:   commands/ff-deliver.md: records artifacts.delivery
+ok:   commands/ff-deliver.md: leaves currentPhase = "done"
+ok:   commands/ff-deliver.md: manual / non-gated (autopilot never chains it)
+ok:   commands/ff-deliver.md: gates off tier: lite unless requested
+ok:   commands/ff-deliver.md: states it never blocks done
+ok:   commands/ff-deliver.md: carries the DELIVERY GAP detection
+ok:   commands/ff-deliver.md: excludes an irreversible-with-mitigation task from the gap
+ok:   docs/manifest-schema.md: '## Delivery' section present
+ok:   docs/manifest-schema.md §Delivery: documents phases.deliver
+ok:   docs/manifest-schema.md §Delivery: documents artifacts.delivery
+ok:   docs/manifest-schema.md §Delivery: states the absent-field default
+ok:   docs/manifest-schema.md: currentPhase enum correctly omits 'deliver'
+ok:   docs/manifest-schema.md: durable-eligible set includes 'delivery'
+ok:   SKILL.md references ff-deliver
+ok:   README.md references ff-deliver
+ok:   delivery-gap eval fixture present
+ok:   dist parity: commands/ff-deliver.md
+ok:   dist parity: templates/delivery.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: delivery guard
+command_exit_status: 0
+
+=== scripts/checks/design-tradeoff-guard.sh ===
+ok:   templates/design.md: Trade-off matrix carries the core 3-axis header
+ok:   templates/design.md: Trade-off matrix states the adaptive-axis rule
+ok:   templates/design.md: has the '## Devil's advocate' section
+ok:   templates/design.md: Devil's advocate carries '### Failure scenarios'
+ok:   templates/design.md: Devil's advocate carries '### Edge cases & operational risk'
+ok:   templates/design.md: Failure scenarios carries a labeled '- **FS1:**' example row
+ok:   templates/design.md: states >=1 failure scenario required even for a single obvious option
+ok:   commands/ff-design.md: carries the Devil's-advocate pass
+ok:   commands/ff-design.md: requires >=1 concrete failure scenario
+ok:   commands/ff-design.md: adversarial beat (94) sits between the do-not-contradict STOP (92) and '## Write the artifact' (118)
+ok:   commands/ff-design.md: states the derive-not-diverge rule for decision.md's Trade-offs
+ok:   commands/ff-design.md: failure scenarios named in decision.md by reference
+ok:   templates/decision.md: Trade-offs schema untouched (decision-record-guard.sh stays green)
+ok:   commands/ff-verify.md: resolves artifacts.design
+ok:   commands/ff-verify.md: maps each failure scenario into its own FS<n> contract item
+ok:   commands/ff-verify.md: FS mapping reuses the AC mapping discipline
+ok:   templates/verify.md: FS1 contract-mapping block present
+ok:   templates/verify.md: FS block carries \*\*Method:\*\*
+ok:   templates/verify.md: FS block carries \*\*Evidence:\*\*
+ok:   templates/verify.md: FS block carries \*\*Confidence:\*\*
+ok:   templates/verify.md: FS block carries \*\*Gap
+ok:   docs/manifest-schema.md: '## Design trade-offs & devil's advocate' canonical section present
+ok:   docs/manifest-schema.md §Design trade-offs: '### Trade-off matrix' present
+ok:   docs/manifest-schema.md §Design trade-offs: '### Devil' present
+ok:   docs/manifest-schema.md §Design trade-offs: '### Actuation' present
+ok:   docs/manifest-schema.md §Design trade-offs: '### decision.md reconciliation' present
+ok:   docs/manifest-schema.md §Design trade-offs: '### v1 non-goals' present
+ok:   docs/manifest-schema.md §Design trade-offs: states no new §Autopilot row (reuses Evidence gap stop)
+ok:   docs/manifest-schema.md §Evidence: Confidence ladder names the design-time-failure-scenario class
+ok:   config/defaults.json: no new config key (always-on, as required)
+ok:   docs/manifest-schema.md: no new top-level manifest field
+ok:   dist parity: templates/design.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-verify.md
+PASS: design-tradeoff guard
+command_exit_status: 0
+
+=== scripts/checks/discovery-fields-guard.sh ===
+ok:   templates/spec.md: '## Success metrics' present
+ok:   templates/spec.md: '## Requirement graph' present
+ok:   templates/spec.md: 'Success metrics' carries the full-tier-only banner
+ok:   templates/spec.md: 'Requirement graph' carries the full-tier-only banner
+ok:   templates/spec.md: no Stakeholders section (as required)
+ok:   templates/spec.md: Success metrics states the binary-threshold-with-measurement discipline
+ok:   templates/spec.md: Success metrics cross-references (not diverges from) the binary-AC discipline
+ok:   templates/spec.md: Requirement graph carries the '| AC | Depends on |' header
+ok:   templates/spec.md: Requirement graph names its reuse of §Planning intelligence's notation
+ok:   commands/ff-clarify.md: names the Success metrics field
+ok:   commands/ff-clarify.md: names the Requirement graph field
+ok:   commands/ff-clarify.md: lite branch explicitly skips the two fields
+ok:   commands/ff-verify.md: maps each Success-metrics row into its own '### SM<n>'
+ok:   commands/ff-verify.md: states presence-not-tier gating for SM
+ok:   templates/verify.md: SM1 contract-mapping block present
+ok:   templates/verify.md: SM block carries \*\*Method:\*\*
+ok:   templates/verify.md: SM block carries \*\*Evidence:\*\*
+ok:   templates/verify.md: SM block carries \*\*Confidence:\*\*
+ok:   templates/verify.md: SM block carries \*\*Gap
+ok:   commands/ff-plan.md: carries the requirement-graph derivation bullet
+ok:   commands/ff-plan.md: requirement-graph bullet (82) sits between 'Map every AC' (66) and 'Derive planning intelligence' (95)
+ok:   templates/plan.md: Dependency graph header UNCHANGED (no new column — derive-don't-widen)
+ok:   templates/plan.md: Outcome gate carries the requirement-graph coverage/gap rule
+ok:   templates/plan.md: names the un-derivable same-task-covers-both-ACs gap format
+ok:   docs/manifest-schema.md: '## Discovery fields' canonical section present
+ok:   docs/manifest-schema.md §Discovery fields: '### Success metrics' present
+ok:   docs/manifest-schema.md §Discovery fields: '### Requirement graph' present
+ok:   docs/manifest-schema.md §Discovery fields: '### Actuation 1' present
+ok:   docs/manifest-schema.md §Discovery fields: '### Actuation 2' present
+ok:   docs/manifest-schema.md §Discovery fields: '### Tier / track scope' present
+ok:   docs/manifest-schema.md §Discovery fields: '### v1 non-goals' present
+ok:   docs/manifest-schema.md §Evidence: Confidence ladder names 'success metric' as a fourth contract-item class
+ok:   config/defaults.json: no new config key (always-on, as required)
+ok:   docs/manifest-schema.md: no new top-level manifest field
+ok:   docs/manifest-schema.md §Autopilot: no new discovery-fields row (as required)
+ok:   dist parity: templates/spec.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: templates/plan.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: discovery-fields guard
+command_exit_status: 0
+
+=== scripts/checks/dist-parity-guard.sh ===
+FAIL: drift: integrity/testdata/legacy/inventory-v1.json differs from dist/codex/feature-flow/integrity/testdata/legacy/inventory-v1.json (re-run scripts/package-codex-plugin.sh)
+ok:   checked 45 packaged files (1 drifted, 0 orphaned)
+RED: dist parity guard failed
+command_exit_status: 1
+
+=== scripts/checks/durable-paths-guard.sh ===
+ok:   config/defaults.json: paths.durable present, default null
+ok:   docs/manifest-schema.md: 'Durable artifact resolution' rule present
+ok:   docs/manifest-schema.md: rule names paths.durable
+ok:   docs/manifest-schema.md: rule states the <date>-<slug>/<artifact> scheme
+ok:   docs/manifest-schema.md: phases.<phase>.artifact described as a display mirror
+ok:   docs/manifest-schema.md: stale 'only spec/plan relocatable' claim absent
+ok:   docs/manifest-schema.md: Disk-inference references artifacts.<name>
+ok:   docs/manifest-schema.md: Disk-inference has the paths.durable manifest-lost fallback
+ok:   docs/manifest-schema.md: artifacts note carries the resolution rule
+ok:   commands/ff-clarify.md: references the Durable artifact resolution rule
+ok:   commands/ff-clarify.md: records the resolved path in artifacts.spec
+ok:   commands/ff-plan.md: references the Durable artifact resolution rule
+ok:   commands/ff-plan.md: records the resolved path in artifacts.plan
+ok:   commands/ff-design.md: references the Durable artifact resolution rule
+ok:   commands/ff-design.md: records the resolved path in artifacts.design
+ok:   commands/ff-design.md: references the Durable artifact resolution rule
+ok:   commands/ff-design.md: records the resolved path in artifacts.decision
+ok:   commands/ff-diagnose.md: references the Durable artifact resolution rule
+ok:   commands/ff-diagnose.md: records the resolved path in artifacts.diagnosis
+ok:   commands/ff-verify.md: references the Durable artifact resolution rule
+ok:   commands/ff-verify.md: records the resolved path in artifacts.verify
+ok:   commands/ff-deliver.md: references the Durable artifact resolution rule
+ok:   commands/ff-deliver.md: records the resolved path in artifacts.delivery
+ok:   commands/ff-implement.md: resolves the plan via artifacts.plan
+ok:   commands/ff-implement.md: Cold-start reads artifacts.plan (rel@5) before the sandbox fallback (rel@7)
+ok:   commands/ff-implement.md: bugfix work resolves the diagnosis via artifacts.diagnosis
+ok:   commands/ff-status.md: resolves artifact existence via artifacts.<name>
+ok:   README.md: has a paths.durable config row
+ok:   SKILL.md: notes durable promotion
+ok:   dist parity: config/defaults.json
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: commands/ff.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-diagnose.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-status.md
+ok:   dist parity: commands/ff-resume.md
+ok:   dist parity: README.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   read-site completeness (AC13): no bare-name durable-artifact reader/gate in any command body
+PASS: durable-paths guard
+command_exit_status: 0
+
+=== scripts/checks/enforce-gate-guard.sh ===
+ok:   GateA: feature unsigned → implement
+ok:   GateA: feature signed → implement
+ok:   GateA: bugfix-lite diagnose incomplete → implement
+ok:   GateA: bugfix-lite diagnose complete → implement (no sign-off needed)
+ok:   GateA: bugfix-full unsigned → implement
+ok:   GateA: feature-lite unsigned → implement (feature/* arm covers lite)
+ok:   GateA: feature-lite signed → implement
+ok:   GateB/AC10: legacy stub verify.md (no Contract mapping) → denied
+ok:   GateB/AC10: filled report (Contract mapping + status token) → allowed
+ok:   GateB/AC10: Contract mapping without a captured status token → denied
+ok:   GateB/AC10: verbatim unfilled template → denied
+ok:   GateB: feature done, verify.md absent
+ok:   GateB: feature done, verify.md empty
+ok:   GateB: feature done, verify.md has no heading
+ok:   GateB: feature done but verify.status != complete
+ok:   GateB/AC5: honors renamed artifacts.verify pointer
+ok:   GateB: bugfix done + verify + review
+ok:   GateB: bugfix done, review.md absent
+ok:   non-manifest write → fast-exit allow
+ok:   unparseable proposed content → fail-open
+ok:   missing track → fail-open
+ok:   kill switch: toggles.enforce=false → allow
+ok:   jq absent → systemMessage warning (fail-open)
+ok:   dispatch seam: run-hook.cmd → enforce-gate denies
+PASS: enforce-gate guard
+command_exit_status: 0
+
+=== scripts/checks/evidence-guard.sh ===
+ok:   templates/plan.md: task template has a **Covers:** field
+ok:   templates/plan.md: Outcome gate requires every AC mapped/flagged
+ok:   commands/ff-plan.md: AC-mapping instruction present, feature-scoped
+ok:   templates/verify.md: '## Regression risk' section present
+ok:   commands/ff-verify.md: regression-risk instruction present
+ok:   templates/diagnosis.md: '## Root cause candidates' section present
+ok:   templates/diagnosis.md: '## Confirmed root cause' section present
+ok:   commands/ff-diagnose.md: full-tier candidate instruction present
+ok:   commands/ff-diagnose.md: sign-off echo still lists 'root cause' (AC4)
+ok:   dist parity: templates/plan.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: templates/diagnosis.md
+ok:   docs/manifest-schema.md: '## Evidence' canonical section present
+ok:   docs/manifest-schema.md §Evidence: '### Evidence-kind taxonomy' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Evidence record shape' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Evidence directory' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Confidence ladder' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Detection and N/A rule' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Evidence waiver' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Tier scaling' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### Adding an evidence kind' subsection present
+ok:   docs/manifest-schema.md §Evidence: '### v1 non-goals' subsection present
+ok:   docs/manifest-schema.md §Evidence: evidence record shape stated literally
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'executed-test'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'build/static-analysis'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'e2e/browser'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'http/api'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'db'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'cli-output'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'logs'
+ok:   docs/manifest-schema.md §Evidence: taxonomy names 'before/after'
+ok:   docs/manifest-schema.md §Evidence: confidence token 'Verified (multi-source)' present
+ok:   templates/verify.md: confidence token 'Verified (multi-source)' present
+ok:   docs/manifest-schema.md §Evidence: confidence token 'Verified (single-source)' present
+ok:   templates/verify.md: confidence token 'Verified (single-source)' present
+ok:   docs/manifest-schema.md §Evidence: confidence token 'Partially verified' present
+ok:   templates/verify.md: confidence token 'Partially verified' present
+ok:   docs/manifest-schema.md §Evidence: confidence token 'Unverified' present
+ok:   templates/verify.md: confidence token 'Unverified' present
+ok:   templates/verify.md: '## Evidence coverage matrix' section present
+ok:   templates/verify.md: '## Evidence artifacts index' section present
+ok:   templates/verify.md: '## Limitations & remaining risks' section present
+ok:   templates/verify.md: '## Contract mapping' section present
+ok:   templates/verify.md: lite-tier skip note present on the coverage matrix
+ok:   agents/ff-test-runner.md: detects 'composer.json'
+ok:   agents/ff-test-runner.md: detects 'phpunit.xml'
+ok:   agents/ff-test-runner.md: detects 'playwright.config'
+ok:   agents/ff-test-runner.md: detects 'bin/magento'
+ok:   agents/ff-test-runner.md: detects 'MFTF'
+ok:   agents/ff-test-runner.md: evidence-dir write scope stated
+ok:   agents/ff-test-runner.md: clears evidence/ before writing (re-run hygiene)
+ok:   docs/manifest-schema.md §Autopilot: 'Evidence gap stop' pause row present
+ok:   commands/ff-verify.md: references the Evidence contract by name
+ok:   commands/ff-verify.md: waiver line format stated
+ok:   docs/manifest-schema.md: waiver line format stated
+ok:   dist parity: agents/ff-test-runner.md
+GREEN: evidence guard passed
+command_exit_status: 0
+
+=== scripts/checks/integrity-boundary-guard.sh ===
+ok:   current commands/hooks/templates/config do not invoke doctor or migration
+ok:   schemas/manifest-v1.schema.json parses
+ok:   schemas/golden-vector-v1.schema.json parses
+ok:   schemas/doctor-result-v1.schema.json parses
+ok:   schemas/migration-plan-v1.schema.json parses
+ok:   integrity/protocol/v1/diagnostics.json parses
+ok:   integrity/testdata/vectors/v1/index.json parses
+ok:   integrity/testdata/legacy/inventory-v1.json parses
+PASS: integrity boundary guard
+command_exit_status: 0
+
+=== scripts/checks/integrity-conformance-guard.sh ===
+FAIL: Go toolchain is required for WP1 conformance
+command_exit_status: 1
+
+=== scripts/checks/integrity-wp2-guard.sh ===
+ok:   every inventoried legacy source has one registered profile or explicit rationale
+ok:   legacy inventory source identities are unique
+ok:   migration corpus contains X-LOSSLESS
+ok:   migration corpus contains X-IDEMPOTENT
+ok:   migration corpus contains X-AMBIGUOUS
+ok:   migration corpus contains X-POINTER
+ok:   migration corpus contains X-POINTER-DRIFT
+ok:   migration corpus contains X-LEGACY-DONE
+ok:   migration corpus contains X-PREVIEW-NOWRITE
+ok:   migration corpus contains X-POLICY-EQUIVALENCE
+ok:   WP2 remains directly invocable only
+PASS: WP2 integrity guard
+command_exit_status: 0
+
+=== scripts/checks/kb-guard.sh ===
+ok:   config/defaults.json: toggles.kb present, default true
+ok:   config/defaults.json: paths.kb present, default ".feature-flow-kb"
+ok:   config/defaults.json: kb.freshnessWindowDays + kb.maxRecallEntries present
+ok:   docs/manifest-schema.md: '## Knowledge base' contract section present
+ok:   docs/manifest-schema.md §Knowledge base: names freshnessWindowDays
+ok:   docs/manifest-schema.md §Knowledge base: names referencedFiles
+ok:   docs/manifest-schema.md §Knowledge base: names captureCommitSha
+ok:   docs/manifest-schema.md §Knowledge base: names maxRecallEntries
+ok:   docs/manifest-schema.md §Knowledge base: names paths.kb
+ok:   docs/manifest-schema.md §Knowledge base: documents the Codex degrade path (AC11)
+ok:   docs/manifest-schema.md §Knowledge base: states dedup + supersession non-goals (AC13)
+ok:   docs/manifest-schema.md §Autopilot: has the KB capture confirm-gate row
+ok:   docs/manifest-schema.md: '## Terminal convergence' section present (canonical done-transition rule)
+ok:   docs/manifest-schema.md §Knowledge base: capture rule references Terminal convergence (single-source)
+ok:   templates/kb-entry.md: provenance field title
+ok:   templates/kb-entry.md: provenance field captureDate
+ok:   templates/kb-entry.md: provenance field captureCommitSha
+ok:   templates/kb-entry.md: provenance field runSlug
+ok:   templates/kb-entry.md: provenance field tags
+ok:   templates/kb-entry.md: provenance field referencedFiles
+ok:   commands/ff-verify.md: has a '## KB capture' section
+ok:   commands/ff-verify.md §KB capture: gates on toggles.kb
+ok:   commands/ff-verify.md §KB capture: references the §Knowledge base contract
+ok:   commands/ff-verify.md §KB capture: reads run artifacts via artifacts.<name> pointers
+ok:   commands/ff-review.md: has a '## KB capture' section
+ok:   commands/ff-review.md §KB capture: gates on toggles.kb
+ok:   commands/ff-review.md §KB capture: references the §Knowledge base contract
+ok:   commands/ff-review.md §KB capture: reads run artifacts via artifacts.<name> pointers
+ok:   commands/ff-review.md §KB capture: has the feature-track guard
+ok:   commands/ff-verify.md §Update manifest: both done-transitions invoke KB capture (2)
+ok:   commands/ff-review.md §Update manifest: bugfix done-transition invokes KB capture (1)
+ok:   commands/ff-explore.md: has a '## KB recall' section
+ok:   commands/ff-explore.md §## KB recall: gates on toggles.kb
+ok:   commands/ff-explore.md §## KB recall: references the §Knowledge base contract
+ok:   commands/ff-explore.md §## KB recall: applies the staleness flag (flag-not-suppress)
+ok:   commands/ff-design.md: has a '## KB recall' section
+ok:   commands/ff-design.md §## KB recall: gates on toggles.kb
+ok:   commands/ff-design.md §## KB recall: references the §Knowledge base contract
+ok:   commands/ff-design.md §## KB recall: applies the staleness flag (flag-not-suppress)
+ok:   commands/ff-diagnose.md: has a '## KB recall' section
+ok:   commands/ff-diagnose.md §## KB recall: gates on toggles.kb
+ok:   commands/ff-diagnose.md §## KB recall: references the §Knowledge base contract
+ok:   commands/ff-diagnose.md §## KB recall: applies the staleness flag (flag-not-suppress)
+ok:   commands/ff-implement.md: has a '## Decision recall' section
+ok:   commands/ff-implement.md §## Decision recall: gates on toggles.kb
+ok:   commands/ff-implement.md §## Decision recall: references the §Knowledge base contract
+ok:   commands/ff-implement.md §## Decision recall: applies the staleness flag (flag-not-suppress)
+ok:   skills/feature-flow/SKILL.md: documents dedup + supersession as v1 non-goals
+ok:   README.md: documents dedup + supersession as v1 non-goals
+ok:   commands/ff-verify.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-review.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-explore.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-design.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-diagnose.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-implement.md: KB section reads are pointer-form (no bare durable reader)
+ok:   dist parity: config/defaults.json
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: templates/kb-entry.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-review.md
+ok:   dist parity: commands/ff-explore.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-diagnose.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: kb guard
+command_exit_status: 0
+
+=== scripts/checks/lite-tier-guard.sh ===
+ok:   ff.md judges feature tier
+ok:   ff.md defaults full on doubt
+ok:   ff.md writes resolved tier (not hardcoded full)
+ok:   ff-explore writes resolved tier
+ok:   ff-explore dispatches 1 explorer when lite
+ok:   ff-explore branches on tier == lite
+ok:   ff-clarify has a lite-tier mode
+ok:   ff-clarify lite skips premise+approach beats
+ok:   ff-clarify routes lite to implement
+ok:   ff-clarify has lite->full escalation
+ok:   ff-implement has a feature-lite cold-start branch
+ok:   ff-implement lite requires only spec
+ok:   ff-implement lite never routes to design/plan
+ok:   schema documents feature lite tier
+ok:   SKILL documents feature lite tier
+PASS: lite-tier guard
+command_exit_status: 0
+
+=== scripts/checks/planning-intelligence-guard.sh ===
+ok:   templates/plan.md: four sections present, in order, between '## Tasks' and '## Status conventions'
+ok:   templates/plan.md: 'Dependency graph' carries a '> ' guidance blockquote
+ok:   templates/plan.md: 'Critical path' carries a '> ' guidance blockquote
+ok:   templates/plan.md: 'Risk register' carries a '> ' guidance blockquote
+ok:   templates/plan.md: 'Rollback plan' carries a '> ' guidance blockquote
+ok:   templates/plan.md: Risk register has the categorical table header
+ok:   templates/plan.md: Risk register states the no-numeric-score doctrine
+ok:   templates/plan.md: Dependency graph rows reference Task N IDs
+ok:   templates/plan-bugfix.md: four sections present, in order, between '## Tasks' and '## Status conventions'
+ok:   templates/plan-bugfix.md: 'Dependency graph' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: 'Critical path' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: 'Risk register' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: 'Rollback plan' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: Risk register has the categorical table header
+ok:   templates/plan-bugfix.md: Risk register states the no-numeric-score doctrine
+ok:   templates/plan-bugfix.md: Dependency graph rows reference Task N IDs
+ok:   docs/manifest-schema.md: '## Planning intelligence' canonical section present
+ok:   docs/manifest-schema.md §Planning intelligence: '### Dependency graph notation' present
+ok:   docs/manifest-schema.md §Planning intelligence: '### Critical-path derivation' present
+ok:   docs/manifest-schema.md §Planning intelligence: '### Critical-path check' present
+ok:   docs/manifest-schema.md §Planning intelligence: '### Risk register' present
+ok:   docs/manifest-schema.md §Planning intelligence: '### Rollback plan' present
+ok:   docs/manifest-schema.md §Planning intelligence: derivation names the longest chain
+ok:   docs/manifest-schema.md §Planning intelligence: states the lower-numbered dependency invariant
+ok:   docs/manifest-schema.md §Planning intelligence: names the Critical-path override recording
+ok:   docs/manifest-schema.md §Autopilot: has the Critical-path stop row
+ok:   docs/manifest-schema.md §Autopilot: Critical-path stop is unconditional
+ok:   commands/ff-plan.md: has the derive-planning-intelligence instruction
+ok:   commands/ff-plan.md: states the critical path is derived, not hand-authored
+ok:   commands/ff-plan.md: derive instruction sits between AC-mapping (66) and Outcome-gate population (110)
+ok:   commands/ff-implement.md: has a '## Critical-path check' section
+ok:   commands/ff-implement.md §Critical-path check: resolves via artifacts.plan
+ok:   commands/ff-implement.md §Critical-path check: STOP is unconditional in both modes
+ok:   commands/ff-implement.md §Critical-path check: override recorded verbatim
+ok:   commands/ff-implement.md §Critical-path check: names the Rollback plan as recovery
+ok:   commands/ff-implement.md: '## Critical-path check' sits between Decision recall and Do the work — feature track
+ok:   commands/ff-verify.md: cross-references the plan's Risk register
+ok:   commands/ff-verify.md: resolves the plan via artifacts.plan
+ok:   config/defaults.json: no planning-intelligence config key (always-on, as required)
+ok:   docs/manifest-schema.md: no new top-level manifest field for planning intelligence
+ok:   dist parity: templates/plan.md
+ok:   dist parity: templates/plan-bugfix.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-verify.md
+PASS: planning-intelligence guard
+command_exit_status: 0
+
+=== scripts/checks/repair-loop-guard.sh ===
+ok:   docs/manifest-schema.md §Autopilot: 'Verify repair-and-re-verify cycle' mandatory-pause row present
+ok:   docs/manifest-schema.md §Autopilot: repair-cycle row correctly avoids 'unconditional'
+ok:   docs/manifest-schema.md: 'Repair-and-re-verify cycle' subsection present (mirrors Fix-and-re-review cycle)
+ok:   commands/ff-verify.md: repair branch (122) sits inside 'Refuse premature done' (116), before the fall-through STOP (142)
+ok:   commands/ff-verify.md: repair branch names the full-tier-only precondition
+ok:   commands/ff-verify.md: re-verify is scoped to only the named re-touched ACs
+ok:   commands/ff-verify.md: names the 'scoped repair re-verify' the runner keys off
+ok:   commands/ff-verify.md: states the evidence-preservation exception
+ok:   agents/ff-test-runner.md: carries the scoped-repair carve-out (do not clear evidence/)
+ok:   templates/verify.md: '## Repair' section present
+ok:   templates/verify.md: '## Repair' carries \*\*Triggering item:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Captured failure:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Diagnosis:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Fix applied:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Re-touched items
+ok:   templates/verify.md: '## Repair' carries \*\*Re-verify outcome:\*\*
+ok:   templates/verify.md: '## Repair' Re-touched line names the bugfix track too (not AC-only)
+ok:   config/defaults.json: no new repair config key
+ok:   docs/manifest-schema.md: no new top-level manifest field for repair cycles
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: agents/ff-test-runner.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: repair-loop guard
+command_exit_status: 0
+
+=== scripts/checks/run-start-ask-guard.sh ===
+ok:   commands/ff.md: resolve-autopilot@68 precedes write@80
+ok:   commands/ff-explore.md: resolve-autopilot@28 precedes write@31
+ok:   commands/ff-clarify.md: resolve-autopilot@25 precedes write@28
+ok:   commands/ff-diagnose.md: resolve-autopilot@28 precedes write@31
+ok:   ff.md: creation field list includes autopilot
+ok:   commands/ff-explore.md: creation write includes autopilot
+ok:   commands/ff-clarify.md: creation write includes autopilot
+ok:   commands/ff-diagnose.md: creation write includes autopilot
+ok:   manifest-schema.md: run-start is resolve-before-write
+ok:   manifest-schema.md: creation rule lists autopilot
+ok:   SKILL.md: doctrine line present
+ok:   manifest-schema.md: gate table has 'Run-start mode ask' row
+ok:   ff-status.md: prints the autopilot mode
+PASS: run-start ask guard
+command_exit_status: 0
+
+=== scripts/checks/version-sync-guard.sh ===
+ok:   .claude-plugin/plugin.json: canonical version 0.17.0
+ok:   .codex-plugin/plugin.json: version 0.17.0 matches canonical
+ok:   .claude-plugin/marketplace.json: version 0.17.0 matches canonical
+ok:   README.md: Status badge reads v0.17.0
+ok:   CHANGELOG.md: newest entry is [0.17.0]
+PASS: version-sync guard (0.17.0)
+command_exit_status: 0
+
+exit_status: 1

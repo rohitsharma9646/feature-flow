@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/migration-plan-v1.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "status", "legacyUnknownPointers", "requiresTerminalConfirmation", "applyFinalizers", "diagnostics"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "status": {"enum": ["ready", "refused", "already-current", "diagnosis-only"]},
+    "sourceDigest": {"type": "string"},
+    "profileId": {"type": "string"},
+    "runId": {"type": "string"},
+    "proposed": {"type": "object"},
+    "legacyUnknownPointers": {"type": "array", "items": {"type": "string"}},
+    "requiresTerminalConfirmation": {"type": "boolean"},
+    "applyFinalizers": {"type": "array"},
+    "diagnostics": {"type": "array"},
+    "planDigest": {"type": "string"}
+  },
+  "additionalProperties": false
+}

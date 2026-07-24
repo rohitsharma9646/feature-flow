@@ -12,17 +12,29 @@ IFS=$'\t' read -r goos goarch exe < <(
   { echo "target metadata is incomplete: $target" >&2; exit 2; }
 
 output="dist/integrity/$target"
+case "$exe" in
+  *.exe) integrity_exe="ff-integrity.exe" ;;
+  *) integrity_exe="ff-integrity" ;;
+esac
 rm -rf "$output"
 mkdir -p "$output/payload/bin" "$output/payload/schemas" \
-  "$output/payload/integrity/protocol/v1" "$output/payload/integrity/testdata/smoke"
+  "$output/payload/integrity/protocol/v1" "$output/payload/integrity/testdata/smoke" \
+  "$output/payload/integrity/testdata/legacy"
 
 CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
   go build -trimpath -ldflags='-s -w -buildid=' -o "$output/payload/bin/$exe" \
   ./cmd/ff-integrity-classify
+CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+  go build -trimpath -ldflags='-s -w -buildid=' -o "$output/payload/bin/$integrity_exe" \
+  ./cmd/ff-integrity
 
-cp schemas/manifest-v1.schema.json schemas/golden-vector-v1.schema.json "$output/payload/schemas/"
+cp schemas/manifest-v1.schema.json schemas/golden-vector-v1.schema.json \
+  schemas/doctor-result-v1.schema.json schemas/migration-plan-v1.schema.json \
+  "$output/payload/schemas/"
 cp integrity/protocol/v1/diagnostics.json "$output/payload/integrity/protocol/v1/"
 cp integrity/testdata/manifests/current-feature.json "$output/payload/integrity/testdata/smoke/"
+cp integrity/testdata/manifests/legacy.json "$output/payload/integrity/testdata/smoke/"
+cp integrity/testdata/legacy/inventory-v1.json "$output/payload/integrity/testdata/legacy/"
 
 (
   cd "$output/payload"
@@ -62,10 +74,15 @@ done
 
 for rel in \
   "bin/$exe" \
+  "bin/$integrity_exe" \
   "schemas/manifest-v1.schema.json" \
   "schemas/golden-vector-v1.schema.json" \
+  "schemas/doctor-result-v1.schema.json" \
+  "schemas/migration-plan-v1.schema.json" \
   "integrity/protocol/v1/diagnostics.json" \
-  "integrity/testdata/smoke/current-feature.json"; do
+  "integrity/testdata/smoke/current-feature.json" \
+  "integrity/testdata/smoke/legacy.json" \
+  "integrity/testdata/legacy/inventory-v1.json"; do
   cmp "$output/claude/$rel" "$output/codex/$rel"
 done
 

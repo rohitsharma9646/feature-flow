@@ -1,0 +1,56 @@
+{
+  "artifacts": {},
+  "assurance": {
+    "review": null,
+    "verification": null
+  },
+  "autopilot": false,
+  "closedAt": null,
+  "code": {
+    "baseline": {
+      "head": null,
+      "repositoryIdentity": "ff-bootstrap-repository-v1:1b6268b49e60a939c9074dc53beddf9c349ab36229746d58ac040de706638008",
+      "repositoryKind": "non-git",
+      "startSnapshotDigest": "sha256:3a2fdd13d4ba4b74c5f1dd12754432f9e52a9ca5546f87bc181c5ed2f5e6575b",
+      "worktreeIdentity": "ff-bootstrap-worktree-v1:a5388e4a607b5928e0ea66efd7fd11a453c9cc8cbac8d3404d9eb1dfe3d87116"
+    },
+    "revision": {
+      "algorithm": "ff-code-revision-v1",
+      "diagnostic": "FFI_REVISION_UNSUPPORTED",
+      "id": null,
+      "status": "unsupported"
+    },
+    "scope": {
+      "exclusions": [],
+      "includedUntrackedPaths": [],
+      "trackedPaths": []
+    }
+  },
+  "createdAt": "1970-01-01T00:00:00Z",
+  "currentPhase": "implement",
+  "lock": null,
+  "migration": {
+    "from": "legacy-unversioned",
+    "legacyTerminal": false,
+    "legacyUnknownPointers": [],
+    "migratedAt": "2026-07-24T05:37:18.117088331Z",
+    "migratorVersion": "ff-integrity-wp2",
+    "sourceDigest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+    "sourceSnapshot": "migration/manifest-v0-f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c.json",
+    "to": 1
+  },
+  "phases": {},
+  "runId": "ffrun1:c0167e1cb03b1fd71e6b0e16c36a5e284c625995189065304e70045014edfb88",
+  "schemaVersion": 1,
+  "signOff": {
+    "actor": null,
+    "date": null,
+    "evidenceRef": null,
+    "required": true,
+    "signed": false
+  },
+  "slug": "legacy",
+  "tier": "full",
+  "track": "feature",
+  "updatedAt": "2026-07-24T05:37:18.117088331Z"
+}

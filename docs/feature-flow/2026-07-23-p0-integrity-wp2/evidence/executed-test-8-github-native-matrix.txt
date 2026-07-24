@@ -1,0 +1,24 @@
+kind: executed-test
+command: GitHub Actions integrity workflow, run 30070218076
+event: push
+commit: c595640
+url: https://github.com/rohitsharma9646/feature-flow/actions/runs/30070218076
+
+jobs:
+- inventory: pass, 6s, job 89409334668
+- native-package (linux-arm64, ubuntu-24.04-arm): pass, 42s, job 89409352159
+- native-package (windows-arm64, windows-11-arm): pass, 2m11s, job 89409352163
+- native-package (macos-x86_64, macos-15-intel): pass, 56s, job 89409352172
+- native-package (windows-x86_64, windows-latest): pass, 2m7s, job 89409352181
+- native-package (linux-x86_64, ubuntu-latest): pass, 56s, job 89409352188
+- native-package (macos-arm64, macos-latest): pass, 43s, job 89409352211
+
+artifacts:
+- integrity-linux-x86_64
+- integrity-linux-arm64
+- integrity-macos-x86_64
+- integrity-macos-arm64
+- integrity-windows-x86_64
+- integrity-windows-arm64
+
+exit_status: 0

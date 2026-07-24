@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"id":"X-LOSSLESS","contract":"snapshot bytes equal exact legacy source bytes"},
+    {"id":"X-IDEMPOTENT","contract":"second apply performs zero writes and preserves migratedAt"},
+    {"id":"X-AMBIGUOUS","contract":"unknown behavior field or multiple profile match refuses"},
+    {"id":"X-POINTER","contract":"absolute, traversal, drive, UNC, device, and symlink escape refuse"},
+    {"id":"X-POINTER-DRIFT","contract":"changed pointer facts invalidate the reviewed plan"},
+    {"id":"X-LEGACY-DONE","contract":"apply requires dedicated confirmation and reopens assurance"},
+    {"id":"X-PREVIEW-NOWRITE","contract":"doctor and preview change no portable filesystem dimension"},
+    {"id":"X-POLICY-EQUIVALENCE","contract":"preview and apply recompute the same canonical plan digest"}
+  ],
+  "platformExpectations": {
+    "unix":"same-directory synced temp plus atomic rename and parent directory sync",
+    "windows":"native MoveFileExW replacement with write-through; no copy/delete fallback"
+  }
+}

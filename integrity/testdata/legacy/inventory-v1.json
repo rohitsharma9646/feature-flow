@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "generation": "Run go run ./cmd/ff-integrity-inventory --history --output integrity/testdata/legacy/inventory-v1.json [committed-dogfood-roots...]",
+  "coveragePolicy": "Every Git-history and explicitly supplied committed dogfood legacy source receives one supported profile or explicit unsupported rationale.",
+  "profiles": [
+    {
+      "profileId": "legacy-minimal-feature-v0",
+      "disposition": "supported",
+      "recognizedTopLevelFields": [
+        "profile-specific; see integrity/migration/v0/registry.go"
+      ]
+    },
+    {
+      "profileId": "legacy-minimal-feature-request-v0",
+      "disposition": "supported",
+      "recognizedTopLevelFields": [
+        "profile-specific; see integrity/migration/v0/registry.go"
+      ]
+    },
+    {
+      "profileId": "legacy-feature-active-v0",
+      "disposition": "supported",
+      "recognizedTopLevelFields": [
+        "profile-specific; see integrity/migration/v0/registry.go"
+      ]
+    },
+    {
+      "profileId": "legacy-feature-terminal-v0",
+      "disposition": "supported",
+      "recognizedTopLevelFields": [
+        "profile-specific; see integrity/migration/v0/registry.go"
+      ]
+    },
+    {
+      "profileId": "legacy-bugfix-active-v0",
+      "disposition": "supported",
+      "recognizedTopLevelFields": [
+        "profile-specific; see integrity/migration/v0/registry.go"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "reference": "2a6c40b244af:integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    },
+    {
+      "reference": "30b573e67d09:integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    },
+    {
+      "reference": "38f1bc2ff235:integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    },
+    {
+      "reference": "d958a9c691ab:integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    },
+    {
+      "reference": "e98546d60e3c:integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    },
+    {
+      "reference": "f1857b193a26:integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    },
+    {
+      "reference": "integrity/testdata/legacy/profiles/bugfix-active.json",
+      "digest": "sha256:56e277b667074dee00c1a105e74f0c05763629380b63e3dde102be7b9ce41078",
+      "fingerprint": "shape-v1:a1fe929b74130624fa0930b076f6460aa12e025bd9e096b0de28ad1476416830",
+      "disposition": "supported",
+      "profileId": "legacy-bugfix-active-v0"
+    },
+    {
+      "reference": "integrity/testdata/legacy/profiles/feature-active.json",
+      "digest": "sha256:fb0ef6a82198bc05a79a0ddc0696eb712a8c01fb6e5c1729b2ef4b9d5909c186",
+      "fingerprint": "shape-v1:d53a33f69882ef0d0c73b79f93412ffd31ad39c46c53f72d04be61c8ad39f53f",
+      "disposition": "supported",
+      "profileId": "legacy-feature-active-v0"
+    },
+    {
+      "reference": "integrity/testdata/legacy/profiles/feature-minimal-request.json",
+      "digest": "sha256:6fa8d204682ebd08aeb38939253aec70bccd74a4d69fdb6128d5ead96a83da5f",
+      "fingerprint": "shape-v1:a716412ab6771e4be455946915efe5a3d871e6f44b07f88f9ea778190890ddc9",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-request-v0"
+    },
+    {
+      "reference": "integrity/testdata/legacy/profiles/feature-terminal.json",
+      "digest": "sha256:c7d49084410ce527799dd3f06292a7ffafbb5e1a882d599cb0479cb729e83179",
+      "fingerprint": "shape-v1:e9c2d980661345fcb6896b497953ee1c7dad70e8cf77a46adf78f5ca724f10f9",
+      "disposition": "supported",
+      "profileId": "legacy-feature-terminal-v0"
+    },
+    {
+      "reference": "integrity/testdata/manifests/legacy.json",
+      "digest": "sha256:f0c2bf7f3542b4dec1d54c8b6801cf24f190cb7d126671250bbb54fbc9d53a2c",
+      "fingerprint": "shape-v1:066bf7d7c7927dc55c8057128bf3866572316a5c8f63e06656fca4d90bb3f2f6",
+      "disposition": "supported",
+      "profileId": "legacy-minimal-feature-v0"
+    }
+  ]
+}
