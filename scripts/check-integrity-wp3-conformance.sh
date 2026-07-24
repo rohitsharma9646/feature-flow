@@ -12,12 +12,12 @@ jq -e '
   (.platformDispositions.windowsSymlinkTarget == "unsupported-fail-closed")
 ' "$index" >/dev/null
 
-pattern="$(jq -r '[.cases[].test] | join("|")' "$index")"
+pattern="$(jq -r '[.cases[].test] | join("|")' "$index" | tr -d '\r')"
 output="$(go test -count=1 -run "$pattern" \
   ./integrity/revision/... ./integrity/assurance ./integrity/wp3 ./cmd/ff-integrity)"
 printf '%s\n' "$output"
 
-for test_name in $(jq -r '.cases[].test' "$index"); do
+for test_name in $(jq -r '.cases[].test' "$index" | tr -d '\r'); do
   grep -qE '^(ok|\\?)' <<<"$output" ||
     { echo "FAIL: no Go package executed for $test_name" >&2; exit 1; }
   grep -R -F -q "func ${test_name}(" integrity cmd ||
