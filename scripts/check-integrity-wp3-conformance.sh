@@ -20,7 +20,7 @@ printf '%s\n' "$output"
 for test_name in $(jq -r '.cases[].test' "$index"); do
   grep -qE '^(ok|\\?)' <<<"$output" ||
     { echo "FAIL: no Go package executed for $test_name" >&2; exit 1; }
-  grep -R -q "func ${test_name}(" integrity cmd ||
+  grep -R -F -q "func ${test_name}(" integrity cmd ||
     { echo "FAIL: indexed test is missing: $test_name" >&2; exit 1; }
 done
 
