@@ -1,0 +1,24 @@
+{
+  "manifestValid":true,"proposedDone":true,"revisionReady":true,
+  "scopeDrift":false,"evidenceGap":false,
+  "storedRevision":"ffr1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "observedRevision":"ffr1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "review":{
+    "attestationId":"review","kind":"review","status":"passed",
+    "codeRevision":"ffr1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "producer":{"kind":"agent","host":"codex","id":"test"},
+    "recordedAt":"2026-07-24T00:00:00Z","artifact":"review",
+    "evidenceRefs":["evidence:review"],"invalidation":null,"supersedes":null
+  },
+  "verification":{
+    "attestationId":"verify","kind":"verification","status":"passed",
+    "codeRevision":"ffr1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "producer":{"kind":"agent","host":"codex","id":"test"},
+    "recordedAt":"2026-07-24T00:00:00Z","artifact":"verify",
+    "evidenceRefs":["evidence:verify"],"invalidation":null,"supersedes":null
+  },
+  "references":{
+    "artifacts":{"review":true,"verify":true},
+    "evidence":{"evidence:review":true,"evidence:verify":true}
+  }
+}

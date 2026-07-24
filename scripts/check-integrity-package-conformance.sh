@@ -55,4 +55,16 @@ done
 cmp "$package_root/source-plan.out" "$package_root/claude-plan.out"
 cmp "$package_root/source-plan.out" "$package_root/codex-plan.out"
 
-echo "PASS: source, Claude package, and Codex package match for WP1 and WP2 vectors on $target"
+for operation in revision converge; do
+  case "$operation" in
+    revision) input="integrity/testdata/revision/v1/canonical/basic.json" ;;
+    converge) input="integrity/testdata/revision/v1/convergence/ready.json" ;;
+  esac
+  "$source_integrity" "$operation" --input "$input" > "$package_root/source-wp3-$operation.out"
+  "$claude_integrity" "$operation" --input "$input" > "$package_root/claude-wp3-$operation.out"
+  "$codex_integrity" "$operation" --input "$input" > "$package_root/codex-wp3-$operation.out"
+  cmp "$package_root/source-wp3-$operation.out" "$package_root/claude-wp3-$operation.out"
+  cmp "$package_root/source-wp3-$operation.out" "$package_root/codex-wp3-$operation.out"
+done
+
+echo "PASS: source, Claude package, and Codex package match for WP1, WP2, and WP3 vectors on $target"

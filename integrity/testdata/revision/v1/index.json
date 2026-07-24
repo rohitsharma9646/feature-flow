@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"id":"canonical-permutation","kind":"canonical","test":"TestComputeCanonicalizesScopeAndEntries"},
+    {"id":"dimension-sensitivity","kind":"git-state","test":"TestRevisionChangesForGitDimensions"},
+    {"id":"no-op-stability","kind":"git-state","test":"TestCaptureAndObserveNoOpIsStable"},
+    {"id":"dirty-second-change","kind":"scope","test":"TestCaptureAndObserveDetectSecondDirtyChange"},
+    {"id":"unsupported-conflict-sparse","kind":"capability","test":"TestUnsupportedConflictAndSparseStatesFailClosed"},
+    {"id":"ancestor-swap","kind":"race","test":"TestAncestorSymlinkSwapCannotRedirectObservation"},
+    {"id":"attestation-idempotency","kind":"assurance","test":"TestRecordIsIdempotentAndRefusesIdentityConflict"},
+    {"id":"stale-attestation","kind":"assurance","test":"TestEffectivePassIgnoresInvalidationAnnotation"},
+    {"id":"crash-mismatch","kind":"reconcile","test":"TestReconcileCrashFailsClosed"},
+    {"id":"mutation-order","kind":"mutation","test":"TestRunMutationOrdersObservationAndPersistsChangedState"},
+    {"id":"scope-authorization","kind":"scope","test":"TestScopeReconciliationRequiresAuthorization"},
+    {"id":"route-convergence","kind":"convergence","test":"TestEveryRouteUsesIdenticalConvergenceDecision"},
+    {"id":"tier-readiness","kind":"readiness","test":"TestReadinessIsTierInvariant"},
+    {"id":"direct-baseline-observe","kind":"cli","test":"TestBaselineAndObserveDirectOperations"}
+  ],
+  "platformDispositions": {
+    "unixSymlinkTarget": "supported",
+    "windowsSymlinkTarget": "unsupported-fail-closed",
+    "windowsReparseAncestor": "unsupported-fail-closed"
+  }
+}

@@ -8,12 +8,17 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/rohitsharma9646/feature-flow/integrity/assurance"
 	"github.com/rohitsharma9646/feature-flow/integrity/diagnostics"
 	"github.com/rohitsharma9646/feature-flow/integrity/doctor"
 	"github.com/rohitsharma9646/feature-flow/integrity/migration"
 	"github.com/rohitsharma9646/feature-flow/integrity/observe"
+	"github.com/rohitsharma9646/feature-flow/integrity/revision"
+	"github.com/rohitsharma9646/feature-flow/integrity/revision/gitobserve"
 	"github.com/rohitsharma9646/feature-flow/integrity/storage"
+	"github.com/rohitsharma9646/feature-flow/integrity/wp3"
 )
 
 const maxRuns = 10000
@@ -28,7 +33,7 @@ type writer interface {
 
 func run(args []string, stdout, stderr writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: ff-integrity <doctor|migrate> ...")
+		fmt.Fprintln(stderr, "usage: ff-integrity <doctor|migrate|baseline|observe|revision|attest|mutation|scope|converge> ...")
 		return 2
 	}
 	switch args[0] {
@@ -36,10 +41,213 @@ func run(args []string, stdout, stderr writer) int {
 		return runDoctor(args[1:], stdout, stderr)
 	case "migrate":
 		return runMigrate(args[1:], stdout, stderr)
+	case "revision":
+		return runJSONOperation(args[1:], stdout, stderr, computeRevision)
+	case "baseline":
+		return runRepositoryOperation(args[1:], stdout, stderr, captureBaseline)
+	case "observe":
+		return runRepositoryOperation(args[1:], stdout, stderr, observeRevision)
+	case "attest":
+		return runJSONOperation(args[1:], stdout, stderr, recordAttestation)
+	case "mutation":
+		return runJSONOperation(args[1:], stdout, stderr, reconcileMutation)
+	case "scope":
+		return runJSONOperation(args[1:], stdout, stderr, reconcileScope)
+	case "converge":
+		return runJSONOperation(args[1:], stdout, stderr, converge)
 	default:
 		fmt.Fprintln(stderr, "unknown command")
 		return 2
 	}
+}
+
+func runRepositoryOperation(args []string, stdout, stderr writer, operation func(string, []byte) (any, error)) int {
+	flags := flag.NewFlagSet("repository integrity operation", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	input := flags.String("input", "", "bounded JSON request file")
+	repository := flags.String("repo", "", "trusted Git worktree")
+	format := flags.String("format", "json", "human or json")
+	if err := flags.Parse(args); err != nil || *input == "" || *repository == "" ||
+		(*format != "human" && *format != "json") || len(flags.Args()) != 0 {
+		fmt.Fprintln(stderr, "operation requires --repo <worktree> --input <json-file>")
+		return 2
+	}
+	info, err := os.Stat(*input)
+	if err != nil || !info.Mode().IsRegular() || info.Size() > classifierLimit() {
+		fmt.Fprintln(stderr, "input unavailable or exceeds limit")
+		return 2
+	}
+	raw, err := os.ReadFile(*input)
+	if err != nil {
+		return 2
+	}
+	result, err := operation(*repository, raw)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	if err := renderDirect(stdout, result, *format); err != nil {
+		return 2
+	}
+	return 0
+}
+
+func captureBaseline(repository string, raw []byte) (any, error) {
+	var scope revision.Scope
+	if err := strictUnmarshal(raw, &scope); err != nil {
+		return nil, err
+	}
+	baseline, err := gitobserve.Capture(repository, scope, gitobserve.DefaultLimits())
+	if err != nil {
+		return nil, err
+	}
+	return struct {
+		Baseline  gitobserve.Baseline `json:"baseline"`
+		Canonical json.RawMessage     `json:"canonical"`
+	}{
+		Baseline: baseline, Canonical: baseline.Canonical,
+	}, nil
+}
+
+func observeRevision(repository string, raw []byte) (any, error) {
+	var baseline gitobserve.Baseline
+	if err := strictUnmarshal(raw, &baseline); err != nil {
+		return nil, err
+	}
+	result := gitobserve.Observe(repository, baseline, gitobserve.DefaultLimits())
+	if result.Err != nil {
+		return struct {
+			Status     gitobserve.Status `json:"status"`
+			Diagnostic string            `json:"diagnostic"`
+			DriftPaths []string          `json:"driftPaths"`
+		}{Status: result.Status, Diagnostic: result.Err.Error(), DriftPaths: result.DriftPaths}, nil
+	}
+	return struct {
+		Status   gitobserve.Status `json:"status"`
+		Revision revision.Result   `json:"revision"`
+	}{Status: result.Status, Revision: result.Revision}, nil
+}
+
+func runJSONOperation(args []string, stdout, stderr writer, operation func([]byte) (any, error)) int {
+	flags := flag.NewFlagSet("integrity operation", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	input := flags.String("input", "", "bounded JSON request file")
+	format := flags.String("format", "json", "human or json")
+	if err := flags.Parse(args); err != nil || *input == "" ||
+		(*format != "human" && *format != "json") || len(flags.Args()) != 0 {
+		fmt.Fprintln(stderr, "operation requires --input <json-file>")
+		return 2
+	}
+	info, err := os.Stat(*input)
+	if err != nil || !info.Mode().IsRegular() || info.Size() > classifierLimit() {
+		fmt.Fprintln(stderr, "input unavailable or exceeds limit")
+		return 2
+	}
+	raw, err := os.ReadFile(*input)
+	if err != nil {
+		fmt.Fprintln(stderr, "input read failed")
+		return 2
+	}
+	result, err := operation(raw)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	if err := renderDirect(stdout, result, *format); err != nil {
+		fmt.Fprintln(stderr, "output write failed")
+		return 2
+	}
+	return 0
+}
+
+func renderDirect(output writer, value any, format string) error {
+	var raw []byte
+	var err error
+	if format == "human" {
+		raw, err = json.Marshal(value)
+	} else {
+		raw, err = json.MarshalIndent(value, "", "  ")
+	}
+	if err != nil {
+		return err
+	}
+	return writeOutput(output, append(raw, '\n'))
+}
+
+func computeRevision(raw []byte) (any, error) {
+	var request revision.Descriptor
+	if err := strictUnmarshal(raw, &request); err != nil {
+		return nil, err
+	}
+	result, err := revision.Compute(request)
+	if err != nil {
+		return nil, err
+	}
+	return struct {
+		Status     string          `json:"status"`
+		Algorithm  string          `json:"algorithm"`
+		ID         string          `json:"id"`
+		Descriptor json.RawMessage `json:"descriptor"`
+	}{
+		Status: result.Status, Algorithm: result.Algorithm, ID: result.ID,
+		Descriptor: result.Canonical,
+	}, nil
+}
+
+func recordAttestation(raw []byte) (any, error) {
+	var request struct {
+		Existing *assurance.Attestation  `json:"existing"`
+		Request  assurance.RecordRequest `json:"request"`
+	}
+	if err := strictUnmarshal(raw, &request); err != nil {
+		return nil, err
+	}
+	return assurance.Record(request.Existing, request.Request)
+}
+
+func reconcileMutation(raw []byte) (any, error) {
+	var request struct {
+		State      wp3.State `json:"state"`
+		Before     string    `json:"before"`
+		After      string    `json:"after"`
+		Reason     string    `json:"reason"`
+		DetectedAt time.Time `json:"detectedAt"`
+	}
+	if err := strictUnmarshal(raw, &request); err != nil {
+		return nil, err
+	}
+	return wp3.ReconcileMutation(request.State, request.Before, request.After, request.Reason, request.DetectedAt)
+}
+
+func reconcileScope(raw []byte) (any, error) {
+	var request struct {
+		State   wp3.State        `json:"state"`
+		Request wp3.ScopeRequest `json:"request"`
+	}
+	if err := strictUnmarshal(raw, &request); err != nil {
+		return nil, err
+	}
+	return wp3.ReconcileScope(request.State, request.Request)
+}
+
+func converge(raw []byte) (any, error) {
+	var request assurance.ConvergenceInput
+	if err := strictUnmarshal(raw, &request); err != nil {
+		return nil, err
+	}
+	return assurance.Converge(request), nil
+}
+
+func strictUnmarshal(raw []byte, output any) error {
+	decoder := json.NewDecoder(strings.NewReader(string(raw)))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(output); err != nil {
+		return err
+	}
+	if err := decoder.Decode(new(any)); err != io.EOF {
+		return fmt.Errorf("trailing JSON")
+	}
+	return nil
 }
 
 func runDoctor(args []string, stdout, stderr writer) int {

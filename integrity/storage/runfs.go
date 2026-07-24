@@ -14,6 +14,8 @@ type runFS interface {
 	EnsureMigration() error
 	PublishSnapshot(name string, raw []byte) (bool, error)
 	RemoveSnapshot(name string) error
+	EnsureRevision() error
+	PublishRevision(name string, raw []byte) (bool, error)
 	WriteManifestTemp(raw []byte) (string, error)
 	RemoveManifestTemp(name string) error
 	ReplaceManifest(name string) error

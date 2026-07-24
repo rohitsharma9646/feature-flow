@@ -32,7 +32,9 @@ jobs:
           cache: true
       - name: Unit and conformance tests
         shell: bash
-        run: go test ./...
+        run: |
+          go test ./...
+          bash scripts/check-integrity-wp3-conformance.sh
       - name: Assemble target packages
         shell: bash
         run: bash scripts/build-integrity-packages.sh "${{ matrix.target }}"

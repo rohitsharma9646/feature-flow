@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/code-revision-v1.schema.json",
+  "title": "Feature Flow CodeRevision v1 result",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["status", "algorithm", "id"],
+      "properties": {
+        "status": {"const": "ready"},
+        "algorithm": {"const": "ff-code-revision-v1"},
+        "id": {"type": "string", "pattern": "^ffr1:[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["status", "algorithm", "id", "diagnostic"],
+      "properties": {
+        "status": {"const": "unsupported"},
+        "algorithm": {"const": "ff-code-revision-v1"},
+        "id": {"type": "null"},
+        "diagnostic": {"const": "FFI_REVISION_UNSUPPORTED"}
+      },
+      "additionalProperties": false
+    }
+  ]
+}
