@@ -38,3 +38,15 @@ func TestWindowsRelativeHandlesBlockAncestorSwap(t *testing.T) {
 	}
 	windows.CloseHandle(fileHandle)
 }
+
+func TestWindowsMissingRelativeTargetIsDeletion(t *testing.T) {
+	root := t.TempDir()
+	kind, mode, content, target, size, err := observeWorktree(root, "missing.txt", 1024)
+	if err != nil {
+		t.Fatalf("missing target must be represented as a deletion: %v", err)
+	}
+	if kind != "" || mode != "" || content != nil || target != nil || size != 0 {
+		t.Fatalf("unexpected missing-target facts: kind=%q mode=%q content=%v target=%v size=%d",
+			kind, mode, content, target, size)
+	}
+}

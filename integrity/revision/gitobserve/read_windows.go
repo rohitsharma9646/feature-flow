@@ -36,7 +36,7 @@ func observeWorktree(root, name string, max int64) (revision.EntryKind, string, 
 	defer closeHandles(handles)
 	handle, err := openRelativeNoReparse(parent, parts[len(parts)-1], false)
 	if err != nil {
-		if errors.Is(err, windows.ERROR_FILE_NOT_FOUND) || errors.Is(err, windows.ERROR_PATH_NOT_FOUND) {
+		if isMissingRelativeObject(err) {
 			return "", "", nil, nil, 0, nil
 		}
 		return "", "", nil, nil, 0, errors.New("FFI_REVISION_UNSUPPORTED")
@@ -62,6 +62,14 @@ func observeWorktree(root, name string, max int64) (revision.EntryKind, string, 
 		mode = "100755"
 	}
 	return revision.KindFile, mode, &value, nil, int64(len(raw)), nil
+}
+
+func isMissingRelativeObject(err error) bool {
+	return errors.Is(err, windows.ERROR_FILE_NOT_FOUND) ||
+		errors.Is(err, windows.ERROR_PATH_NOT_FOUND) ||
+		errors.Is(err, windows.STATUS_NO_SUCH_FILE) ||
+		errors.Is(err, windows.STATUS_OBJECT_NAME_NOT_FOUND) ||
+		errors.Is(err, windows.STATUS_OBJECT_PATH_NOT_FOUND)
 }
 
 func readArtifact(root, name string, max int64) ([]byte, error) {
