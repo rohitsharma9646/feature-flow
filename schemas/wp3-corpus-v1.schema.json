@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/wp3-corpus-v1.schema.json",
+  "title": "Feature Flow WP3 executable corpus index",
+  "type": "object",
+  "required": ["schemaVersion", "cases", "platformDispositions"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "cases": {
+      "type": "array",
+      "minItems": 14,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "test"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "test": {"type": "string", "pattern": "^Test[A-Za-z0-9]+$"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "platformDispositions": {
+      "type": "object",
+      "required": ["unixSymlinkTarget", "windowsSymlinkTarget", "windowsReparseAncestor"],
+      "additionalProperties": {"enum": ["supported", "unsupported-fail-closed"]}
+    }
+  },
+  "additionalProperties": false
+}

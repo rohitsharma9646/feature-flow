@@ -17,6 +17,7 @@ type anchoredRunFS struct {
 	parentFD    int
 	runFD       int
 	migrationFD int
+	revisionFD  int
 	runName     string
 }
 
@@ -35,7 +36,7 @@ func openRunFS(runDir string) (runFS, error) {
 		unix.Close(parentFD)
 		return nil, err
 	}
-	return &anchoredRunFS{parentFD: parentFD, runFD: runFD, migrationFD: -1, runName: name}, nil
+	return &anchoredRunFS{parentFD: parentFD, runFD: runFD, migrationFD: -1, revisionFD: -1, runName: name}, nil
 }
 
 func (r *anchoredRunFS) Close() error {
@@ -43,6 +44,12 @@ func (r *anchoredRunFS) Close() error {
 	if r.migrationFD >= 0 {
 		first = unix.Close(r.migrationFD)
 		r.migrationFD = -1
+	}
+	if r.revisionFD >= 0 {
+		if err := unix.Close(r.revisionFD); first == nil {
+			first = err
+		}
+		r.revisionFD = -1
 	}
 	if err := unix.Close(r.runFD); first == nil {
 		first = err
@@ -156,6 +163,62 @@ func (r *anchoredRunFS) RemoveSnapshot(name string) error {
 	return err
 }
 
+func (r *anchoredRunFS) EnsureRevision() error {
+	if r.revisionFD >= 0 {
+		return nil
+	}
+	if err := unix.Mkdirat(r.runFD, "revision", 0o700); err != nil && !errors.Is(err, unix.EEXIST) {
+		return err
+	}
+	fd, err := unix.Openat(r.runFD, "revision", unix.O_RDONLY|unix.O_DIRECTORY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+	if err != nil {
+		return err
+	}
+	var stat unix.Stat_t
+	if err := unix.Fstat(fd, &stat); err != nil || stat.Mode&unix.S_IFMT != unix.S_IFDIR {
+		unix.Close(fd)
+		return errUnsafeFilesystem
+	}
+	if err := unix.Fchmod(fd, 0o700); err != nil {
+		unix.Close(fd)
+		return err
+	}
+	r.revisionFD = fd
+	return nil
+}
+
+func (r *anchoredRunFS) PublishRevision(name string, raw []byte) (bool, error) {
+	if r.revisionFD < 0 || filepath.Base(name) != name {
+		return false, errUnsafeFilesystem
+	}
+	if current, err := r.readAt(r.revisionFD, name, int64(len(raw))); err == nil {
+		if bytes.Equal(current, raw) {
+			return false, nil
+		}
+		return false, errCollision
+	} else if !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, unix.ENOENT) {
+		return false, err
+	}
+	temp, err := r.writeTempAt(r.revisionFD, ".baseline-", raw)
+	if err != nil {
+		return false, err
+	}
+	defer unix.Unlinkat(r.revisionFD, temp, 0)
+	if err := unix.Linkat(r.revisionFD, temp, r.revisionFD, name, 0); err != nil {
+		if errors.Is(err, unix.EEXIST) {
+			if current, readErr := r.readAt(r.revisionFD, name, int64(len(raw))); readErr == nil && bytes.Equal(current, raw) {
+				return false, nil
+			}
+			return false, errCollision
+		}
+		return false, err
+	}
+	if err := unix.Unlinkat(r.revisionFD, temp, 0); err != nil {
+		return true, err
+	}
+	return true, syncFD(r.revisionFD)
+}
+
 func (r *anchoredRunFS) WriteManifestTemp(raw []byte) (string, error) {
 	return r.writeTempAt(r.runFD, ".manifest-v1-", raw)
 }
@@ -181,7 +244,11 @@ func (r *anchoredRunFS) ReplaceManifest(name string) error {
 func (r *anchoredRunFS) SyncRun() error { return syncFD(r.runFD) }
 
 func (r *anchoredRunFS) readMigration(name string, max int64) ([]byte, error) {
-	fd, err := unix.Openat(r.migrationFD, name, unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
+	return r.readAt(r.migrationFD, name, max)
+}
+
+func (r *anchoredRunFS) readAt(dirFD int, name string, max int64) ([]byte, error) {
+	fd, err := unix.Openat(dirFD, name, unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW, 0)
 	if err != nil {
 		return nil, err
 	}

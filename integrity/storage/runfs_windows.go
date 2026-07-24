@@ -16,6 +16,7 @@ type lockedWindowsRunFS struct {
 	parentHandle    windows.Handle
 	runHandle       windows.Handle
 	migrationHandle windows.Handle
+	revisionHandle  windows.Handle
 	runDir          string
 	migrationDir    string
 	publisher       publisher
@@ -35,6 +36,7 @@ func openRunFS(runDir string) (runFS, error) {
 	return &lockedWindowsRunFS{
 		parentHandle: parentHandle, runHandle: runHandle,
 		migrationHandle: windows.InvalidHandle,
+		revisionHandle:  windows.InvalidHandle,
 		runDir:          clean, migrationDir: filepath.Join(clean, "migration"),
 		publisher: newPublisher(),
 	}, nil
@@ -45,6 +47,12 @@ func (r *lockedWindowsRunFS) Close() error {
 	if r.migrationHandle != windows.InvalidHandle {
 		first = windows.CloseHandle(r.migrationHandle)
 		r.migrationHandle = windows.InvalidHandle
+	}
+	if r.revisionHandle != windows.InvalidHandle {
+		if err := windows.CloseHandle(r.revisionHandle); first == nil {
+			first = err
+		}
+		r.revisionHandle = windows.InvalidHandle
 	}
 	if err := windows.CloseHandle(r.runHandle); first == nil {
 		first = err
@@ -120,6 +128,47 @@ func (r *lockedWindowsRunFS) RemoveSnapshot(name string) error {
 		return nil
 	}
 	return err
+}
+
+func (r *lockedWindowsRunFS) EnsureRevision() error {
+	if r.revisionHandle != windows.InvalidHandle {
+		return nil
+	}
+	revisionDir := filepath.Join(r.runDir, "revision")
+	if err := os.Mkdir(revisionDir, 0o700); err != nil && !errors.Is(err, fs.ErrExist) {
+		return err
+	}
+	handle, err := openWindowsDirectory(revisionDir)
+	if err != nil {
+		return err
+	}
+	r.revisionHandle = handle
+	return nil
+}
+
+func (r *lockedWindowsRunFS) PublishRevision(name string, raw []byte) (bool, error) {
+	if r.revisionHandle == windows.InvalidHandle || filepath.Base(name) != name {
+		return false, errUnsafeFilesystem
+	}
+	revisionDir := filepath.Join(r.runDir, "revision")
+	destination := filepath.Join(revisionDir, name)
+	if current, err := readWindowsRegular(destination, int64(len(raw))); err == nil {
+		if bytes.Equal(current, raw) {
+			return false, nil
+		}
+		return false, errCollision
+	} else if !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, windows.ERROR_FILE_NOT_FOUND) {
+		return false, err
+	}
+	temp, err := writeTemp(revisionDir, ".baseline-", raw)
+	if err != nil {
+		return false, err
+	}
+	defer os.Remove(temp)
+	if err := r.publisher.PublishNew(temp, destination); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *lockedWindowsRunFS) WriteManifestTemp(raw []byte) (string, error) {

@@ -28,4 +28,7 @@ func TestSchemasCompileAsDraft2020(t *testing.T) {
 	compile(t, "https://feature-flow.dev/schemas/golden-vector-v1.schema.json", GoldenVectorV1)
 	compile(t, "https://feature-flow.dev/schemas/doctor-result-v1.schema.json", DoctorResultV1)
 	compile(t, "https://feature-flow.dev/schemas/migration-plan-v1.schema.json", MigrationPlanV1)
+	compile(t, "https://feature-flow.dev/schemas/code-revision-v1.schema.json", CodeRevisionV1)
+	compile(t, "https://feature-flow.dev/schemas/attestation-v1.schema.json", AttestationV1)
+	compile(t, "https://feature-flow.dev/schemas/wp3-corpus-v1.schema.json", WP3CorpusV1)
 }

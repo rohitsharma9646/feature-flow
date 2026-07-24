@@ -19,7 +19,8 @@ esac
 rm -rf "$output"
 mkdir -p "$output/payload/bin" "$output/payload/schemas" \
   "$output/payload/integrity/protocol/v1" "$output/payload/integrity/testdata/smoke" \
-  "$output/payload/integrity/testdata/legacy"
+  "$output/payload/integrity/testdata/legacy" \
+  "$output/payload/integrity/testdata/revision/v1"
 
 CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
   go build -trimpath -ldflags='-s -w -buildid=' -o "$output/payload/bin/$exe" \
@@ -30,11 +31,14 @@ CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
 
 cp schemas/manifest-v1.schema.json schemas/golden-vector-v1.schema.json \
   schemas/doctor-result-v1.schema.json schemas/migration-plan-v1.schema.json \
+  schemas/code-revision-v1.schema.json schemas/attestation-v1.schema.json \
+  schemas/wp3-corpus-v1.schema.json \
   "$output/payload/schemas/"
 cp integrity/protocol/v1/diagnostics.json "$output/payload/integrity/protocol/v1/"
 cp integrity/testdata/manifests/current-feature.json "$output/payload/integrity/testdata/smoke/"
 cp integrity/testdata/manifests/legacy.json "$output/payload/integrity/testdata/smoke/"
 cp integrity/testdata/legacy/inventory-v1.json "$output/payload/integrity/testdata/legacy/"
+cp -R integrity/testdata/revision/v1/. "$output/payload/integrity/testdata/revision/v1/"
 
 (
   cd "$output/payload"
@@ -79,10 +83,16 @@ for rel in \
   "schemas/golden-vector-v1.schema.json" \
   "schemas/doctor-result-v1.schema.json" \
   "schemas/migration-plan-v1.schema.json" \
+  "schemas/code-revision-v1.schema.json" \
+  "schemas/attestation-v1.schema.json" \
+  "schemas/wp3-corpus-v1.schema.json" \
   "integrity/protocol/v1/diagnostics.json" \
   "integrity/testdata/smoke/current-feature.json" \
   "integrity/testdata/smoke/legacy.json" \
-  "integrity/testdata/legacy/inventory-v1.json"; do
+  "integrity/testdata/legacy/inventory-v1.json" \
+  "integrity/testdata/revision/v1/index.json" \
+  "integrity/testdata/revision/v1/canonical/basic.json" \
+  "integrity/testdata/revision/v1/convergence/ready.json"; do
   cmp "$output/claude/$rel" "$output/codex/$rel"
 done
 

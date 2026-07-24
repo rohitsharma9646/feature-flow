@@ -34,6 +34,10 @@ func TestPlanTerminalRequiresConfirmationAndUnsupportedRevision(t *testing.T) {
 	if code["revision"].(map[string]any)["status"] != "unsupported" {
 		t.Fatal("ready revision fabricated")
 	}
+	assurance := plan.Proposed["assurance"].(map[string]any)
+	if assurance["review"] != nil || assurance["verification"] != nil {
+		t.Fatal("historical assurance was fabricated")
+	}
 }
 
 func TestPlanRefusesNestedUnknownAndRecordsInertMetadata(t *testing.T) {
