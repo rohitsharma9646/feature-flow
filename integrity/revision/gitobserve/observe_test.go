@@ -94,6 +94,9 @@ func TestRevisionChangesForGitDimensions(t *testing.T) {
 			write(t, root, "owned.txt", "worktree")
 		},
 		"executable-mode": func(t *testing.T, root string) {
+			if os.PathSeparator == '\\' {
+				t.Skip("Windows worktrees do not expose Unix executable permission changes")
+			}
 			if err := os.Chmod(filepath.Join(root, "owned.txt"), 0o700); err != nil {
 				t.Fatal(err)
 			}
