@@ -18,6 +18,18 @@ repository="$fixture_root/repo"
 run_root="$repository/.feature-flow/run"
 manifest="$run_root/manifest.json"
 mkdir -p "$run_root"
+contract_repository="$repository"
+contract_run_root="$run_root"
+contract_manifest="$manifest"
+case "$direct_bin" in
+  *.exe)
+    command -v cygpath >/dev/null 2>&1 ||
+      { echo "FAIL: cygpath is required for Windows-native contract paths" >&2; exit 1; }
+    contract_repository="$(cygpath -w "$repository")"
+    contract_run_root="$(cygpath -w "$run_root")"
+    contract_manifest="$(cygpath -w "$manifest")"
+    ;;
+esac
 
 projection_direct() {
   jq -r '[.applicable,.allowed,([(.diagnostics // [])[].code] | join(","))] | @tsv' "$1"
@@ -54,7 +66,8 @@ run_manifest_vector() {
   local id="$1" current="$2" proposed="$3"
   cp "$current" "$manifest"
   jq -n \
-    --arg repo "$repository" --arg run "$run_root" --arg target ".feature-flow/run/manifest.json" \
+    --arg repo "$contract_repository" --arg run "$contract_run_root" \
+    --arg target ".feature-flow/run/manifest.json" \
     --slurpfile proposed "$proposed" \
     '{
       schemaVersion:1,host:"direct",event:"command_preflight",
@@ -65,12 +78,12 @@ run_manifest_vector() {
       enforcementMode:"observe"
     }' > "$fixture_root/$id-direct.json"
   jq -n \
-    --arg cwd "$repository" --arg path "$manifest" --rawfile content "$proposed" \
+    --arg cwd "$contract_repository" --arg path "$contract_manifest" --rawfile content "$proposed" \
     '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Write",
       tool_input:{file_path:$path,content:$content}}' > "$fixture_root/$id-claude.json"
   make_patch "$current" "$proposed" "$fixture_root/$id.patch"
   jq -n \
-    --arg cwd "$repository" --rawfile command "$fixture_root/$id.patch" \
+    --arg cwd "$contract_repository" --rawfile command "$fixture_root/$id.patch" \
     '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"apply_patch",
       tool_input:{command:$command}}' > "$fixture_root/$id-codex.json"
 
@@ -124,7 +137,7 @@ run_manifest_vector duplicate "$fixture_root/current.json" "$fixture_root/allowe
 cmp "$fixture_root/duplicate-first.expected" "$fixture_root/duplicate.expected"
 
 jq -n \
-  --arg repo "$repository" --arg run "$run_root" \
+  --arg repo "$contract_repository" --arg run "$contract_run_root" \
   '{
     schemaVersion:1,host:"direct",event:"command_preflight",
     operation:"manifest_mutation",toolClass:"file_write",target:"README.md",
@@ -132,19 +145,19 @@ jq -n \
     requiredCapabilities:["command_preflight","kernel","schema","json_output"],
     enforcementMode:"observe"
   }' > "$fixture_root/unrelated-direct.json"
-jq -n --arg cwd "$repository" \
+jq -n --arg cwd "$contract_repository" \
   '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Write",
     tool_input:{file_path:"README.md",content:"text"}}' > "$fixture_root/unrelated-claude.json"
-jq -n --arg cwd "$repository" \
+jq -n --arg cwd "$contract_repository" \
   '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"apply_patch",
     tool_input:{command:"*** Begin Patch\n*** Add File: README.md\n+text\n*** End Patch\n"}}' \
   > "$fixture_root/unrelated-codex.json"
 cp "$fixture_root/unrelated-direct.json" "$fixture_root/payload-spoof-direct.json"
-jq -n --arg cwd "$repository" \
+jq -n --arg cwd "$contract_repository" \
   '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Write",
     tool_input:{file_path:"README.md",content:".feature-flow/run/manifest.json"}}' \
   > "$fixture_root/payload-spoof-claude.json"
-jq -n --arg cwd "$repository" \
+jq -n --arg cwd "$contract_repository" \
   '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"apply_patch",
     tool_input:{command:"*** Begin Patch\n*** Add File: README.md\n+.feature-flow/run/manifest.json\n*** End Patch\n"}}' \
   > "$fixture_root/payload-spoof-codex.json"
