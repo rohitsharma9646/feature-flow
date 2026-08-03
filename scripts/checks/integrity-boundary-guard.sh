@@ -6,14 +6,14 @@ fail=0
 err() { echo "FAIL: $1"; fail=1; }
 ok() { echo "ok:   $1"; }
 
-if rg -n 'ff-integrity (?:doctor|migrate)|integrity/(?:doctor|migration|storage)' \
+if grep -R -E -n 'ff-integrity (doctor|migrate)|integrity/(doctor|migration|storage)' \
     hooks adapters/codex/hooks >/dev/null; then
   err "host adapters invoke WP2 diagnosis, migration, or storage paths"
 else
   ok "host adapters invoke no WP2 diagnosis, migration, or storage path"
 fi
 
-if rg -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \
+if grep -R -E -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \
     hooks/enforce-gate hooks/run-hook.cmd adapters/codex/hooks >/dev/null; then
   err "host adapters duplicate workflow policy"
 else
@@ -25,9 +25,9 @@ for file in commands/ff.md commands/ff-explore.md commands/ff-clarify.md \
   commands/ff-implement.md commands/ff-review.md commands/ff-verify.md \
   commands/ff-deliver.md commands/ff-close.md commands/ff-abandon.md \
   commands/ff-resume.md; do
-  marker_count="$(rg -c 'Integrity boundary — before every .*state write|Integrity boundary — before every manifest creation or state write|Integrity boundary — before every terminal state write' "$file" || true)"
-  marker_line="$(rg -n -m1 'Integrity boundary — before every' "$file" | cut -d: -f1 || true)"
-  mutation_line="$(rg -n -m1 'Set `phases\.|Set `closedAt|Set `currentPhase|then create one|write a manifest|write the manifest|reconstruct.*manifest' "$file" | cut -d: -f1 || true)"
+  marker_count="$(grep -E -c 'Integrity boundary — before every .*state write|Integrity boundary — before every manifest creation or state write|Integrity boundary — before every terminal state write' "$file" || true)"
+  marker_line="$(grep -n -m1 'Integrity boundary — before every' "$file" | cut -d: -f1 || true)"
+  mutation_line="$(grep -E -n -m1 'Set `phases\.|Set `closedAt|Set `currentPhase|then create one|write a manifest|write the manifest|reconstruct.*manifest' "$file" | cut -d: -f1 || true)"
   if [[ "$marker_count" == "1" && -n "$marker_line" &&
         ( -z "$mutation_line" || "$marker_line" -lt "$mutation_line" ) ]]; then
     ok "$file invokes canonical command preflight before its first manifest write"

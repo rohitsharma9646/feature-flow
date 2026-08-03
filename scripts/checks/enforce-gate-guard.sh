@@ -60,7 +60,7 @@ if grep -q '"permissionDecision":"deny"' <<<"$out"; then
 fi
 grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
-if rg -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \
+if grep -E -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \
   hooks/enforce-gate hooks/run-hook.cmd; then
   echo "FAIL: host launch assets contain workflow policy" >&2
   exit 1
