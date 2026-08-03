@@ -120,14 +120,14 @@ case "$target" in
       else
         cp "$wp4_fixture/current.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
       fi
-      claude_input="$(cygpath -w "$wp4_fixture/$vector-claude.json")"
-      codex_input="$(cygpath -w "$wp4_fixture/$vector-codex.json")"
-      claude_output="$(cygpath -w "$wp4_fixture/$vector-installed-claude.out")"
-      codex_output="$(cygpath -w "$wp4_fixture/$vector-installed-codex.out")"
       cmd.exe //d //s //c \
-        "\"$claude_launcher\" enforce-gate < \"$claude_input\" > \"$claude_output\""
+        "call \"$claude_launcher\" enforce-gate" \
+        < "$wp4_fixture/$vector-claude.json" \
+        > "$wp4_fixture/$vector-installed-claude.out"
       cmd.exe //d //s //c \
-        "set \"PLUGIN_ROOT=$codex_root\"&& \"$codex_launcher\" < \"$codex_input\" > \"$codex_output\""
+        "set \"PLUGIN_ROOT=$codex_root\"&& call \"$codex_launcher\"" \
+        < "$wp4_fixture/$vector-codex.json" \
+        > "$wp4_fixture/$vector-installed-codex.out"
       cmp "$wp4_fixture/$vector-packaged-claude.out" \
         "$wp4_fixture/$vector-installed-claude.out"
       cmp "$wp4_fixture/$vector-packaged-codex.out" \
