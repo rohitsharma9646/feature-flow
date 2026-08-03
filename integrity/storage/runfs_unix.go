@@ -219,6 +219,13 @@ func (r *anchoredRunFS) PublishRevision(name string, raw []byte) (bool, error) {
 	return true, syncFD(r.revisionFD)
 }
 
+func (r *anchoredRunFS) ReadRevision(name string, max int64) ([]byte, error) {
+	if r.revisionFD < 0 || filepath.Base(name) != name {
+		return nil, errUnsafeFilesystem
+	}
+	return r.readAt(r.revisionFD, name, max)
+}
+
 func (r *anchoredRunFS) WriteManifestTemp(raw []byte) (string, error) {
 	return r.writeTempAt(r.runFD, ".manifest-v1-", raw)
 }

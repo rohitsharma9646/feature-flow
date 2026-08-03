@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
@@ -64,7 +65,7 @@ func (r *lockedWindowsRunFS) Close() error {
 }
 
 func (r *lockedWindowsRunFS) ReadManifest(max int64) ([]byte, error) {
-	return readWindowsRegular(filepath.Join(r.runDir, "manifest.json"), max)
+	return readWindowsRegularAt(r.runHandle, "manifest.json", max)
 }
 
 func (r *lockedWindowsRunFS) ValidateLocation() error {
@@ -171,6 +172,13 @@ func (r *lockedWindowsRunFS) PublishRevision(name string, raw []byte) (bool, err
 	return true, nil
 }
 
+func (r *lockedWindowsRunFS) ReadRevision(name string, max int64) ([]byte, error) {
+	if r.revisionHandle == windows.InvalidHandle || filepath.Base(name) != name {
+		return nil, errUnsafeFilesystem
+	}
+	return readWindowsRegularAt(r.revisionHandle, name, max)
+}
+
 func (r *lockedWindowsRunFS) WriteManifestTemp(raw []byte) (string, error) {
 	path, err := writeTemp(r.runDir, ".manifest-v1-", raw)
 	if err != nil {
@@ -247,6 +255,38 @@ func readWindowsRegular(path string, max int64) ([]byte, error) {
 		return nil, err
 	}
 	file := os.NewFile(uintptr(handle), path)
+	defer file.Close()
+	var handleInfo windows.ByHandleFileInformation
+	if err := windows.GetFileInformationByHandle(handle, &handleInfo); err != nil ||
+		handleInfo.FileAttributes&(windows.FILE_ATTRIBUTE_DIRECTORY|windows.FILE_ATTRIBUTE_REPARSE_POINT) != 0 {
+		return nil, errUnsafeFilesystem
+	}
+	info, err := file.Stat()
+	if err != nil || !info.Mode().IsRegular() || info.Size() > max {
+		return nil, errUnsafeFilesystem
+	}
+	return readLimited(file, max)
+}
+
+func readWindowsRegularAt(parent windows.Handle, name string, max int64) ([]byte, error) {
+	objectName, err := windows.NewNTUnicodeString(name)
+	if err != nil {
+		return nil, err
+	}
+	attributes := &windows.OBJECT_ATTRIBUTES{
+		RootDirectory: parent, ObjectName: objectName, Attributes: windows.OBJ_CASE_INSENSITIVE,
+	}
+	attributes.Length = uint32(unsafe.Sizeof(*attributes))
+	var handle windows.Handle
+	var status windows.IO_STATUS_BLOCK
+	if err := windows.NtCreateFile(
+		&handle, windows.FILE_GENERIC_READ, attributes, &status, nil, 0,
+		windows.FILE_SHARE_READ, windows.FILE_OPEN,
+		windows.FILE_NON_DIRECTORY_FILE|windows.FILE_OPEN_REPARSE_POINT, 0, 0,
+	); err != nil {
+		return nil, err
+	}
+	file := os.NewFile(uintptr(handle), name)
 	defer file.Close()
 	var handleInfo windows.ByHandleFileInformation
 	if err := windows.GetFileInformationByHandle(handle, &handleInfo); err != nil ||

@@ -18,6 +18,23 @@ type TrustedRoots struct {
 	DurableRoot    string
 }
 
+// PointerLocation selects the trusted root for a manifest artifact pointer and
+// validates the pointer against that root. Bare and other non-durable pointers
+// are run-local; configured durable and .feature-flow pointers are repository
+// relative.
+func PointerLocation(pointer string, roots TrustedRoots) (string, string, error) {
+	root := roots.RunRoot
+	normalized := strings.ReplaceAll(pointer, `\`, "/")
+	if underConfiguredRoot(roots.RepositoryRoot, roots.DurableRoot, normalized) ||
+		underConfiguredRoot(roots.RepositoryRoot, filepath.Join(roots.RepositoryRoot, ".feature-flow"), normalized) {
+		root = roots.RepositoryRoot
+	}
+	if _, err := pathpolicy.Resolve(root, pointer); err != nil {
+		return "", "", err
+	}
+	return root, pointer, nil
+}
+
 func Pointers(raw []byte, roots TrustedRoots) (map[string]pathpolicy.Fact, error) {
 	value, err := jsonstrict.Decode(raw)
 	if err != nil {
@@ -34,13 +51,11 @@ func Pointers(raw []byte, roots TrustedRoots) (map[string]pathpolicy.Fact, error
 		if !ok || pointer == "" {
 			continue
 		}
-		root := roots.RunRoot
-		normalized := strings.ReplaceAll(pointer, `\`, "/")
-		if underConfiguredRoot(roots.RepositoryRoot, roots.DurableRoot, normalized) ||
-			underConfiguredRoot(roots.RepositoryRoot, filepath.Join(roots.RepositoryRoot, ".feature-flow"), normalized) {
-			root = roots.RepositoryRoot
+		root, relative, err := PointerLocation(pointer, roots)
+		if err != nil {
+			return nil, err
 		}
-		fact, err := pathpolicy.Resolve(root, pointer)
+		fact, err := pathpolicy.Resolve(root, relative)
 		if err != nil {
 			return nil, err
 		}

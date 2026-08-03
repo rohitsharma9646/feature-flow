@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -83,7 +84,7 @@ func Capture(root string, scope revision.Scope, limits Limits) (Baseline, error)
 	if err != nil {
 		return Baseline{}, errors.New("FFI_REVISION_UNSUPPORTED")
 	}
-	facts, err := snapshot(root, firstHead, limits)
+	facts, err := stableSnapshot(root, firstHead, limits, nil)
 	if err != nil {
 		return Baseline{}, err
 	}
@@ -111,6 +112,9 @@ func Capture(root string, scope revision.Scope, limits Limits) (Baseline, error)
 }
 
 func Observe(root string, baseline Baseline, limits Limits) ObserveResult {
+	if err := ValidateBaseline(baseline); err != nil {
+		return ObserveResult{Status: StatusUnsupported, Err: err}
+	}
 	head, err := gitText(root, limits, "rev-parse", "--verify", "HEAD")
 	if err != nil || head != baseline.Head {
 		return ObserveResult{Status: StatusUnsupported, Err: errors.New("FFI_REVISION_UNSUPPORTED")}
@@ -119,7 +123,7 @@ func Observe(root string, baseline Baseline, limits Limits) ObserveResult {
 	if err != nil || identity != baseline.RepositoryIdentity || worktree != baseline.WorktreeIdentity {
 		return ObserveResult{Status: StatusUnsupported, Err: errors.New("FFI_REVISION_UNSUPPORTED")}
 	}
-	current, err := snapshot(root, head, limits)
+	current, err := stableSnapshot(root, head, limits, nil)
 	if err != nil {
 		return ObserveResult{Status: StatusUnsupported, Err: err}
 	}
@@ -195,7 +199,41 @@ func Observe(root string, baseline Baseline, limits Limits) ObserveResult {
 	return ObserveResult{Status: StatusReady, Revision: result, DriftPaths: []string{}}
 }
 
-func snapshot(root, head string, limits Limits) ([]PathFact, error) {
+// ValidateBaseline proves that the supplied baseline fields are the exact
+// content addressed object captured by Capture. Authoritative callers must
+// additionally load that object through the manifest's registered pointer.
+func ValidateBaseline(baseline Baseline) error {
+	raw, err := baselineBytes(
+		baseline.RepositoryIdentity,
+		baseline.WorktreeIdentity,
+		baseline.Head,
+		baseline.Scope,
+		baseline.Facts,
+	)
+	if err != nil ||
+		digest.RawSHA256(raw) != baseline.ArtifactDigest ||
+		digest.SHA256("baseline-snapshot-v1", raw) != baseline.StartSnapshotDigest {
+		return errors.New("FFI_REVISION_UNSUPPORTED")
+	}
+	return nil
+}
+
+func stableSnapshot(root, head string, limits Limits, between func()) ([]PathFact, error) {
+	first, err := snapshotOnce(root, head, limits)
+	if err != nil {
+		return nil, err
+	}
+	if between != nil {
+		between()
+	}
+	second, err := snapshotOnce(root, head, limits)
+	if err != nil || !reflect.DeepEqual(first, second) {
+		return nil, errors.New("FFI_REVISION_MISMATCH")
+	}
+	return second, nil
+}
+
+func snapshotOnce(root, head string, limits Limits) ([]PathFact, error) {
 	if err := checkCapabilities(root, limits); err != nil {
 		return nil, err
 	}

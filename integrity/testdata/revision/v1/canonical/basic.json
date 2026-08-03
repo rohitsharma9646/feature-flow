@@ -1,13 +1,13 @@
 {
   "repositoryIdentity": "repo-id",
   "worktreeIdentity": "worktree-id",
-  "baselineHead": "0123456789abcdef",
+  "baselineHead": "0123456789abcdef0123456789abcdef01234567",
   "startSnapshotDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
   "scope": {"trackedPaths":["a.go"],"includedUntrackedPaths":[],"exclusions":[]},
   "entries": [
     {
       "path":"a.go","kind":"file","mode":"100644",
-      "baselineBlob":"base","indexBlob":"index",
+      "baselineBlob":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","indexBlob":"cccccccccccccccccccccccccccccccccccccccc",
       "worktreeDigest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "symlinkTargetDigest":null
     }

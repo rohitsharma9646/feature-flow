@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/rohitsharma9646/feature-flow/integrity/revision"
@@ -53,6 +54,40 @@ func TestCaptureAndObserveNoOpIsStable(t *testing.T) {
 	second := Observe(root, baseline, DefaultLimits())
 	if first.Status != StatusReady || second.Status != StatusReady || first.Revision.ID != second.Revision.ID {
 		t.Fatalf("no-op was unstable: %#v %#v", first, second)
+	}
+}
+
+func TestObserveRejectsTamperedBaseline(t *testing.T) {
+	root := t.TempDir()
+	git(t, root, "init", "-q")
+	git(t, root, "config", "user.email", "test@example.test")
+	git(t, root, "config", "user.name", "Test")
+	write(t, root, "owned.txt", "base")
+	git(t, root, "add", ".")
+	git(t, root, "commit", "-qm", "base")
+	baseline, err := Capture(root, revision.Scope{TrackedPaths: []string{"owned.txt"}}, DefaultLimits())
+	if err != nil {
+		t.Fatal(err)
+	}
+	baseline.Facts[0].Mode = "100755"
+	if got := Observe(root, baseline, DefaultLimits()); got.Status != StatusUnsupported {
+		t.Fatalf("tampered baseline was accepted: %#v", got)
+	}
+}
+
+func TestStableSnapshotRejectsMidObservationMutation(t *testing.T) {
+	root := t.TempDir()
+	git(t, root, "init", "-q")
+	git(t, root, "config", "user.email", "test@example.test")
+	git(t, root, "config", "user.name", "Test")
+	write(t, root, "owned.txt", "base")
+	git(t, root, "add", ".")
+	git(t, root, "commit", "-qm", "base")
+	head := strings.TrimSpace(gitOutput(t, root, "rev-parse", "HEAD"))
+	if _, err := stableSnapshot(root, head, DefaultLimits(), func() {
+		write(t, root, "owned.txt", "changed-between-snapshots")
+	}); err == nil {
+		t.Fatal("mid-observation mutation was accepted")
 	}
 }
 
@@ -198,6 +233,16 @@ func git(t *testing.T, root string, args ...string) {
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("git %v: %v\n%s", args, err, output)
 	}
+}
+
+func gitOutput(t *testing.T, root string, args ...string) string {
+	t.Helper()
+	command := exec.Command("git", append([]string{"-C", root}, args...)...)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %v: %v\n%s", args, err, output)
+	}
+	return string(output)
 }
 
 func write(t *testing.T, root, name, value string) {
