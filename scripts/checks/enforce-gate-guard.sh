@@ -53,7 +53,11 @@ grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
 mv "$tmp/package/bin/ff-integrity" "$tmp/package/bin/ff-integrity.missing"
 out="$(payload "$target" "$signed" | "$tmp/package/hooks/enforce-gate")"
-grep -q '"permissionDecision":"deny"' <<<"$out"
+grep -q '"systemMessage"' <<<"$out"
+if grep -q '"permissionDecision":"deny"' <<<"$out"; then
+  echo "FAIL: observe-mode missing binary must not deny" >&2
+  exit 1
+fi
 grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
 if rg -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \

@@ -28,7 +28,7 @@ printf '%s\n' "$output"
 for test_name in $(jq -r \
   '[.cases[].test, (.failureScenarioCoverage[] | .[])] | unique[]' \
   "$index" | tr -d '\r'); do
-  rg -F -q "func ${test_name}(" integrity cmd schemas ||
+  grep -R -F -q --include='*.go' "func ${test_name}(" integrity cmd schemas ||
     { echo "FAIL: indexed WP4 test is missing: $test_name" >&2; exit 1; }
 done
 
