@@ -32,7 +32,8 @@ case "$direct_bin" in
 esac
 
 projection_direct() {
-  jq -r '[.applicable,.allowed,([(.diagnostics // [])[].code] | join(","))] | @tsv' "$1"
+  jq -r '[.applicable,.allowed,([(.diagnostics // [])[].code] | join(","))] | @tsv' "$1" |
+    tr -d '\r'
 }
 
 projection_host() {
@@ -49,7 +50,7 @@ projection_host() {
         sub("^Feature Flow integrity preflight denied: ";""))]
     else error("unknown host response")
     end | @tsv
-  ' "$output"
+  ' "$output" | tr -d '\r'
 }
 
 make_patch() {
