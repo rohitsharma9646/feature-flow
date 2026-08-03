@@ -110,6 +110,28 @@ func TestDecodeCodexApplyPatchReconstructsProposedManifest(t *testing.T) {
 	}
 }
 
+func TestDecodeCodexApplyPatchMatchesCRLFManifest(t *testing.T) {
+	repository := t.TempDir()
+	runRoot := filepath.Join(repository, ".feature-flow", "run")
+	if err := os.MkdirAll(runRoot, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	current := "{\r\n  \"schemaVersion\": 1,\r\n  \"currentPhase\": \"plan\"\r\n}\r\n"
+	if err := os.WriteFile(filepath.Join(runRoot, "manifest.json"), []byte(current), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	patch := "*** Begin Patch\n*** Update File: .feature-flow/run/manifest.json\n@@\n-  \"currentPhase\": \"plan\"\n+  \"currentPhase\": \"implement\"\n*** End Patch\n"
+	raw := []byte(`{"hook_event_name":"PreToolUse","cwd":` + quote(repository) +
+		`,"tool_name":"apply_patch","tool_input":{"command":` + quote(patch) + `}}`)
+	decoded, err := DecodeCodex(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(decoded.Request.ProposedManifest), `"currentPhase": "implement"`) {
+		t.Fatalf("proposed = %s", decoded.Request.ProposedManifest)
+	}
+}
+
 func TestDecodeCodexUnrelatedPatchIsSilentWithoutReadingTarget(t *testing.T) {
 	repository := t.TempDir()
 	patch := "*** Begin Patch\n*** Update File: missing.txt\n@@\n-old\n+.feature-flow/run/manifest.json\n*** End Patch\n"

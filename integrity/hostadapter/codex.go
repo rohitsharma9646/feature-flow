@@ -176,8 +176,9 @@ func applyPatchSection(cwd string, section patchSection) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	hadFinalNewline := strings.HasSuffix(string(currentRaw), "\n")
-	current := strings.Split(strings.TrimSuffix(string(currentRaw), "\n"), "\n")
+	normalizedCurrent := strings.ReplaceAll(string(currentRaw), "\r\n", "\n")
+	hadFinalNewline := strings.HasSuffix(normalizedCurrent, "\n")
+	current := strings.Split(strings.TrimSuffix(normalizedCurrent, "\n"), "\n")
 	for i := 0; i < len(section.Lines); {
 		if !strings.HasPrefix(section.Lines[i], "@@") {
 			i++

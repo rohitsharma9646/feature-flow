@@ -3,11 +3,14 @@ package preflight
 import (
 	"bytes"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func validRequest() Request {
+	repository := filepath.Join(os.TempDir(), "feature-flow-preflight-workspace")
 	return Request{
 		SchemaVersion: SchemaVersion,
 		Host:          HostDirect,
@@ -16,8 +19,8 @@ func validRequest() Request {
 		ToolClass:     ToolClassFileWrite,
 		Target:        ".feature-flow/example/manifest.json",
 		Context: TrustedContext{
-			RepositoryRoot: "/workspace",
-			RunRoot:        "/workspace/.feature-flow/example",
+			RepositoryRoot: repository,
+			RunRoot:        filepath.Join(repository, ".feature-flow", "example"),
 		},
 		ProposedManifest: json.RawMessage(`{"track":"feature"}`),
 		RequiredCapabilities: []CapabilityName{
