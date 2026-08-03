@@ -5,6 +5,16 @@ Feature Flow was written first for Claude Code, where the files under
 `.codex-plugin/plugin.json`, so use the same command files as procedure
 references instead of trying to invoke Claude slash commands.
 
+## Integrity lifecycle adapter
+
+The Codex plugin declares `./adapters/codex/hooks/hooks.json`. Its `PreToolUse`
+adapter covers Bash and `apply_patch` (including the Edit/Write matcher aliases), invokes the
+packaged native `ff-integrity host-preflight --host codex --mode observe`, and uses `commandWindows` for the
+native Windows launcher. Codex skips a changed or untrusted plugin hook; therefore standalone
+`capabilities --host codex` reports enforcement as unknown/degraded until a trusted lifecycle
+invocation supplies that evidence. Command procedures also invoke the same host-neutral direct
+preflight at declared mutation boundaries.
+
 ## Phase Procedures
 
 When a Feature Flow instruction references `/feature-flow:ff-*`, treat that as a
@@ -27,8 +37,8 @@ phase name:
 | `/feature-flow:ff-abandon` | Read `commands/ff-abandon.md` and run that phase inline |
 | `/feature-flow:ff-close` | Read `commands/ff-close.md` and run that phase inline |
 
-Do not expose `commands/` as a Codex manifest field. The Codex manifest should
-only point at `skills`; the command files are supporting reference documents.
+Do not expose `commands/` as a Codex manifest field. The Codex manifest points at `skills` and
+the lifecycle hook configuration; the command files remain supporting reference documents.
 
 ## Path Mapping
 

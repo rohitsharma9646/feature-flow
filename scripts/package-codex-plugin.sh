@@ -27,7 +27,7 @@ Options:
   -h, --help       Show this help.
 
 The package intentionally includes Codex runtime content:
-  .codex-plugin, skills, commands, agents, templates, config,
+  .codex-plugin, adapters/codex, skills, commands, agents, templates, config,
   schemas, integrity protocol assets, docs, README.md, LICENSE.
 Target-native binaries are added by scripts/build-integrity-packages.sh.
 USAGE
@@ -80,6 +80,7 @@ esac
 
 REQUIRED_PATHS=(
   ".codex-plugin"
+  "adapters/codex"
   "skills"
   "commands"
   "agents"
@@ -96,8 +97,13 @@ ASSET_FILES=(
   "schemas/golden-vector-v1.schema.json"
   "schemas/doctor-result-v1.schema.json"
   "schemas/migration-plan-v1.schema.json"
+  "schemas/preflight-request-v1.schema.json"
+  "schemas/preflight-result-v1.schema.json"
+  "schemas/capability-report-v1.schema.json"
+  "schemas/wp4-corpus-v1.schema.json"
   "integrity/protocol/v1/diagnostics.json"
   "integrity/testdata/legacy/inventory-v1.json"
+  "integrity/testdata/adapter/v1/index.json"
 )
 
 for rel in "${REQUIRED_PATHS[@]}" "${ASSET_FILES[@]}"; do

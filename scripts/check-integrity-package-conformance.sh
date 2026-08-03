@@ -9,7 +9,8 @@ case "$target" in
   *) exe=ff-integrity-classify; integrity_exe=ff-integrity ;;
 esac
 
-package_root="dist/integrity/$target"
+integrity_dist_root="${FF_INTEGRITY_DIST_ROOT:-dist/integrity}"
+package_root="$integrity_dist_root/$target"
 source_exe="$package_root/source/$exe"
 claude_exe="$package_root/claude/bin/$exe"
 codex_exe="$package_root/codex/bin/$exe"
@@ -67,4 +68,104 @@ for operation in revision converge; do
   cmp "$package_root/source-wp3-$operation.out" "$package_root/codex-wp3-$operation.out"
 done
 
-echo "PASS: source, Claude package, and Codex package match for WP1, WP2, and WP3 vectors on $target"
+for host in direct claude codex; do
+  set +e
+  "$source_integrity" capabilities --host "$host" --format json > "$package_root/source-capabilities-$host.out"
+  source_status=$?
+  "$claude_integrity" capabilities --host "$host" --format json > "$package_root/claude-capabilities-$host.out"
+  claude_status=$?
+  "$codex_integrity" capabilities --host "$host" --format json > "$package_root/codex-capabilities-$host.out"
+  codex_status=$?
+  set -e
+  test "$source_status" -eq "$claude_status"
+  test "$source_status" -eq "$codex_status"
+  cmp "$package_root/source-capabilities-$host.out" "$package_root/claude-capabilities-$host.out"
+  cmp "$package_root/source-capabilities-$host.out" "$package_root/codex-capabilities-$host.out"
+done
+
+wp4_fixture="$package_root/wp4-fixture"
+rm -rf "$wp4_fixture"
+mkdir -p "$wp4_fixture"
+bash scripts/check-integrity-wp4-five-path.sh \
+  "$wp4_fixture" \
+  "$source_integrity" "$source_integrity" "$source_integrity" \
+  "$claude_integrity" "$codex_integrity"
+wp4_vectors=(
+  allowed-feature denied-feature allowed-bugfix denied-bugfix legacy malformed-current
+  terminal-incomplete duplicate payload-spoof unrelated
+)
+
+case "$target" in
+  windows-*)
+    command -v cmd.exe >/dev/null 2>&1 ||
+      { echo "FAIL: native Windows cmd.exe is unavailable" >&2; exit 1; }
+    command -v cygpath >/dev/null 2>&1 ||
+      { echo "FAIL: native Windows path conversion is unavailable" >&2; exit 1; }
+    jq -e '
+      .hooks.PreToolUse[0].hooks[0].commandWindows ==
+      "\"%PLUGIN_ROOT%\\adapters\\codex\\hooks\\run-integrity.cmd\""
+    ' "$package_root/codex/adapters/codex/hooks/hooks.json" >/dev/null
+    jq -e '
+      .hooks.PreToolUse[0].hooks[0].command |
+      contains("/hooks/run-hook.cmd")
+    ' "$package_root/claude/hooks/hooks.json" >/dev/null
+    claude_launcher="$(cygpath -w "$package_root/claude/hooks/run-hook.cmd")"
+    codex_launcher="$(cygpath -w "$package_root/codex/adapters/codex/hooks/run-integrity.cmd")"
+    codex_root="$(cygpath -w "$package_root/codex")"
+    for vector in "${wp4_vectors[@]}"; do
+      if [[ "$vector" == "legacy" ]]; then
+        cp "$wp4_fixture/legacy.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
+      elif [[ "$vector" == *bugfix ]]; then
+        cp "$wp4_fixture/current-bugfix.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
+      else
+        cp "$wp4_fixture/current.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
+      fi
+      claude_input="$(cygpath -w "$wp4_fixture/$vector-claude.json")"
+      codex_input="$(cygpath -w "$wp4_fixture/$vector-codex.json")"
+      claude_output="$(cygpath -w "$wp4_fixture/$vector-installed-claude.out")"
+      codex_output="$(cygpath -w "$wp4_fixture/$vector-installed-codex.out")"
+      cmd.exe //d //s //c \
+        "\"$claude_launcher\" enforce-gate < \"$claude_input\" > \"$claude_output\""
+      cmd.exe //d //s //c \
+        "set \"PLUGIN_ROOT=$codex_root\"&& \"$codex_launcher\" < \"$codex_input\" > \"$codex_output\""
+      cmp "$wp4_fixture/$vector-packaged-claude.out" \
+        "$wp4_fixture/$vector-installed-claude.out"
+      cmp "$wp4_fixture/$vector-packaged-codex.out" \
+        "$wp4_fixture/$vector-installed-codex.out"
+    done
+    ;;
+  *)
+    jq -e '
+      .hooks.PreToolUse[0].hooks[0].command |
+      contains("/hooks/run-hook.cmd")
+    ' "$package_root/claude/hooks/hooks.json" >/dev/null
+    jq -e '
+      .hooks.PreToolUse[0].hooks[0].command |
+      contains("/adapters/codex/hooks/run-integrity")
+    ' "$package_root/codex/adapters/codex/hooks/hooks.json" >/dev/null
+    chmod +x "$package_root/claude/hooks/enforce-gate" "$package_root/claude/hooks/run-hook.cmd" \
+      "$package_root/codex/adapters/codex/hooks/run-integrity"
+    for vector in "${wp4_vectors[@]}"; do
+      if [[ "$vector" == "legacy" ]]; then
+        cp "$wp4_fixture/legacy.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
+      elif [[ "$vector" == *bugfix ]]; then
+        cp "$wp4_fixture/current-bugfix.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
+      else
+        cp "$wp4_fixture/current.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
+      fi
+      "$package_root/claude/hooks/run-hook.cmd" enforce-gate \
+        < "$wp4_fixture/$vector-claude.json" \
+        > "$wp4_fixture/$vector-installed-claude.out"
+      PLUGIN_ROOT="$package_root/codex" \
+        "$package_root/codex/adapters/codex/hooks/run-integrity" \
+        < "$wp4_fixture/$vector-codex.json" \
+        > "$wp4_fixture/$vector-installed-codex.out"
+      cmp "$wp4_fixture/$vector-packaged-claude.out" \
+        "$wp4_fixture/$vector-installed-claude.out"
+      cmp "$wp4_fixture/$vector-packaged-codex.out" \
+        "$wp4_fixture/$vector-installed-codex.out"
+    done
+    ;;
+esac
+
+echo "PASS: source, Claude package, and Codex package match for WP1-WP4 vectors on $target"

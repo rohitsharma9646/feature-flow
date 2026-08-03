@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {"id":"request-contract","kind":"contract","test":"TestRequestValidateAcceptsHostNeutralV1"},
+    {"id":"strict-bounded-input","kind":"contract","test":"TestDecodeRequestIsStrictAndBounded"},
+    {"id":"capability-truth","kind":"capability","test":"TestCapabilityReportTruthTable"},
+    {"id":"degraded-deny","kind":"capability","test":"TestEngineFailsClosedForDegradedRecognizedMutation"},
+    {"id":"observe-degraded-allow","kind":"rollout","test":"TestEngineObserveModeIsVisiblyDegradedButDoesNotBlock"},
+    {"id":"duplicate-idempotence","kind":"determinism","test":"TestEngineNormalizesAuthorityDiagnosticsAndIsByteStable"},
+    {"id":"unrelated-zero-observation","kind":"applicability","test":"TestEngineUnrelatedEventDoesNotObserveCapabilitiesOrAuthority"},
+    {"id":"payload-spoof","kind":"applicability","test":"TestApplicableUsesDecodedTargetNotManifestText"},
+    {"id":"claude-normalization","kind":"host","test":"TestDecodeClaudeWriteNormalizesCanonicalManifest"},
+    {"id":"codex-patch-normalization","kind":"host","test":"TestDecodeCodexApplyPatchReconstructsProposedManifest"},
+    {"id":"host-decision-parity","kind":"parity","test":"TestWP4HostDecisionParity"},
+    {"id":"transition-gate","kind":"transition","test":"TestEvaluateTransitionFactsRequiresFeatureSignOffBeforeImplement"},
+    {"id":"terminal-assurance","kind":"assurance","test":"TestConvergeRequiresSameCurrentRevisionAndValidEvidence"}
+  ],
+  "executableParityVectors": [
+    "allowed-feature",
+    "denied-feature",
+    "allowed-bugfix",
+    "denied-bugfix",
+    "legacy",
+    "malformed-current",
+    "terminal-incomplete",
+    "duplicate",
+    "payload-spoof",
+    "unrelated"
+  ],
+  "paths": ["direct", "claude", "codex", "packaged-claude", "packaged-codex"],
+  "failureScenarios": ["FS1", "FS2", "FS3", "FS4", "FS5", "FS6", "FS7", "FS8", "FS9", "FS10"],
+  "failureScenarioCoverage": {
+    "FS1": ["TestCapabilityReportTruthTable", "TestEngineFailsClosedForDegradedRecognizedMutation"],
+    "FS2": ["TestApplicableUsesDecodedTargetNotManifestText", "TestDecodeCodexUnrelatedPatchIsSilentWithoutReadingTarget"],
+    "FS3": ["TestEngineFailsClosedForDegradedRecognizedMutation"],
+    "FS4": ["TestWP4HostDecisionParity", "TestEngineNormalizesAuthorityDiagnosticsAndIsByteStable"],
+    "FS5": ["TestEngineNormalizesAuthorityDiagnosticsAndIsByteStable", "TestRunMutationOrdersObservationAndPersistsChangedState"],
+    "FS6": ["TestWP4HostDecisionParity"],
+    "FS7": ["TestEvaluateTransitionFactsDelegatesReadinessAndTerminalCodes", "TestEveryRouteUsesIdenticalConvergenceDecision"],
+    "FS8": ["TestDecodeClaudeRecognizedEditWithoutFullContentFailsClosed"],
+    "FS9": ["TestRequestValidateRejectsHostSyntaxAndAmbiguousFields"],
+    "FS10": ["TestSchemasCompileAsDraft2020"]
+  }
+}

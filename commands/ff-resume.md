@@ -11,6 +11,10 @@ argument-hint: "[slug, if more than one run exists]"
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Re-enter the one incomplete phase, run it, then STOP.
 
+> **Integrity boundary — before every manifest creation or state write:** run the canonical
+> Command-level preflight in `docs/manifest-schema.md`; follow its legacy/current mode rule and
+> stop on an enforce-mode denial or invocation failure.
+
 ## Do the work
 
 1. Resolve `paths.base` from config. Find the run dir per **Run resolution** in
@@ -32,7 +36,7 @@ argument-hint: "[slug, if more than one run exists]"
    but artifact missing: `<path>`" / "artifact failed validity check: `<path>`") when that is why.
 4. **Missing or corrupt manifest (edge case):** do NOT fail. Apply the same **Disk inference
    procedure** from scratch (walk the track's phase order; first absent-or-invalid artifact
-   is the resume point) and reconstruct a minimal manifest from what's on disk before
+   is the resume point). Apply the integrity boundary above, then reconstruct from disk before
    continuing.
 5. Announce the resume point and the reason (which artifact was missing/incomplete), then
    run the resume-point phase to completion, honoring its gates (sign-off, design choice)

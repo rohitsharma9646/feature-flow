@@ -7,7 +7,10 @@
     "schemaVersion": {"const": 1},
     "status": {"enum": ["clean", "blocking-integrity", "invocation-failure", "io-failure", "observation-failure"]},
     "exitCode": {"enum": [0, 1, 2]},
-    "runs": {"type": "array"}
+    "runs": {"type": "array"},
+    "capabilities": {
+      "$ref": "capability-report-v1.schema.json"
+    }
   },
   "additionalProperties": false
 }

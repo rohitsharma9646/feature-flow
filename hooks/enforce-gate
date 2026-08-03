@@ -1,127 +1,17 @@
 #!/usr/bin/env bash
-# PreToolUse enforcement hook (M1): deny illegal manifest-state transitions.
-# Fires on Write; inert for everything except .feature-flow/*/manifest.json.
-# Fail-OPEN on any indeterminate state (no jq, unparseable, missing fields,
-# toggles.enforce=false). Deny ONLY on a determinate, illegal transition.
-#
-# Gates (see docs/manifest-schema.md §Enforcement):
-#   A. cannot enter `implement` without the track's sign-off precondition.
-#   B. cannot reach `done` without valid on-disk verify (+ review on bugfix) evidence.
-#
-# Output (Claude Code PreToolUse): exit 0 always; speak via stdout JSON.
-set -u
+# Thin Claude lifecycle adapter. All applicability and transition decisions are
+# made by the packaged native integrity kernel.
+set -eu
 
-INPUT="$(cat)"
-
-# Cheap pre-filter: skip anything that isn't plausibly a ff manifest write.
-# Avoids jq (and warn-spam) on the ~99% non-manifest Write case.
-case "$INPUT" in
-  *'.feature-flow/'*'manifest.json'*) : ;;
-  *) exit 0 ;;
+hook_dir="$(cd "$(dirname "$0")" && pwd)"
+case "$(uname -s 2>/dev/null || true)" in
+  MINGW*|MSYS*|CYGWIN*) executable="$hook_dir/../bin/ff-integrity.exe" ;;
+  *) executable="$hook_dir/../bin/ff-integrity" ;;
 esac
 
-# jq required past here. Absent -> fail-open + LOUD warning (printf, since jq is gone).
-if ! command -v jq >/dev/null 2>&1; then
-  printf '%s\n' '{"systemMessage":"feature-flow enforcement OFF: jq not found in PATH — manifest gates are NOT enforced. Install jq, or set toggles.enforce=false to silence."}'
+if [[ ! -x "$executable" ]]; then
+  printf '%s\n' '{"systemMessage":"Feature Flow integrity observe-only: FFI_CAPABILITY_DEGRADED"}'
   exit 0
 fi
 
-jqr() { printf '%s' "$INPUT" | jq -r "$1" 2>/dev/null; }
-
-file_path="$(jqr '.tool_input.file_path // empty')"
-case "$file_path" in
-  */.feature-flow/*/manifest.json) : ;;
-  *) exit 0 ;;
-esac
-cwd="$(jqr '.cwd // empty')"
-run_dir="$(dirname "$file_path")"
-
-# Proposed manifest = the content being written; invalid JSON -> fail-open.
-content="$(jqr '.tool_input.content // empty')"
-printf '%s' "$content" | jq -e . >/dev/null 2>&1 || exit 0
-mq() { printf '%s' "$content" | jq -r "$1" 2>/dev/null; }
-
-# Kill switch: project override -> plugin default -> on. Read the RAW value (NOT
-# `// empty`/`// false`: jq's `//` treats a literal `false` as empty, which would
-# silently swallow the kill switch). Off ONLY when the resolved value is "false".
-read_enforce() { jq -r '.toggles.enforce' "$1" 2>/dev/null; }   # "true" | "false" | "null" | ""
-enforce=""
-[ -n "$cwd" ] && [ -f "$cwd/.feature-flow.json" ] && enforce="$(read_enforce "$cwd/.feature-flow.json")"
-case "$enforce" in
-  true|false) : ;;   # project override is authoritative
-  *)                 # unset/null/error -> consult the plugin default
-    if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "$CLAUDE_PLUGIN_ROOT/config/defaults.json" ]; then
-      enforce="$(read_enforce "$CLAUDE_PLUGIN_ROOT/config/defaults.json")"
-    fi ;;
-esac
-[ "$enforce" = "false" ] && exit 0
-
-track="$(mq '.track // empty')"
-tier="$(mq '.tier // empty')"
-phase="$(mq '.currentPhase // empty')"
-{ [ -z "$track" ] || [ -z "$phase" ]; } && exit 0   # not a ff manifest / indeterminate
-
-deny() { # $1 gate label  $2 reason
-  jq -cn --arg m "feature-flow $1 — $2 (set toggles.enforce=false to override)" \
-    '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$m}}'
-  exit 0
-}
-
-# resolve_artifact_path <pointer>: manifest.artifacts.<name> value -> absolute path
-# (shared by valid_artifact and valid_verify_evidence — one resolution rule, stated once).
-resolve_artifact_path() {
-  case "$1" in
-    /*)  printf '%s' "$1" ;;
-    */*) printf '%s' "${cwd:-$run_dir}/$1" ;;
-    *)   printf '%s' "$run_dir/$1" ;;
-  esac
-}
-
-# valid_artifact <pointer>: resolve via manifest.artifacts.<name> (never hardcoded),
-# require present + non-empty + >=1 markdown heading.
-valid_artifact() {
-  local rel="$1" path
-  [ -z "$rel" ] && return 1
-  path="$(resolve_artifact_path "$rel")"
-  [ -s "$path" ] && grep -qE '^#{1,6} ' "$path"
-}
-
-# valid_verify_evidence <pointer>: v0.9.0/AC10 content floor for artifacts.verify ONLY
-# (see docs/manifest-schema.md §Enforcement + §Evidence). Requires a '## Contract mapping'
-# heading and >=1 captured status token. Whole-file token grep on purpose: the floor
-# command's exit code in '## Commands run' keeps an all-gaps + waived report passable —
-# this denies an empty-shell report, it does NOT grade evidence quality or waiver coverage.
-valid_verify_evidence() {
-  local path
-  path="$(resolve_artifact_path "$1")"
-  grep -qE '^## Contract mapping' "$path" 2>/dev/null \
-    && grep -qiE 'exit [0-9]+|HTTP[/ ]?[0-9]{3}|status[:= ] ?[0-9]+' "$path" 2>/dev/null
-}
-
-# Gate A — entering implement.
-impl="$(mq '.phases.implement.status // empty')"
-if [ "$phase" = "implement" ] || [ "$impl" = "in_progress" ] || [ "$impl" = "complete" ]; then
-  case "$track/$tier" in
-    feature/*|bugfix/full)
-      [ "$(mq '.signOff.signed // false')" = "true" ] || \
-        deny "Gate A" "cannot enter implement: spec not signed off (signOff.signed != true)" ;;
-    bugfix/lite)
-      [ "$(mq '.phases.diagnose.status // empty')" = "complete" ] || \
-        deny "Gate A" "cannot enter implement: diagnosis not confirmed (phases.diagnose.status != complete)" ;;
-  esac
-fi
-
-# Gate B — reaching done.
-if [ "$phase" = "done" ]; then
-  vrel="$(mq '.artifacts.verify // empty')"
-  if [ "$(mq '.phases.verify.status // empty')" != "complete" ] || ! valid_artifact "$vrel" || ! valid_verify_evidence "$vrel"; then
-    deny "Gate B" "cannot mark done: verify evidence missing or invalid (need phases.verify.status=complete + a non-empty verify artifact with a heading, a '## Contract mapping' section, and >=1 captured exit/HTTP/status code)"
-  fi
-  if [ "$track" = "bugfix" ]; then
-    if [ "$(mq '.phases.review.status // empty')" != "complete" ] || ! valid_artifact "$(mq '.artifacts.review // empty')"; then
-      deny "Gate B" "cannot mark done: review evidence missing or invalid (bugfix needs phases.review.status=complete + a non-empty review artifact with a heading)"
-    fi
-  fi
-fi
-
-exit 0
+exec "$executable" host-preflight --host claude --mode observe

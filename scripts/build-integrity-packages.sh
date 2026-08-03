@@ -11,7 +11,8 @@ IFS=$'\t' read -r goos goarch exe < <(
 [[ -n "$goos" && -n "$goarch" && -n "$exe" ]] ||
   { echo "target metadata is incomplete: $target" >&2; exit 2; }
 
-output="dist/integrity/$target"
+integrity_dist_root="${FF_INTEGRITY_DIST_ROOT:-dist/integrity}"
+output="$integrity_dist_root/$target"
 case "$exe" in
   *.exe) integrity_exe="ff-integrity.exe" ;;
   *) integrity_exe="ff-integrity" ;;
@@ -20,7 +21,8 @@ rm -rf "$output"
 mkdir -p "$output/payload/bin" "$output/payload/schemas" \
   "$output/payload/integrity/protocol/v1" "$output/payload/integrity/testdata/smoke" \
   "$output/payload/integrity/testdata/legacy" \
-  "$output/payload/integrity/testdata/revision/v1"
+  "$output/payload/integrity/testdata/revision/v1" \
+  "$output/payload/integrity/testdata/adapter/v1"
 
 CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
   go build -trimpath -ldflags='-s -w -buildid=' -o "$output/payload/bin/$exe" \
@@ -33,12 +35,15 @@ cp schemas/manifest-v1.schema.json schemas/golden-vector-v1.schema.json \
   schemas/doctor-result-v1.schema.json schemas/migration-plan-v1.schema.json \
   schemas/code-revision-v1.schema.json schemas/attestation-v1.schema.json \
   schemas/wp3-corpus-v1.schema.json \
+  schemas/preflight-request-v1.schema.json schemas/preflight-result-v1.schema.json \
+  schemas/capability-report-v1.schema.json schemas/wp4-corpus-v1.schema.json \
   "$output/payload/schemas/"
 cp integrity/protocol/v1/diagnostics.json "$output/payload/integrity/protocol/v1/"
 cp integrity/testdata/manifests/current-feature.json "$output/payload/integrity/testdata/smoke/"
 cp integrity/testdata/manifests/legacy.json "$output/payload/integrity/testdata/smoke/"
 cp integrity/testdata/legacy/inventory-v1.json "$output/payload/integrity/testdata/legacy/"
 cp -R integrity/testdata/revision/v1/. "$output/payload/integrity/testdata/revision/v1/"
+cp -R integrity/testdata/adapter/v1/. "$output/payload/integrity/testdata/adapter/v1/"
 
 (
   cd "$output/payload"
@@ -86,6 +91,10 @@ for rel in \
   "schemas/code-revision-v1.schema.json" \
   "schemas/attestation-v1.schema.json" \
   "schemas/wp3-corpus-v1.schema.json" \
+  "schemas/preflight-request-v1.schema.json" \
+  "schemas/preflight-result-v1.schema.json" \
+  "schemas/capability-report-v1.schema.json" \
+  "schemas/wp4-corpus-v1.schema.json" \
   "integrity/protocol/v1/diagnostics.json" \
   "integrity/testdata/smoke/current-feature.json" \
   "integrity/testdata/smoke/legacy.json" \
@@ -96,8 +105,15 @@ for rel in \
   cmp "$output/claude/$rel" "$output/codex/$rel"
 done
 
+for rel in \
+  "integrity/testdata/adapter/v1/index.json"; do
+  cmp "$output/claude/$rel" "$output/codex/$rel"
+done
+
 test -f "$output/claude/.claude-plugin/plugin.json"
 test -f "$output/codex/.codex-plugin/plugin.json"
+test -f "$output/claude/hooks/hooks.json"
+test -f "$output/codex/adapters/codex/hooks/hooks.json"
 if find "$output/claude/schemas" "$output/claude/integrity/protocol" \
     "$output/codex/schemas" "$output/codex/integrity/protocol" \
     -type f -name '*.go' -print -quit | grep -q .; then

@@ -12,6 +12,9 @@ jobs:
       matrix: ${{ steps.targets.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
       - id: targets
         shell: bash
         run: |
@@ -26,6 +29,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26.5'
@@ -33,8 +39,13 @@ jobs:
       - name: Unit and conformance tests
         shell: bash
         run: |
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'exact_commit=%s\n' "$actual"
           go test ./...
           bash scripts/check-integrity-wp3-conformance.sh
+          bash scripts/check-integrity-wp4-conformance.sh
       - name: Assemble target packages
         shell: bash
         run: bash scripts/build-integrity-packages.sh "${{ matrix.target }}"

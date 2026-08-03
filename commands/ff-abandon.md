@@ -16,6 +16,10 @@ reachable by explicit slug.
 
 ## Do the work
 
+> **Integrity boundary — before every manifest state write:** run the canonical Command-level
+> preflight in `docs/manifest-schema.md`; follow its legacy/current mode rule and stop on an
+> enforce-mode denial or invocation failure.
+
 1. `$ARGUMENTS` must name a slug. If it doesn't: STOP with — "Specify which run to abandon.
    Run `/feature-flow:ff-list` to see all runs."
 2. Resolve `paths.base` from config and locate `<base>/<slug>/`. If it does not exist: STOP

@@ -1,5 +1,6 @@
 : << 'CMDBLOCK'
 @echo off
+setlocal EnableDelayedExpansion
 REM Cross-platform polyglot wrapper for hook scripts.
 REM On Windows: cmd.exe runs the batch portion, which finds and calls bash.
 REM On Unix: the shell interprets this as a script (: is a no-op in bash).
@@ -17,25 +18,34 @@ if "%~1"=="" (
 
 set "HOOK_DIR=%~dp0"
 
+REM Integrity enforcement is native and must not depend on Bash.
+if /I "%~1"=="enforce-gate" (
+    if exist "%HOOK_DIR%..\bin\ff-integrity.exe" (
+        "%HOOK_DIR%..\bin\ff-integrity.exe" host-preflight --host claude --mode observe
+        exit /b !ERRORLEVEL!
+    )
+    echo {"systemMessage":"Feature Flow integrity observe-only: FFI_CAPABILITY_DEGRADED"}
+    exit /b 0
+)
+
 REM Try Git for Windows bash in standard locations
 if exist "C:\Program Files\Git\bin\bash.exe" (
     "C:\Program Files\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
-    exit /b %ERRORLEVEL%
+    exit /b !ERRORLEVEL!
 )
 if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
     "C:\Program Files (x86)\Git\bin\bash.exe" "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
-    exit /b %ERRORLEVEL%
+    exit /b !ERRORLEVEL!
 )
 
 REM Try bash on PATH (e.g. user-installed Git Bash, MSYS2, Cygwin)
 where bash >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     bash "%HOOK_DIR%%~1" %2 %3 %4 %5 %6 %7 %8 %9
-    exit /b %ERRORLEVEL%
+    exit /b !ERRORLEVEL!
 )
 
-REM No bash found - exit silently rather than error
-REM (plugin still works, just without SessionStart context injection)
+REM SessionStart context is optional when Bash is unavailable.
 exit /b 0
 CMDBLOCK
 

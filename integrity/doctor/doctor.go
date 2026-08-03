@@ -11,6 +11,7 @@ import (
 	"github.com/rohitsharma9646/feature-flow/integrity/jsonstrict"
 	"github.com/rohitsharma9646/feature-flow/integrity/migration"
 	"github.com/rohitsharma9646/feature-flow/integrity/observe"
+	"github.com/rohitsharma9646/feature-flow/integrity/preflight"
 )
 
 type RunResult struct {
@@ -23,10 +24,20 @@ type RunResult struct {
 }
 
 type Report struct {
-	SchemaVersion int         `json:"schemaVersion"`
-	Status        string      `json:"status"`
-	ExitCode      int         `json:"exitCode"`
-	Runs          []RunResult `json:"runs"`
+	SchemaVersion int                         `json:"schemaVersion"`
+	Status        string                      `json:"status"`
+	ExitCode      int                         `json:"exitCode"`
+	Runs          []RunResult                 `json:"runs"`
+	Capabilities  *preflight.CapabilityReport `json:"capabilities,omitempty"`
+}
+
+func WithCapabilities(report Report, capabilities preflight.CapabilityReport) Report {
+	report.Capabilities = &capabilities
+	if !capabilities.Enforceable && report.ExitCode < 1 {
+		report.ExitCode = 1
+		report.Status = "blocking-integrity"
+	}
+	return report
 }
 
 func Diagnose(runs []observe.Run) Report {
@@ -133,6 +144,10 @@ func RenderHuman(report Report) []byte {
 			}
 			out.WriteByte('\n')
 		}
+	}
+	if report.Capabilities != nil {
+		fmt.Fprintf(&out, "capabilities: host=%s enforceable=%t mode=%s\n",
+			report.Capabilities.Host, report.Capabilities.Enforceable, report.Capabilities.Mode)
 	}
 	return []byte(out.String())
 }

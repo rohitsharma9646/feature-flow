@@ -36,3 +36,23 @@ var AttestationV1 []byte
 //
 //go:embed wp3-corpus-v1.schema.json
 var WP3CorpusV1 []byte
+
+// PreflightRequestV1 is the host-neutral preflight input schema.
+//
+//go:embed preflight-request-v1.schema.json
+var PreflightRequestV1 []byte
+
+// PreflightResultV1 is the normalized preflight decision schema.
+//
+//go:embed preflight-result-v1.schema.json
+var PreflightResultV1 []byte
+
+// CapabilityReportV1 is the integrity enforcement capability schema.
+//
+//go:embed capability-report-v1.schema.json
+var CapabilityReportV1 []byte
+
+// WP4CorpusV1 is the executable host-adapter corpus index schema.
+//
+//go:embed wp4-corpus-v1.schema.json
+var WP4CorpusV1 []byte

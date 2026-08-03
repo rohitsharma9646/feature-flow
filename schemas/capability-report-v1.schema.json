@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/capability-report-v1.schema.json",
+  "title": "Feature Flow integrity capability report v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "host",
+    "mode",
+    "kernelVersion",
+    "schemaVersionName",
+    "capabilities",
+    "enforceable"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "host": {"enum": ["direct", "claude", "codex"]},
+    "mode": {"enum": ["enforce", "observe"]},
+    "kernelVersion": {"type": "string", "minLength": 1},
+    "schemaVersionName": {"type": "string", "minLength": 1},
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "state", "required", "evidence"],
+        "properties": {
+          "name": {
+            "enum": [
+              "lifecycle_hook",
+              "command_preflight",
+              "kernel",
+              "schema",
+              "git_observation",
+              "atomic_replacement",
+              "json_output"
+            ]
+          },
+          "state": {"enum": ["available", "unavailable", "unknown"]},
+          "required": {"type": "boolean"},
+          "version": {"type": "string"},
+          "evidence": {"type": "string", "minLength": 1},
+          "diagnostic": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["supported", "packaged", "enabled", "trusted", "executable", "enforceable"],
+      "properties": {
+        "supported": {"enum": ["yes", "no", "unknown"]},
+        "packaged": {"enum": ["yes", "no", "unknown"]},
+        "enabled": {"enum": ["yes", "no", "unknown"]},
+        "trusted": {"enum": ["yes", "no", "unknown"]},
+        "executable": {"enum": ["yes", "no", "unknown"]},
+        "enforceable": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "enforceable": {"type": "boolean"}
+  },
+  "additionalProperties": false
+}
