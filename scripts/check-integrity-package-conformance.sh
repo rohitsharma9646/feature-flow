@@ -109,9 +109,9 @@ case "$target" in
       .hooks.PreToolUse[0].hooks[0].command |
       contains("/hooks/run-hook.cmd")
     ' "$package_root/claude/hooks/hooks.json" >/dev/null
-    claude_launcher="$(cygpath -w "$package_root/claude/hooks/run-hook.cmd")"
-    codex_launcher="$(cygpath -w "$package_root/codex/adapters/codex/hooks/run-integrity.cmd")"
-    codex_root="$(cygpath -w "$package_root/codex")"
+    claude_launcher="$(cygpath -aw "$package_root/claude/hooks/run-hook.cmd")"
+    codex_launcher="$(cygpath -aw "$package_root/codex/adapters/codex/hooks/run-integrity.cmd")"
+    codex_root="$(cygpath -aw "$package_root/codex")"
     for vector in "${wp4_vectors[@]}"; do
       if [[ "$vector" == "legacy" ]]; then
         cp "$wp4_fixture/legacy.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
@@ -120,12 +120,11 @@ case "$target" in
       else
         cp "$wp4_fixture/current.json" "$wp4_fixture/repo/.feature-flow/run/manifest.json"
       fi
-      cmd.exe //d //s //c \
-        "call \"$claude_launcher\" enforce-gate" \
+      cmd.exe //d //c call "$claude_launcher" enforce-gate \
         < "$wp4_fixture/$vector-claude.json" \
         > "$wp4_fixture/$vector-installed-claude.out"
-      cmd.exe //d //s //c \
-        "set \"PLUGIN_ROOT=$codex_root\"&& call \"$codex_launcher\"" \
+      PLUGIN_ROOT="$codex_root" \
+        cmd.exe //d //c call "$codex_launcher" \
         < "$wp4_fixture/$vector-codex.json" \
         > "$wp4_fixture/$vector-installed-codex.out"
       cmp "$wp4_fixture/$vector-packaged-claude.out" \
