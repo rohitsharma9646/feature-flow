@@ -45,3 +45,6 @@ jobs:
         with:
           name: integrity-${{ matrix.target }}
           path: dist/integrity/${{ matrix.target }}
+          # Nothing downstream downloads these; keep them briefly for manual inspection only.
+          # The 90-day default filled the account's artifact storage quota (12 packages per push).
+          retention-days: 7
