@@ -21,6 +21,7 @@ phase name:
 | `/feature-flow:ff-implement` | Read `commands/ff-implement.md` and run that phase inline |
 | `/feature-flow:ff-review` | Read `commands/ff-review.md` and run that phase inline |
 | `/feature-flow:ff-verify` | Read `commands/ff-verify.md` and run that phase inline |
+| `/feature-flow:ff-deliver` | Read `commands/ff-deliver.md` and run that phase inline |
 | `/feature-flow:ff-status` | Read `commands/ff-status.md` and run that phase inline |
 | `/feature-flow:ff-resume` | Read `commands/ff-resume.md` and run that phase inline |
 | `/feature-flow:ff-list` | Read `commands/ff-list.md` and run that phase inline |

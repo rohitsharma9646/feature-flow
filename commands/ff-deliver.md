@@ -46,7 +46,7 @@ Resolve each upstream artifact **only** via `manifest.artifacts.<name>` (the sol
   and the delivery-gap check.
 - `artifacts.verify` — `§Limitations & remaining risks` (known issues) + `§Commands run` (release validation).
 
-**A source that does not resolve is reported, not fatal.** A lite/pre-WS-2 run whose `artifacts.plan`
+**A source that does not resolve is reported, not fatal.** A lite or older run whose `artifacts.plan`
 resolves to nothing, or an empty `§Limitations`, yields "no plan — rollback not derivable" / "None
 reported" in the corresponding section — never a crash, never invented content. Delivery degrades gracefully.
 
@@ -71,7 +71,7 @@ task file lists), verify it has a `§Rollback plan` recovery line. A qualifying 
 recovery line is an upstream hole: write a `⚠ DELIVERY GAP: <task> touches <migration/schema> but
 the plan's §Rollback plan has no recovery line` entry into the Rollback checklist section, and **report
 every gap to the user** in the hand-off. This is **non-blocking** — delivery never blocks `done`; the
-gap is back-pressure that makes the missing rollback visible, closing WS-2's rollback loop. A task
+gap is back-pressure that makes the missing rollback visible. A task
 carrying an `irreversible: mitigation is <X>` line is **not** a gap — surface its mitigation instead.
 
 Resolve the report's path per **Durable artifact resolution** in

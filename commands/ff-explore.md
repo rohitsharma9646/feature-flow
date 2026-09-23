@@ -42,7 +42,7 @@ no upstream artifact is required (cold-start safe).
 Run this **before the explorer fan-out** in `## Do the work`. It is a **no-op unless the KB is
 active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and dispatch the explorers
-exactly as today (byte-identical behavior).
+with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
@@ -65,7 +65,7 @@ with a differentiated focus so the coverage is genuinely distinct:
 **Lite tier (`tier == "lite"`): dispatch exactly ONE `ff-code-explorer`** with a single
 combined focus (where the change lives + what to reuse) instead of the `explorerAgents`
 fan-out — a small feature does not need 3-way coverage. Full/unset → the `explorerAgents`
-fan-out above, unchanged.
+fan-out above.
 
 Read the files the agents flag as essential. Synthesize a findings summary: where the
 feature will live, what to reuse, constraints discovered, and open questions for clarify.

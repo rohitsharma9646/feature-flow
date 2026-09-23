@@ -43,7 +43,9 @@ focuses:
 - **conventions** — CLAUDE.md / project-guideline adherence.
 
 Pass each the `reviewThreshold` from config; they report only issues scoring ≥ threshold.
-On a greenfield / non-git project, point them at the working-tree files instead of a diff.
+The reviewers have no shell and cannot run `git`, so hand each one the change under review:
+run `git diff HEAD` yourself (staged + unstaged) and pass its output, or — on a greenfield /
+non-git project — pass the list of files this run touched.
 
 Consolidate findings (de-duplicate across agents) into `review.md` from
 `${CLAUDE_PLUGIN_ROOT}/templates/review.md`: Critical vs Important, each with file:line,
@@ -104,7 +106,7 @@ Critical-review block is unresolved (the run is not yet at terminal convergence)
 Sequenced **after** `review.md` + the manifest update but **before** `currentPhase = "done"`, and a
 **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non-null, read from
 `.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`). When inactive (or on the
-feature track), do nothing — behavior is byte-identical to today.
+feature track), do nothing.
 
 When active on the bugfix terminal, follow the **Knowledge base** capture rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA

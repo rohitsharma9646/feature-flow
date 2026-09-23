@@ -32,7 +32,7 @@ Implements the planned work for **either track**. Branch on `manifest.track`:
 Read `manifest.track` and gate accordingly. Check the gate **before** any cold-start or
 work, and write **no** code until it passes.
 
-- **Feature track, or bugfix `tier: full` (AC4):** read `signOff` from the manifest and the
+- **Feature track, or bugfix `tier: full`:** read `signOff` from the manifest and the
   `User signed off:` line in `spec.md` (feature) / `diagnosis.md` (escalated bugfix).
   **If sign-off is `no` / `signed: false`, STOP immediately.** Tell the user:
 
@@ -40,7 +40,7 @@ work, and write **no** code until it passes.
   > (`/feature-flow:ff-clarify` for a feature spec, `/feature-flow:ff-diagnose` for an escalated
   > bug's diagnosis), then re-run `/feature-flow:ff-implement`.
 
-- **Bugfix `tier: lite` (AC13):** there is no separate sign-off; the gate is a **confirmed**
+- **Bugfix `tier: lite`:** there is no separate sign-off; the gate is a **confirmed**
   diagnosis (reproduced + root cause + chosen fix approach), resolved via
   `manifest.artifacts.diagnosis` (manifest-first; sandbox fallback when the manifest is
   absent). **If the resolved diagnosis is missing, or the bug is "not reproduced", STOP** and
@@ -87,7 +87,7 @@ authority, per **Durable artifact resolution** — **never a bare filename**. Th
 **unconditional of the KB toggle**: full tier resolves the promoted decision record, lite tier
 resolves `manifest.artifacts.spec` (its `## Solution approaches considered` section *is* lite's
 decision record — the pointer was set by `ff-clarify`). **The same pointer read serves both
-tiers — no tier branch in the locating logic.** Absent `artifacts.decision` (a pre-v0.10.0
+tiers — no tier branch in the locating logic.** Absent `artifacts.decision` (an older
 manifest) → "no decision recorded"; proceed, no error.
 
 Then, when the KB is active (`toggles.kb === true` AND `paths.kb` non-null), also follow the
@@ -127,7 +127,7 @@ skips a task the critical path names, or executes critical-path tasks out of the
 > to respect the critical path, or (b) an explicit user override recorded verbatim as
 > `Critical-path override by user (<date>): <reason>` in the plan's `## Critical path` section
 > (via `manifest.artifacts.plan`) — never self-authored. No divergence, or no critical path
-> recorded (a pre-WS-2 plan) → one-line note, proceed.
+> recorded in the plan → one-line note, proceed.
 
 **Rollback on a failed Verify step.** When any task's `Step N: Verify` fails during `## Do the
 work` below, the recovery is **not** ad hoc: read that task's row in the plan's `## Rollback plan`
