@@ -35,12 +35,29 @@ The full behavioral contract lives in
 ### Claude Code
 
 ```
-claude plugin marketplace add rohitsharma9646/feature-flow
+claude plugin marketplace add rohitsharma9646/feature-flow#dist
 claude plugin install feature-flow@feature-flow
 ```
 
 Then **fully restart Claude** — plugins load at startup, so `/clear` or a new conversation is
 **not** enough.
+
+`#dist` installs from the `dist` branch, which CI publishes on every push to `master` and which holds
+**only the runtime files** (commands, agents, skills, hooks, templates, config, the reference docs).
+The development repo — Go sources, tests, eval fixtures, CI scripts, run history — never lands on
+your machine. Runtime needs are just bash and `jq`.
+
+**Already installed from the full repo?** Re-add the marketplace once so its local clone is clean too:
+
+```
+claude plugin marketplace remove feature-flow
+claude plugin marketplace add rohitsharma9646/feature-flow#dist
+claude plugin install feature-flow@feature-flow
+```
+
+(Your plugin cache is already clean after `claude plugin update feature-flow@feature-flow` — the
+marketplace entry now points at `dist` — but the old marketplace clone keeps the full repo until you
+re-add it.)
 
 ### Codex
 
@@ -216,7 +233,8 @@ Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 
 ## Native integrity operations
 
-Complete Claude and Codex packages include a directly invocable `ff-integrity` binary:
+The CI-built native packages (`scripts/build-integrity-packages.sh`, one per platform) include a
+directly invocable `ff-integrity` binary. It is **not** part of the marketplace (`#dist`) install:
 
 ```sh
 ff-integrity doctor <slug> --format human

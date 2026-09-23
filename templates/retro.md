@@ -26,7 +26,7 @@
 - **Proposed validation:** <how a fix would be shown to work>
 
 <!-- Owner = regression/forward test → write Proposed validation in the forward-test case shape
-     (evals/forward/README.md), one line each:
+     (feature-flow repo's evals/forward/README.md — not shipped with the plugin), one line each:
        - **Proposed validation:**
          - Fired input: <the input that must trigger the behavior>
          - Expected outcome: <the observable that proves it fired>

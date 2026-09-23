@@ -1,0 +1,14 @@
+### first publish (branch absent)
+creating ffprobe/dist (orphan history)
+built e0ea19c7c7d2230f369006aba2fe972d3bbc2edf (tree 2340c63e9fa46dff74b61a9242ebeb8189c10ae1) from ebdc876
+To /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/fin/remote.git
+ * [new branch]      e0ea19c7c7d2230f369006aba2fe972d3bbc2edf -> dist
+published ffprobe/dist -> e0ea19c7c7d2230f369006aba2fe972d3bbc2edf
+exit=0
+### re-publish, unchanged
+dist unchanged: ffprobe/dist already holds this tree (2340c63e9fa46dff74b61a9242ebeb8189c10ae1) — nothing to publish.
+exit=0
+dist commits: 1
+dist top-level: .claude-plugin LICENSE README.md agents commands config docs hooks skills templates 
+dist .go files: 0
+dist file count: 46
