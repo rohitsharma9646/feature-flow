@@ -77,8 +77,8 @@ assistant) drive it — the user never has to know the command names:
 
 After the first phase, the modes diverge. **Step-by-step** (`autopilot: false` or absent):
 continue **phase by phase** — each later phase is its own command the user (or you) invokes
-next, so every human gate is honored and a dropped session is recoverable. Each phase-end
-hand-off also suggests `/clear` before the next phase (the **Fresh-context hint** in §Progress
+next, so every human gate is honored and a dropped session is recoverable. Each step-by-step
+phase-end hand-off also suggests `/clear` before the next phase (the **Fresh-context hint** in §Progress
 strip) — the run's state is on disk, so a clean context costs nothing and sheds this phase's noise. **Autopilot**
 (`manifest.autopilot: true`): ceremonial phase-end STOPs become continuations — chain
 forward per **Autopilot** in `docs/manifest-schema.md`, pausing at every mandatory gate.

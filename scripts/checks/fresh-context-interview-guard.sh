@@ -43,7 +43,7 @@ need "FC1: never in autopilot"                                      "$ps" 'never
 need "FC1: never at a sign-off / decision / blocking pause"         "$ps" 'never at a sign-off'
 
 # --- FC2: every hand-off routes through §Progress strip ------------------------
-for c in ff ff-explore ff-clarify ff-design ff-plan ff-diagnose ff-implement ff-review ff-verify; do
+for c in ff ff-explore ff-clarify ff-design ff-plan ff-diagnose ff-implement ff-review ff-verify ff-resume; do
   flat < "commands/$c.md" | grep -qF '**Progress strip**' \
     && ok "FC2: commands/$c.md ends its hand-off via §Progress strip" \
     || err "FC2: commands/$c.md must reference **Progress strip** for its hand-off"
@@ -91,6 +91,19 @@ else
     printf '%s\n' "$eb" | grep -qE "$f" && ok "TP3: E2E block carries $f" || err "TP3: E2E block must carry $f"
   done
 fi
+
+# TP3b: the E2E command actually reaches the one agent that gathers evidence — on lite too.
+need "TP3b: ff-verify passes the End-to-end check row to ff-test-runner" "$vf" 'pass it verbatim to the runner'
+tr_="$(cat agents/ff-test-runner.md)"
+need "TP3b: ff-test-runner runs a provided end-to-end check"            "$tr_" 'If an end-to-end check is provided'
+need "TP3b: …on a lite dispatch too (carve-out from floor-only)"         "$tr_" 'lite-tier dispatch too'
+need "TP3b: ff-test-runner maps the end-to-end check as a contract item" "$tr_" 'the end-to-end check'
+# TP3c: no applicable flow → an explicit none, which verify treats as absent (never a placeholder row).
+need "TP3c: spec template allows an explicit none"  "$(section "$TPL_S" '^## End-to-end check$')" 'E2E: none'
+need "TP3c: ff-verify treats E2E: none as absent"   "$vf" 'E2E: none'
+# TP3d: downstream consumers enumerate E2E with the other contract-item classes.
+need "TP3d: retro signal list names E2E"            "$(section "$SCHEMA" '^## Retrospective')" '`E2E`'
+need "TP3d: repair-cycle trigger decides E2E/SM"    "$(section "$SCHEMA" '^## Autopilot')" 'end-to-end check'
 
 # --- TP4: review scope reference -------------------------------------------------
 need "TP4: spec-conformance reviewer reads Touchpoints" "$(section commands/ff-review.md '^## Spec conformance')" 'Touchpoints'

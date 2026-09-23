@@ -48,7 +48,9 @@ devil's advocate).
 
 Read `models.testRunner` from config (`.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for the dispatched
-agent. Dispatch the **`ff-test-runner`** agent, telling it the run's `tier`. It detects and
+agent. Dispatch the **`ff-test-runner`** agent, telling it the run's `tier`. **Feature track:**
+when the spec has an `## End-to-end check` row (not `E2E: none`), pass it verbatim to the runner
+as the end-to-end check to run — on every tier, lite included. It detects and
 **actually runs** the project's test / build / lint commands **and the project's detected
 evidence surfaces** — e2e/browser (Playwright CLI), http/api, db, cli-output, logs,
 before/after — per the evidence-kind taxonomy in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
@@ -85,9 +87,9 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   contract item, **exactly as an acceptance criterion is mapped** — same `pass` / `fail` /
   `manual-unverified` derivation, Confidence ladder, and evidence-gap stop + waiver line below.
   Prove it by actually running the stated command / flow end to end, not by pointing at the AC
-  evidence. Absent `## End-to-end check`, or a section with no row (an older spec) → skip, no
-  E2E block, no gap — a **presence check on the section**, not a tier check (§Discovery fields →
-  Actuation 3).
+  evidence. Absent `## End-to-end check`, a section with no row (an older spec), or an explicit
+  `E2E: none` (no user-facing flow — e.g. a pure refactor) → skip, no E2E block, no gap — a
+  **presence check on the section**, not a tier check (§Discovery fields → Actuation 3).
 - **Feature track — success metrics:** additionally map **each row** of the spec's `## Success
   metrics` (resolved via the already-read `artifacts.spec` — no new pointer) into its own `### SM<n>`
   contract item, **exactly as an acceptance criterion is mapped** — same `pass` / `fail` /
@@ -129,15 +131,15 @@ A contract item is done-eligible only at `Verified (single-source)` or `Verified
 
 - **Autopilot repair-and-re-verify cycle** (`manifest.autopilot: true` **and** `tier == "full"`
   only — mirrors the review cap; step-by-step and lite never enter this bullet). The trigger (a
-  **captured non-success** status on an acceptance criterion or bugfix item — a check that ran and
-  failed, never a pure gap and never a design-time `### FS<n>`), the one-cycle cap, and the
+  **captured non-success** status on an acceptance criterion, bugfix item, or the `### E2E` check —
+  a check that ran and failed, never a pure gap and never a design-time `### FS<n>`), the one-cycle cap, and the
   fall-through conditions are the canonical **Repair-and-re-verify cycle** contract in
   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Autopilot — do not restate them here.
   Operationally: when it applies and `verify.md` has **no** prior `## Repair` section, emit a short
   repair plan (what failed → smallest diagnosis → proposed fix → the contract items it re-touches,
   drawn conservatively), apply the fix inline (no re-entry to `/feature-flow:ff-implement`), append
   the `## Repair` section (`${CLAUDE_PLUGIN_ROOT}/templates/verify.md`), then re-verify **only the
-  named re-touched contract items** (ACs or the bugfix item(s)) by re-dispatching `ff-test-runner`
+  named re-touched contract items** (ACs, the E2E check, or the bugfix item(s)) by re-dispatching `ff-test-runner`
   — tell it explicitly this is a **scoped repair re-verify** so it does **not** clear
   `<run dir>/evidence/` (an explicit **exception to the start-of-verify evidence-clear rule**,
   preserving every un-touched item's evidence) — mapping its output back onto only those items'

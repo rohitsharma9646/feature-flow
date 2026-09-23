@@ -74,6 +74,11 @@ discipline as the acceptance criteria. `ff-verify` maps it into an `### E2E` con
 
 - [ ] E2E: <run `<command / flow>`> → <observable end result>
 
+<!-- No user-facing flow to exercise (a pure refactor, an internal library) → replace the row with
+     `E2E: none — <reason>`; ff-verify then maps no E2E block. Never leave the placeholder. -->
+
+
+
 ## Success metrics
 
 > **Full tier only.** A lite spec omits this section entirely — no placeholder, no warning.

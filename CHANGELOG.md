@@ -27,6 +27,13 @@ the recommendation first, and independent questions batched. Open-ended probes (
   same Confidence ladder, same evidence-gap stop and waiver, and it's proven by actually running
   the stated command or flow. Both sections are presence-gated, so older specs are unaffected.
   Contract: §Discovery fields → Touchpoints / End-to-end check / Actuation 3.
+- `ff-verify` passes the E2E row to `ff-test-runner`, which runs it as stated under its true kind.
+  That includes lite, the one exception to lite's floor-only rule. Without this, E2E would
+  routinely sit at Unverified.
+- Work with no user-facing flow writes `E2E: none — <reason>`, which verify treats as absent.
+- A captured E2E **failure** is a repair-cycle trigger, like an AC. `SM<n>` is now stated as not
+  being one, which is what the old wording already implied.
+- `E2E` joins the retro's closed signal list of unproven contract items.
 
 **Fix:** the v0.19.0 spec-conformance reviewer was told to read the spec's `## Out of scope`
 section. The template calls it `## Non-goals`, so it now reads `## Non-goals` (plus

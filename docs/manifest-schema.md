@@ -946,8 +946,8 @@ as prose in the same section — context, **not** contract items.
 `ff-verify` resolves `design.md` via `manifest.artifacts.design` (full tier; absent on lite, on the
 bugfix track, or on a pre-WS-5 design → skip, no FS blocks, never a STOP) and maps each named
 failure scenario into its own `### FS<n>` block in `verify.md`'s `## Contract mapping` — **exactly
-as an acceptance criterion is mapped**: same four Confidence-ladder levels (which now name three
-contract-item classes: acceptance criterion, bugfix item, or design-time failure scenario), same
+as an acceptance criterion is mapped**: same four Confidence-ladder levels (a design-time failure
+scenario is one of the contract-item classes listed in §Evidence → Confidence ladder), same
 evidence-gap-stop shape. An `FS<n>` stuck at `Partially verified` or `Unverified` holds the run at
 the existing **Evidence gap stop** (§Autopilot) — the SAME turn-ending, waivable stop an unverified
 AC already uses, **not** the do-not-contradict STOP (an unproven scenario is *unaddressed*, not
@@ -1013,8 +1013,8 @@ all-independent spec omits the section.
 `ff-verify` resolves `spec.md` via `manifest.artifacts.spec` (already read in Cold-start; no new
 pointer) and maps each `## Success metrics` row into its own `### SM<n>` block in `verify.md`'s
 `## Contract mapping` — **exactly as an acceptance criterion is mapped**: the same four
-Confidence-ladder levels (which now name **four** contract-item classes — acceptance criterion, bugfix
-item, design-time failure scenario, success metric), the same evidence-gap-stop shape. An `SM<n>`
+Confidence-ladder levels (a success metric is one of the contract-item classes listed in §Evidence →
+Confidence ladder), the same evidence-gap-stop shape. An `SM<n>`
 stuck at `Partially verified` or `Unverified` holds the run at the existing **Evidence gap stop**
 (§Autopilot) — the SAME turn-ending, waivable stop an unverified AC or `FS<n>` already uses, **not**
 the do-not-contradict STOP — cleared by proving it or by the SAME verbatim `Evidence gap accepted by
@@ -1153,12 +1153,13 @@ Zero Critical findings → no cycle; chain proceeds.
 Fix-and-re-review cycle above, applied to a genuine verify *failure* instead of a review finding.
 Before starting a cycle, check `verify.md` for an existing `## Repair` section — the verify
 artifact is the durable one-cycle record (it survives session drops), exactly as review's
-`## Resolution`. **No prior cycle AND ≥1 contract item is an acceptance criterion or bugfix item
-(never a design-time `FS<n>`) backed by a captured non-success exit/HTTP/status** (a check that ran
+`## Resolution`. **No prior cycle AND ≥1 contract item is an acceptance criterion, bugfix item, or
+the spec's end-to-end check (`E2E` — never a design-time `FS<n>`, and a success metric `SM<n>` is
+not a trigger either) backed by a captured non-success exit/HTTP/status** (a check that ran
 and failed — not a pure gap with no captured evidence) → emit the repair plan (what failed →
 smallest diagnosis → proposed fix → re-touched contract items, drawn conservatively — when uncertain,
 include), apply the fix inline (no `ff-implement` re-entry), append the `## Repair` record, and
-re-verify **only the named re-touched contract items** (ACs or the bugfix item(s)), **once** — the
+re-verify **only the named re-touched contract items** (ACs, the E2E check, or the bugfix item(s)), **once** — the
 scoped repair re-verify does **not** re-clear `<run dir>/evidence/` (an explicit exception to
 §Evidence, Evidence directory: every un-touched item's evidence is preserved). A prior `## Repair` section exists, a re-touched item
 still fails, the failure is a pure gap or a failed `FS<n>`, or the run is step-by-step / lite tier
@@ -1274,7 +1275,7 @@ one is "not available", never invented) and scans them for exactly these on-disk
    `Assumption validation waived by user`, `Evidence gap accepted by user`, `sign-off waived by user`.
 2. **Cycle records** — review `## Resolution` (a fix-and-re-review cycle ran), verify `## Repair`
    (a repair-and-re-verify cycle ran).
-3. **Unproven contract items** — any AC / bugfix item / `FS<n>` / `SM<n>` left below
+3. **Unproven contract items** — any AC / bugfix item / `FS<n>` / `SM<n>` / `E2E` left below
    `Verified (single-source)` in the final `verify.md`.
 4. **Critical review findings** — raised, whether or not later resolved.
 5. **`⚠ DELIVERY GAP:` lines** in `delivery.md`.
