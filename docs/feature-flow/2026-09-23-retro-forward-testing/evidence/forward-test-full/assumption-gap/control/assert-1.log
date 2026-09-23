@@ -1,0 +1,3 @@
+  ok:   signOff.signed = true
+  ok:   spec reads 'signed off: yes'
+  ok:   no source written

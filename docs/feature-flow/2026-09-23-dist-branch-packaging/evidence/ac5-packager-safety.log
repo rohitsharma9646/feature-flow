@@ -1,0 +1,29 @@
+### AC5 dry-run writes nothing
+exit=0
+nothing written
+### refuse --output .
+ERROR: refusing to package into /, $HOME or the repo root: /home/netzwelt/feature-flow
+exit=1
+### refuse --output /
+ERROR: refusing to package into /, $HOME or the repo root: /
+exit=1
+### refuse --output //
+ERROR: refusing to package into /, $HOME or the repo root: /
+exit=1
+### refuse --output /..
+ERROR: refusing to package into /, $HOME or the repo root: /
+exit=1
+### refuse --output /home/netzwelt
+ERROR: refusing to package into /, $HOME or the repo root: /home/netzwelt
+exit=1
+### refuse --output ..
+ERROR: refusing to package into /, $HOME or the repo root: /home/netzwelt
+exit=1
+### refuse --output /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/cd/notpkg
+ERROR: refusing to replace a non-empty directory that is not a previous package: /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/cd/notpkg
+exit=1
+notpkg intact: keep
+### rebuild over a previous package is allowed
+Claude package ready.
+Claude package ready.
+exit=0

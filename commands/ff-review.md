@@ -84,7 +84,7 @@ below implements it.)
   already passed (`phases.verify.status == "complete"`), first run **KB capture** (see
   `## KB capture (when enabled)` below — a no-op unless the KB is active), then set
   `currentPhase = "done"`, **STOP** and report the run complete (both modes — run completion is
-  always a full report). If
+  always a full report). In the completion report, name `/feature-flow:ff-deliver` (delivery notes) and `/feature-flow:ff-retro` (retrospective on the workflow's safeguards) as **optional next steps** — neither is ever chained (§Autopilot). If
   verify has **not** run yet (`phases.verify.status != "complete"`): if `manifest.autopilot`
   is `true`, emit the progress strip and proceed directly into the verify phase per
   `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md`; if `false` or absent, leave

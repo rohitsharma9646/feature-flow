@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
-# Eval harness (WS-8) — NON-BLOCKING by design.
+# Eval harness (WS-8) — a BLOCKING CI gate since v2.3.
 #
-# Lives in scripts/ (NOT scripts/checks/, so the guard loop never runs it as a gate). It IS
-# wired into .github/workflows/ci.yml as a `continue-on-error` REPORT step — a RED fixture is
-# visible but never wedges a release. Promote to blocking (drop that step's continue-on-error)
-# at v2.3 once stable. Run it manually too:
+# Lives in scripts/ (NOT scripts/checks/, so the guard loop does not run it twice). It is wired
+# into .github/workflows/ci.yml as its own blocking step — a RED fixture fails the build. Run it
+# manually too:
 #     bash scripts/eval.sh
+#
+# Scope: fixtures prove PRECONDITIONS only. Whether a behavior actually FIRES in a live session
+# is proven by the local forward-test runner (scripts/forward-test.sh + evals/forward/), which
+# needs Claude credentials and is never run in CI.
 #
 # It asserts the MECHANICAL PRECONDITIONS of the decision-records actuation — that a
 # recorded decision is well-formed and tag-matchable, and that the do-not-contradict STOP
 # wiring exists in the command that must fire it. It does NOT (and cannot in bash) assert
 # the SEMANTIC catch — "the agent actually STOPs when an approach contradicts a decision"
-# is an LLM judgment, verified by a live self-run (AC13, manual), NOT here. The 0.10.0
-# CHANGELOG names that as a known coverage gap. Each fixture prints a pass/fail line.
+# is an LLM judgment, verified by the local forward-test runner (evals/forward/decision-conflict),
+# NOT here. Each fixture prints a pass/fail line.
 set -u
 cd "$(dirname "$0")/.." || exit 2
 fail=0

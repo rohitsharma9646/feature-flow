@@ -1,0 +1,2 @@
+ M .feature-flow/ts-locale/manifest.json
+ M .feature-flow/ts-locale/spec.md

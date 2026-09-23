@@ -1,0 +1,1 @@
+top perms {'contents': 'read'} | job perms {'contents': 'write'} | if github.event_name == 'push' && github.ref == 'refs/heads/master' | needs guards | concurrency publish-dist

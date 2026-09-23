@@ -26,7 +26,8 @@
         "implement": {"$ref": "#/$defs/phase"},
         "review": {"$ref": "#/$defs/phase"},
         "verify": {"$ref": "#/$defs/phase"},
-        "deliver": {"$ref": "#/$defs/phase"}
+        "deliver": {"$ref": "#/$defs/phase"},
+        "retro": {"$ref": "#/$defs/phase"}
       },
       "additionalProperties": false
     },
@@ -295,7 +296,7 @@
         "properties": {
           "signOff": {"properties": {"required": {"const": true}}},
           "currentPhase": {"enum": ["explore", "clarify", "design", "plan", "implement", "review", "verify", "done", "abandoned"]},
-          "phases": {"propertyNames": {"enum": ["explore", "clarify", "design", "plan", "implement", "review", "verify", "deliver"]}}
+          "phases": {"propertyNames": {"enum": ["explore", "clarify", "design", "plan", "implement", "review", "verify", "deliver", "retro"]}}
         }
       }
     },
@@ -305,7 +306,7 @@
         "properties": {
           "signOff": {"properties": {"required": {"const": true}}},
           "currentPhase": {"enum": ["explore", "clarify", "implement", "review", "verify", "done", "abandoned"]},
-          "phases": {"propertyNames": {"enum": ["explore", "clarify", "implement", "review", "verify", "deliver"]}}
+          "phases": {"propertyNames": {"enum": ["explore", "clarify", "implement", "review", "verify", "deliver", "retro"]}}
         }
       }
     },
@@ -315,7 +316,7 @@
         "properties": {
           "signOff": {"properties": {"required": {"const": true}}},
           "currentPhase": {"enum": ["diagnose", "plan", "implement", "verify", "review", "done", "abandoned"]},
-          "phases": {"propertyNames": {"enum": ["diagnose", "plan", "implement", "verify", "review", "deliver"]}}
+          "phases": {"propertyNames": {"enum": ["diagnose", "plan", "implement", "verify", "review", "deliver", "retro"]}}
         }
       }
     },
@@ -325,7 +326,7 @@
         "properties": {
           "signOff": {"properties": {"required": {"const": false}}},
           "currentPhase": {"enum": ["diagnose", "implement", "verify", "review", "done", "abandoned"]},
-          "phases": {"propertyNames": {"enum": ["diagnose", "implement", "verify", "review", "deliver"]}}
+          "phases": {"propertyNames": {"enum": ["diagnose", "implement", "verify", "review", "deliver", "retro"]}}
         }
       }
     }

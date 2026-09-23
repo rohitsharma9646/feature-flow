@@ -8,6 +8,10 @@ on:
     branches: ["**"]
   pull_request:
 
+# Read-only by default; only the publish job below gets write access.
+permissions:
+  contents: read
+
 jobs:
   guards:
     runs-on: ubuntu-latest
@@ -38,7 +42,34 @@ jobs:
 
       # Eval harness (WS-8): a GATE from v2.3. A RED fixture FAILS the build and blocks the
       # release (promoted from non-blocking once the 7 fixtures were stable). Surfaces the
-      # structural/wiring regressions the grep-guards above can't see. Note: the 8 semantic
-      # STOPs still rely on manual fired-vs-control self-runs — this gate covers structure only.
+      # structural/wiring regressions the grep-guards above can't see. It covers structure only:
+      # whether the 7 semantic behaviors actually FIRE is proven by the LOCAL forward-test runner
+      # (scripts/forward-test.sh, fired vs control in fresh sessions) — never run here, since it
+      # needs Claude credentials and costs tokens. scripts/checks/forward-test-guard.sh (above)
+      # pins that runner's case structure.
       - name: Run eval harness (blocking)
         run: bash scripts/eval.sh
+
+
+  # Publish the runtime-only Claude plugin tree to the `dist` branch — what users install from
+  # (`claude plugin marketplace add rohitsharma9646/feature-flow#dist`). Only on pushes to master,
+  # only after every guard passed; commits only when the runtime tree actually changed.
+  publish-dist:
+    needs: guards
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-dist
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Publish runtime-only tree to the dist branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bash scripts/publish-claude-dist.sh
+

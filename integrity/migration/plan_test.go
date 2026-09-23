@@ -52,3 +52,15 @@ func TestPlanRefusesNestedUnknownAndRecordsInertMetadata(t *testing.T) {
 		t.Fatalf("inert metadata not recorded: %#v", got)
 	}
 }
+
+func TestPlanAcceptsPostTerminalPhases(t *testing.T) {
+	raw := []byte(`{"slug":"legacy","track":"feature","tier":"full","autopilot":false,"currentPhase":"done","phases":{"verify":{"status":"complete","artifact":"verify.md"},"deliver":{"status":"complete","artifact":"delivery.md"},"retro":{"status":"complete","artifact":"retro.md"}},"signOff":{"required":true,"signed":true,"date":"2026-01-01"},"artifacts":{"verify":"verify.md","delivery":"delivery.md","retro":"retro.md"}}`)
+	plan := Plan(Request{Raw: raw, LogicalRunPath: "legacy", RepositoryIdentity: "repo", WorktreeIdentity: "wt"})
+	if plan.Status != StatusReady {
+		t.Fatalf("post-terminal deliver/retro phases refused: %#v", plan)
+	}
+	bogus := []byte(`{"slug":"legacy","track":"feature","currentPhase":"done","phases":{"retrospective":{"status":"complete","artifact":null}}}`)
+	if got := Plan(Request{Raw: bogus}); got.Status != StatusRefused {
+		t.Fatalf("unknown phase accepted: %#v", got)
+	}
+}

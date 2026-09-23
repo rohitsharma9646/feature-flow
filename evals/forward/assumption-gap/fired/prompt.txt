@@ -1,0 +1,1 @@
+/feature-flow:ff-clarify I've read the spec for ts-locale and have no more questions or changes — I sign off on it as written.

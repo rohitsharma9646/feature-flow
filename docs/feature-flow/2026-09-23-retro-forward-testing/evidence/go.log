@@ -1,0 +1,24 @@
+vet ok
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity-classify	(cached)
+?   	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity-inventory	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/cmd/ff-integrity-target	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/assurance	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/canonicaljson	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/classifier	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/conformance	(cached)
+?   	github.com/rohitsharma9646/feature-flow/integrity/diagnostics	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/integrity/digest	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/doctor	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/jsonstrict	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/migration	(cached)
+?   	github.com/rohitsharma9646/feature-flow/integrity/migration/v0	[no test files]
+ok  	github.com/rohitsharma9646/feature-flow/integrity/observe	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/pathpolicy	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/protocol/v1	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/revision	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/revision/gitobserve	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/storage	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/integrity/wp3	(cached)
+ok  	github.com/rohitsharma9646/feature-flow/schemas	(cached)
+go test exit=0

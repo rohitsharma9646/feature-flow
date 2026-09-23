@@ -1,5 +1,64 @@
 # Changelog
 
+## [0.18.0] — 2026-09-23 — Retrospective (`ff-retro`) + forward-testing of semantic behaviors
+
+Two additions that close feature-flow's own feedback loop.
+
+**`/feature-flow:ff-retro` — optional, post-`done`, confirm-gated retrospective.** Classifies what
+the **workflow's own safeguards** did on a finished run and routes each lesson to one owner. It scans
+a closed list of on-disk signals (user override/waiver lines, review `## Resolution`, verify
+`## Repair`, contract items below `Verified (single-source)`, Critical findings, `⚠ DELIVERY GAP:`
+lines) plus the user's notes, keeps only events that pass a **materiality test**, and proposes
+candidates with nine fields: event, expected, observed evidence, impact, safeguard, **safeguard
+result** (`worked | failed | missing | ambiguous | bypassed`), generalizability, **recommended owner**
+(repo instructions · run artifacts · feature-flow command/skill · reference doc · guard/validator
+script · regression/forward test · new skill · no change), and proposed validation. **Nothing is
+written until the user accepts, edits, or rejects each candidate** (the KB capture confirm-gate
+shape). Then `retro.md` is written; it's durable-eligible, tracked in `phases.retro`/`artifacts.retro`
+(absent-defaulted), and `currentPhase` stays `done`. It never applies a fix, never writes KB entries,
+and autopilot never runs it. Runs on lite and bugfix too. Contract: `docs/manifest-schema.md`
+§Retrospective. `ff-verify`/`ff-review` completion now names `ff-deliver` and `ff-retro` as optional
+next steps. A finding routed to **regression/forward test** states its validation as **Fired input /
+Expected outcome / Control input**, which converts 1:1 into a forward-test case.
+
+**Forward tests — `scripts/forward-test.sh` + `evals/forward/`.** The 7 behavioral catches that CI
+only checked structurally (do-not-contradict STOP, critical-path STOP, `⚠ DELIVERY GAP`,
+unvalidated-assumption echo, unproven `FS<n>`, one-cycle repair, unproven `SM<n>`) now each have a
+committed **fired** and **control** case. The runner plays each one in a **fresh headless
+`claude -p --plugin-dir <repo>` session** against a planted sandbox, which is the only way to prove
+an edited command actually fires. It then asserts on the behavior's own on-disk/output marker.
+ERROR (timeout, CLI failure, budget cap, crashed assertion) is never PASS; with `--repeat N` a flaky
+arm is FAIL. Per-session budget cap, per-arm and total cost, and transcripts go to
+`.feature-flow/forward-test-runs/`. **Local only — not CI** (needs Claude credentials and costs
+tokens; the full suite is about $4). `scripts/checks/forward-test-guard.sh` pins the case structure
+in CI; `evals/` is not shipped in the Codex dist.
+
+**Known coverage limits (named, not silent):**
+- `discovery-gap` covers WS-7's `SM<n>` half only. The requirement-graph Outcome-gate gap in `ff-plan`
+  is still manual, and so is `ff-plan`'s critical-path *derivation* (the `ff-implement` STOP is covered).
+- **Mutation check:** stripping the `⚠ DELIVERY GAP` cross-check from a scratch copy of the plugin
+  makes `delivery-gap/fired` FAIL, so the harness catches a hollowed behavior. Stripping the
+  do-not-contradict STOP from every file did **not** make `decision-conflict/fired` FAIL: the model
+  still refuses from the sandbox's explicit decision record. That case proves the behavior, not that
+  the instruction causes it.
+- Forward tests must be re-run by hand after editing a behavior's instruction text; CI won't do it.
+
+**Runtime-only install (`#dist`).** Claude Code copies a plugin's whole directory (no ignore
+mechanism) and clones the marketplace repo, so installs used to carry the entire dev repo — Go
+sources, eval fixtures, CI scripts, run history. Now `scripts/package-claude-plugin.sh` builds an
+allowlisted runtime tree (commands, agents, skills, hooks, templates, config, the two reference docs,
+README, LICENSE, and a marketplace.json serving it from `./`), and a new `publish-dist` CI job (push to
+`master` only, after guards pass, `contents: write` on that job alone) publishes it to the **`dist`
+branch** with `scripts/publish-claude-dist.sh`. Install with
+`claude plugin marketplace add rohitsharma9646/feature-flow#dist`; master's `marketplace.json` now
+sources the plugin from `dist` over HTTPS, so existing installs get a clean plugin cache on update
+(re-add the marketplace once to clean its local clone). `scripts/checks/claude-dist-guard.sh` pins the
+exact allowlist, forbids dev-only files, and checks every `${CLAUDE_PLUGIN_ROOT}` reference resolves
+inside the package. The native `ff-integrity` binary stays CI-package-only. The packager refuses `/`,
+`$HOME`, the repo or an ancestor of it, and any non-empty non-package directory as `--output`.
+
+Also: `scripts/eval.sh`'s header now says it is a blocking gate (it has been since v2.3).
+
 ## [0.17.1] — 2026-09-23 — Prompt-surface audit cleanup
 
 Prompt-only patch from a dated-pattern audit of the agent, command, and skill text. No manifest,
@@ -43,7 +102,7 @@ consumer). Additive and non-breaking: **no new `manifest.json` field, no `toggle
 phase, no new hook, no new §Autopilot row, no new waiver line** — both fields ride `manifest.artifacts.spec`,
 and a pre-WS-7 spec resolves/resumes unchanged. Full tier only; `lite-tier-guard.sh` passes unmodified.
 
-**Known coverage gap (named, not silent):** the two *behavioral* catches have **no automated
+**Known coverage gap (named, not silent)** *(v0.18.0: the `SM<n>` catch (AC6) is now covered by the local forward-test runner `scripts/forward-test.sh`; the requirement-graph Outcome-gate gap (AC8) is still manual — still not CI; see [0.18.0])*: the two *behavioral* catches have **no automated
 regression guard** — verified by a fresh-session fired-vs-control self-run (same posture as WS-1 AC13
 / WS-2 AC15 / WS-4 AC6-AC7 / WS-5 AC7-AC8 / WS-6 AC13-AC14):
 - **AC6 (fired arm):** a full-tier run whose spec carries an **unproven** `## Success metrics` row →
@@ -114,7 +173,7 @@ addition is a §Autopilot mandatory-pauses **row** (capped-then-stop shape, expl
 "unconditional") + a mirrored **"Repair-and-re-verify cycle"** subsection. Full tier only;
 `lite-tier-guard.sh` passes unmodified (lite has no design and its evidence-gap stop is untouched).
 
-**Known coverage gap (named, not silent):** the *behavioral* catch has **no automated regression
+**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runner `scripts/forward-test.sh` — still not CI; see [0.18.0])*: the *behavioral* catch has **no automated regression
 guard** — verified by a fresh-session STOP-vs-control self-run (same posture as WS-1 AC13 / WS-2 AC15
 / WS-4 AC6-AC7 / WS-5 AC7-AC8):
 - **AC13 (fired arm):** a full-tier autopilot run with a seeded failing repairable AC → `ff-verify`
@@ -176,7 +235,7 @@ phase, no new §Autopilot row, no new waiver line** — the existing "Evidence g
 generalizes over any contract item, and Gate B (`hooks/enforce-gate`) is already scenario-agnostic.
 Full tier only; `lite-tier-guard.sh` passes unmodified (lite skips `ff-design` by construction).
 
-**Known coverage gap (named, not silent):** the *behavioral* catch has **no automated regression
+**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runner `scripts/forward-test.sh` — still not CI; see [0.18.0])*: the *behavioral* catch has **no automated regression
 guard** — verified by a fresh-session STOP-vs-control self-run (same posture as WS-1 AC13 / WS-2
 AC15 / WS-3 AC5 / WS-4 AC6/AC7):
 - **AC7 (fired arm):** a full-tier design names a failure scenario with no mechanical way to capture
@@ -236,7 +295,7 @@ release), to be promoted to blocking at v2.3 by dropping the `continue-on-error`
 the plan's "add to CI as a non-blocking report initially" step, so v2.1's actuation claims are
 measured in CI rather than only runnable by hand.
 
-**Known coverage gap (named, not silent):** the *behavioral* catch — `ff-plan` actually deriving
+**Known coverage gap (named, not silent)** *(v0.18.0: `ff-implement`'s critical-path STOP is now covered by the local forward-test runner `scripts/forward-test.sh`; `ff-plan` deriving the path is not — still not CI; see [0.18.0])*: the *behavioral* catch — `ff-plan` actually deriving
 the path and `ff-implement` actually STOPping on a critical-path skip (AC15) — has no automated
 regression guard; it is a semantic, LLM-judgment behavior verified by a fresh-session
 STOP-vs-control self-run (same posture as WS-1 AC13 / WS-3 AC5 / WS-4 AC6/AC7). The `planning-gap`
@@ -276,7 +335,7 @@ section in `docs/manifest-schema.md`; `§Sign-off rendering` bumped to "Three ru
 pins the structure against the shipped files; a non-blocking `evals/fixtures/assumption-gap/` fixture pins
 the mechanical preconditions.
 
-**Known coverage gap (named, not silent):** the *behavioral* catch — the echo actually **rendering** an
+**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runner `scripts/forward-test.sh` — still not CI; see [0.18.0])*: the *behavioral* catch — the echo actually **rendering** an
 unvalidated assumption and **blocking** a clean sign-off (AC6), and the clean control **not** false-firing
 (AC7) — has **no automated regression guard**; it is a semantic, LLM-judgment behavior verified by a
 fresh-session STOP-vs-control self-run (same posture as WS-1 AC13 / WS-2 AC15 / WS-3 AC5).
@@ -318,7 +377,7 @@ the plan to record the rollback WS-2 asks for. Additive and non-breaking: `curre
 (the enum is unchanged and Gate B is untouched); delivery is tracked only in a new `phases.deliver` +
 `artifacts.delivery`, both absent-defaulted, so every pre-v0.12.0 manifest resolves and resumes unchanged.
 
-**Known coverage gap (named, not silent):** the *semantic* catch — `ff-deliver` actually writing the
+**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runner `scripts/forward-test.sh` — still not CI; see [0.18.0])*: the *semantic* catch — `ff-deliver` actually writing the
 `⚠ DELIVERY GAP` line on a live run — has **no automated regression guard**; it is a manual/fresh-session
 behavioral AC (AC5). `delivery-guard.sh` and the `delivery-gap` eval fixture pin only the mechanical
 preconditions (template headers, the gap-detection instruction's presence, the fixture hole is
@@ -358,7 +417,7 @@ runs on a failed `Step N: Verify`. Additive and non-breaking: **no new config to
 manifest field** (the sections live inside the already-durable plan); a pre-WS-2 plan with no
 sections is absent-tolerated everywhere (STOP proceeds, verify derives risk cold).
 
-**Known coverage gap (named, not silent):** the *semantic* catch — `ff-implement` actually
+**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runner `scripts/forward-test.sh` — still not CI; see [0.18.0])*: the *semantic* catch — `ff-implement` actually
 STOPping on a critical-path-skipping approach — has **no automated regression guard**; it is a
 manual/fresh-session self-run behavioral AC (AC15). `planning-intelligence-guard.sh` pins only the
 STOP *instruction's presence*, section placement, and the derivation rule's wording — not that the
@@ -402,7 +461,7 @@ recorded verbatim, never self-authored. Additive and non-breaking: no new phase 
 new manifest field (`artifacts.decision`) is absent-tolerated with no migration, and `tier: lite`
 stays cheap (the spec's inline decision *is* the record — `artifacts.decision` points at the spec).
 
-**Known coverage gap (named, not silent):** the *semantic* catch — the agent actually STOPping on a
+**Known coverage gap (named, not silent)** *(v0.18.0: the STOP is now covered by the local forward-test runner `scripts/forward-test.sh` — but a mutation run showed the model still STOPs with the instruction removed, so that case proves the behavior, not that this instruction causes it — still not CI; see [0.18.0])*: the *semantic* catch — the agent actually STOPping on a
 contradiction — has **no automated regression guard**; it is a manual/self-run behavioral AC
 (AC13). Automated coverage pins only the STOP *instruction's presence* in the command files
 (`decision-record-guard.sh`) and the recall *preconditions* (`scripts/eval.sh`). A future

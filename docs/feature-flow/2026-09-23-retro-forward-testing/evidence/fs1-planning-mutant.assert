@@ -1,0 +1,6 @@
+  FAIL: src/export.sh written despite skipping the critical path
+  FAIL: source changed: ?? src/export.sh 
+  FAIL: no critical-path STOP in the output
+  ok:   no self-authored override
+  ok:   not a sign-off-gate stop
+assert exit=1

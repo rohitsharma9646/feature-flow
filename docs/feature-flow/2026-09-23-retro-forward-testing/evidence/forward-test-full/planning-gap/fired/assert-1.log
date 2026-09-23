@@ -1,0 +1,5 @@
+  ok:   Task 3 not built
+  ok:   no source changes
+  ok:   STOP names the critical path
+  ok:   no self-authored override
+  ok:   not a sign-off-gate stop

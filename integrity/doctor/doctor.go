@@ -105,7 +105,7 @@ func semanticDiagnostics(run observe.Run) []diagnostics.Diagnostic {
 
 var phaseArtifact = map[string]string{
 	"explore": "explore", "clarify": "spec", "design": "design", "plan": "plan",
-	"diagnose": "diagnosis", "review": "review", "verify": "verify", "deliver": "delivery",
+	"diagnose": "diagnosis", "review": "review", "verify": "verify", "deliver": "delivery", "retro": "retro",
 }
 
 func RenderJSON(report Report) []byte {

@@ -1,0 +1,4 @@
+  ok:   signOff.signed not set
+  ok:   spec still reads 'signed off: no'
+  ok:   unvalidated-assumptions echo rendered
+  ok:   no source written

@@ -172,13 +172,13 @@ in **both** `artifacts.verify` and `phases.verify.artifact`: set
 
 - **Feature track:** verify is the **terminal** phase. If all contract items pass, first run
   **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is active),
-  then set `currentPhase = "done"`. **STOP** and report the run complete.
+  then set `currentPhase = "done"`. **STOP** and report the run complete. In the completion report, name `/feature-flow:ff-deliver` (delivery notes) and `/feature-flow:ff-retro` (retrospective on the workflow's safeguards) as **optional next steps** — neither is ever chained (§Autopilot).
 - **Bugfix track:** review is the terminal phase, so the two can be run in either order —
   converge on `done` only when **both** verify and review are complete:
   - If `phases.review.status == "complete"` (review already ran) and verify passed, both
     terminal phases are satisfied → this command is the one reaching the done-transition, so
     first run **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is
-    active), then set `currentPhase = "done"` and report the run complete.
+    active), then set `currentPhase = "done"` and report the run complete. In the completion report, name `/feature-flow:ff-deliver` (delivery notes) and `/feature-flow:ff-retro` (retrospective on the workflow's safeguards) as **optional next steps** — neither is ever chained (§Autopilot).
   - Otherwise review still has to run. If `manifest.autopilot` is `true`, emit the progress
     strip and proceed directly into the review phase per
     `${CLAUDE_PLUGIN_ROOT}/commands/ff-review.md` — see **Autopilot** in

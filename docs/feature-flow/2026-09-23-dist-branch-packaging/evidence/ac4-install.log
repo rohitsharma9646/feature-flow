@@ -1,0 +1,6 @@
+### AC4 install from final package (isolated CLAUDE_CONFIG_DIR)
+Adding marketplace…✔ Successfully added marketplace: feature-flow (declared in user settings)
+Installing plugin "feature-flow@feature-flow"...✔ Successfully installed plugin: feature-flow@feature-flow (scope: user)
+cache entries: .claude-plugin LICENSE README.md agents commands config docs hooks skills templates 
+go files in cache: 0
+cache files: 46
