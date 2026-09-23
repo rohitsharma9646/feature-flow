@@ -1242,7 +1242,8 @@ no candidates.
 
 A finding whose owner is **`regression/forward test`** states its proposed validation as
 **Fired input / Expected outcome / Control input** (control when applicable) — the case shape in
-`evals/forward/README.md`, so it converts 1:1 into a forward-test case. `ff-retro` never creates the
+`evals/forward/README.md` in the feature-flow repository (repo-internal, not shipped with the
+plugin), so it converts 1:1 into a forward-test case. `ff-retro` never creates the
 case (or any other fix) itself. **`new skill`** is recommended only when the need has a distinct
 intent, recurs across repositories, has a clear owner, and no existing command can own it.
 

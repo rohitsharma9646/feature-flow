@@ -1,0 +1,28 @@
+ok:   top-level entries are exactly the allowlist
+ok:   docs/ holds only manifest-schema.md + grilling-playbook.md
+ok:   .claude-plugin/ holds only plugin.json + marketplace.json
+ok:   no dev-only files in the package
+ok:   every ${CLAUDE_PLUGIN_ROOT} reference resolves inside the package
+ok:   packaged marketplace.json: feature-flow from "./" at the plugin.json version
+ok:   master marketplace.json: plugin source = url https …feature-flow.git @ ref dist, version synced
+PASS: claude-dist guard
+exit=0
+### mutation stray-go
+FAIL: dev-only content shipped: ./commands/x.go
+exit=1
+### mutation dangling-braced
+FAIL: dangling ${CLAUDE_PLUGIN_ROOT} references: schemas/manifest-v1.schema.json
+exit=1
+### mutation dangling-bare
+FAIL: dangling ${CLAUDE_PLUGIN_ROOT} references: scripts/eval.sh
+exit=1
+### mutation extra-top
+FAIL: top-level entries differ — want [.claude-plugin LICENSE README.md agents commands config docs hooks skills templates ] got [.claude-plugin LICENSE README.md agents commands config docs evals hooks skills templates ]
+FAIL: dev-only content shipped: ./evals
+exit=1
+### mutation extra-doc
+FAIL: docs/ must hold exactly manifest-schema.md + grilling-playbook.md (got [feature-flow-vnext-rfc.md grilling-playbook.md manifest-schema.md ])
+exit=1
+### mutation extra-plugin-file
+FAIL: .claude-plugin/ must hold exactly plugin.json + marketplace.json (got [hooks.json marketplace.json plugin.json ])
+exit=1

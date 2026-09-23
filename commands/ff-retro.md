@@ -54,7 +54,8 @@ never invent its content.
    §Retrospective's candidate schema, with the closed enums for *Safeguard result*, *Generalizability*
    and *Recommended owner*, and **no numeric score**. *Observed evidence* is an artifact path or a
    quoted line. A candidate whose owner is `regression/forward test` writes *Proposed validation* as
-   **Fired input / Expected outcome / Control input** (the `evals/forward/README.md` case shape).
+   **Fired input / Expected outcome / Control input** (the forward-test case shape — documented in the
+   feature-flow repository's `evals/forward/README.md`; not shipped with the plugin).
 
 ## Confirm gate (cross-turn, mandatory in both modes)
 

@@ -43,6 +43,20 @@ in CI; `evals/` is not shipped in the Codex dist.
   the instruction causes it.
 - Forward tests must be re-run by hand after editing a behavior's instruction text; CI won't do it.
 
+**Runtime-only install (`#dist`).** Claude Code copies a plugin's whole directory (no ignore
+mechanism) and clones the marketplace repo, so installs used to carry the entire dev repo — Go
+sources, eval fixtures, CI scripts, run history. Now `scripts/package-claude-plugin.sh` builds an
+allowlisted runtime tree (commands, agents, skills, hooks, templates, config, the two reference docs,
+README, LICENSE, and a marketplace.json serving it from `./`), and a new `publish-dist` CI job (push to
+`master` only, after guards pass, `contents: write` on that job alone) publishes it to the **`dist`
+branch** with `scripts/publish-claude-dist.sh`. Install with
+`claude plugin marketplace add rohitsharma9646/feature-flow#dist`; master's `marketplace.json` now
+sources the plugin from `dist` over HTTPS, so existing installs get a clean plugin cache on update
+(re-add the marketplace once to clean its local clone). `scripts/checks/claude-dist-guard.sh` pins the
+exact allowlist, forbids dev-only files, and checks every `${CLAUDE_PLUGIN_ROOT}` reference resolves
+inside the package. The native `ff-integrity` binary stays CI-package-only. The packager refuses `/`,
+`$HOME`, the repo or an ancestor of it, and any non-empty non-package directory as `--output`.
+
 Also: `scripts/eval.sh`'s header now says it is a blocking gate (it has been since v2.3).
 
 ## [0.17.1] — 2026-09-23 — Prompt-surface audit cleanup

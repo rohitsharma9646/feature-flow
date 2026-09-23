@@ -1,0 +1,8 @@
+38:claude plugin marketplace add rohitsharma9646/feature-flow#dist
+53:claude plugin marketplace remove feature-flow
+54:claude plugin marketplace add rohitsharma9646/feature-flow#dist
+237:directly invocable `ff-integrity` binary. It is **not** part of the marketplace (`#dist`) install:
+46:**Runtime-only install (`#dist`).** Claude Code copies a plugin's whole directory (no ignore
+commands/ff-retro.md:58:   feature-flow repository's `evals/forward/README.md`; not shipped with the plugin).
+templates/retro.md:29:     (feature-flow repo's evals/forward/README.md — not shipped with the plugin), one line each:
+docs/manifest-schema.md:1245:`evals/forward/README.md` in the feature-flow repository (repo-internal, not shipped with the
