@@ -39,7 +39,7 @@ bugfix track, **STOP** and tell the user to run `/feature-flow:ff-diagnose` firs
 
 **Also resolve the design (feature track, full tier only), for its failure scenarios.** Read
 `manifest.artifacts.design` the same manifest-first way. **Absent is not an error and never a
-STOP** — a pre-WS-5 run, a lite run (design never runs on lite), and a full-tier design that named
+STOP** — an older run, a lite run (design never runs on lite), and a full-tier design that named
 zero failure scenarios all resolve to "no FS items to map." When present, its `## Devil's advocate
 → ### Failure scenarios` is the source the contract mapping below reads (§Design trade-offs &
 devil's advocate).
@@ -86,7 +86,7 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   `manual-unverified` derivation, the same §Evidence Confidence ladder, and the same evidence-gap
   stop + waiver line below (there is **no** separate success-metric waiver: an unproven SM is
   `manual-unverified`, identical to a manual AC). Absent `## Success metrics`, or a section with no
-  rows (lite tier, or a pre-WS-7 spec) → skip, no SM blocks, no gap. This is a **presence check on
+  rows (lite tier, or an older spec) → skip, no SM blocks, no gap. This is a **presence check on
   the section's rows, not a tier check** — unlike `FS<n>` (gated structurally because the design
   artifact never exists on lite), the one shared spec template underlies both tiers, so
   content-absence gates (§Discovery fields → Actuation 1).
@@ -96,7 +96,7 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   `pass` / `fail` / `manual-unverified` derivation, the same §Evidence Confidence ladder, and the
   same evidence-gap stop + waiver line below (there is **no** separate failure-scenario waiver: an
   unproven FS is `manual-unverified`, identical to a manual AC). Absent `artifacts.design`, or a
-  design naming no scenarios (lite tier, or a pre-WS-5 design) → skip, no FS blocks, no gap.
+  design naming no scenarios (lite tier, or an older design) → skip, no FS blocks, no gap.
 - **Bugfix track:** confirm the bug no longer reproduces, and that the regression test
   shows RED (pre-fix) → GREEN (post-fix). Cite the `bugfix.red` / `bugfix.green` evidence
   captured by `/feature-flow:ff-implement` for the pre-fix failure, and the test runner's fresh run for
@@ -109,8 +109,8 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — cite any register
   entry whose surface the just-verified change touched and whether it materialized (do not
   re-derive a risk the register already named), then assess whatever the register did **not**
-  anticipate. No plan (lite tier, or a pre-WS-2 plan with no register) → derive risk cold from
-  the touched surface alone, as before. Record the combined assessment in `verify.md`
+  anticipate. No plan, or a plan with no register (lite tier) → derive risk cold from the touched
+  surface alone. Record the combined assessment in `verify.md`
   §Regression risk. No numeric score.
 
 ## Refuse premature "done" (evidence gap stop)
@@ -203,7 +203,7 @@ bugfix track never double-captures.
 
 It is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non-null, read from
 `.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`). When inactive, do nothing and
-proceed to `currentPhase = "done"` — behavior is byte-identical to today.
+proceed to `currentPhase = "done"`.
 
 When active, follow the **Knowledge base** capture rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA

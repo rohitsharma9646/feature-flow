@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.17.1] — 2026-09-23 — Prompt-surface audit cleanup
+
+Prompt-only patch from a dated-pattern audit of the agent, command, and skill text. No manifest,
+schema, config, hook, or template change.
+
+- **`ff-code-reviewer` scope contract fixed.** The agent defaulted to "review unstaged changes from
+  `git diff`" but has no shell, so it could not run git. It now reviews exactly the diff or file list
+  it is given, and `ff-review` runs `git diff HEAD` itself and passes the output (or the touched file
+  list on greenfield).
+- **Read-budget rationale updated** in the four read-only agents. The rule is unchanged; its reason no
+  longer cites context-window compaction (written for a 200K-context Sonnet) and instead names phase
+  latency.
+- **`ff-code-explorer` scoped to its dispatched focus.** The generic four-stage trace checklist is
+  replaced by a focus-scoped goal so the three differentiated explorers stop each doing an end-to-end
+  tour. The output contract, including the essential-files list `ff-explore` reads, is kept.
+- **Development-history labels removed from prompts:** `(AC4)`/`(AC12)`/`(AC13)` (easily confused with a
+  run's own `AC<n>`), `pre-WS-N`, `pre-v0.x`, `Since v0.x`, and relative phrasing such as "exactly as
+  today (byte-identical behavior)". The SKILL.md KB non-goals are restated as current rules (still
+  naming dedup and supersession).
+- **Codex mapping** gains the missing `/feature-flow:ff-deliver` row.
+
 ## [0.17.0] — 2026-07-06 — Discovery field completeness (WS-7)
 
 `spec.md` gains two **optional, full-tier, actuating** discovery fields — closing the RFC's named

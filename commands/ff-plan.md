@@ -89,7 +89,7 @@ files-to-touch and a verification step:
   lower-numbered task dependency — the same task covers both `AC_i` and `AC_j`, or no numbering
   satisfies it — is recorded as an explicit named gap under the Outcome gate naming the reason (e.g.
   `AC_i depends-on AC_j: covered by the same Task <n>`), never silently dropped. Absent `## Requirement graph`, or a table
-  with no edges (lite tier, or a pre-WS-7 spec) → "no requirement-graph edges → no derived task
+  with no edges (lite tier, or an older spec) → "no requirement-graph edges → no derived task
   dependencies".
 
 **Derive planning intelligence (both tracks — feature and bugfix-full):** after the tasks above

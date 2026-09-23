@@ -41,7 +41,7 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
 Run this **before the diagnostician dispatch** in `## Do the work — reproduce + root-cause`. It
 is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non-null, read from
 `.feature-flow.json` → `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and
-dispatch the diagnosticians exactly as today (byte-identical behavior).
+dispatch the diagnosticians with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
@@ -86,7 +86,7 @@ root cause is enough — skip candidate enumeration (no ceremony on a one-spot b
 > Then STOP — do not proceed to a fix. End your turn here. This stop **ends the chain
 > unconditionally in both modes** — autopilot does not retry an unreproduced bug.
 
-## Decide the fix approach (hotfix-vs-proper — required, AC12)
+## Decide the fix approach (hotfix-vs-proper — required)
 
 From the root cause, name **both** a hotfix/band-aid option and a root-cause/proper option,
 each with cost/risk, then give a **recommendation** (default to the proper fix unless a

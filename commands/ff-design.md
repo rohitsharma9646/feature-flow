@@ -45,7 +45,7 @@ the chosen approach and rejected alternatives.
 Run this **after the sign-off gate, before the architect fan-out**. It is a **no-op unless the KB is
 active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and dispatch the architects
-exactly as today (byte-identical behavior).
+with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
@@ -131,8 +131,8 @@ resolution** rule, artifact name `decision`, the same `<D>-<slug>/` directory al
 the design. **Use the Write tool** to write it from `${CLAUDE_PLUGIN_ROOT}/templates/decision.md`,
 capturing the pick just made: the decision, context, options considered, the **Trade-offs** table
 — **derive** its `Effort`/`Risk`/`Reversibility` cells *from* the design's `## Trade-off matrix`
-(Complexity + Test effort → Effort, Risk / operational impact → Risk; Reversibility assessed as
-before), **never a second, divergent scoring pass** — chosen + rationale (naming the chosen
+(Complexity + Test effort → Effort, Risk / operational impact → Risk; Reversibility assessed on its
+own), **never a second, divergent scoring pass** — chosen + rationale (naming the chosen
 option's devil's-advocate failure scenario(s) **by reference** to the design's `## Devil's
 advocate` section — never copied verbatim; the design stays the single source of truth for the
 `FS<n>` list), related ACs/files, and (auto-proposed) `tags` + `referencedFiles`. Record the

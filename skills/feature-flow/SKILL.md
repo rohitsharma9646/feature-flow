@@ -129,7 +129,7 @@ backstops the prose; honoring the gates below is still your job:
     clarify) and gates `ff-plan` and `ff-implement`. Lite bugfixes need no sign-off — a
     confirmed `diagnosis.md` is the gate.
   - `/feature-flow:ff-implement` is the hard backstop on every track: it writes **no** code until
-    the track's gate is satisfied (AC4).
+    the track's gate is satisfied.
 - **Diagnosis gate (bugfix):** `/feature-flow:ff-implement` requires a confirmed `diagnosis.md`
   (reproduced + root cause + chosen fix approach). An unreproduced bug never proceeds to a
   fix — guessing a fix for an unconfirmed bug is forbidden.
@@ -165,7 +165,7 @@ build, and lint and returned real output. The analysis agents (`ff-code-explorer
 `ff-code-architect`, `ff-code-reviewer`, `ff-diagnostician`) are strictly read-only.
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.
 
-Since v0.9.0 verification is **evidence-based across the project's whole detected surface**
+Verification is **evidence-based across the project's whole detected surface**
 (`docs/manifest-schema.md` §Evidence — the canonical contract): eight evidence kinds
 (executed-test, build/static-analysis, e2e/browser via Playwright CLI, http/api, db,
 cli-output, logs, before/after) captured as literal records with real exit/HTTP status
@@ -175,8 +175,7 @@ codes and files under `<run dir>/evidence/`; per-criterion confidence derived
 `Unverified`, never a numeric score; detected-but-ungathered surfaces are explicit gaps
 (N/A only for undetected surfaces, always with a reason); and any item below
 `Verified (single-source)` blocks `done` pending the user's explicit waiver. Code
-inspection alone is never proof — that rule now spans both tracks, not just the bugfix
-RED→GREEN contract.
+inspection alone is never proof, on either track.
 
 ## Searching the repo (performance)
 
@@ -189,7 +188,7 @@ analysis agents already lack `Bash` and search via these tools; keep it that way
 
 ## Knowledge base
 
-**On by default** (since v0.8.0): `toggles.kb: true` and `paths.kb: ".feature-flow-kb"` ship as
+**On by default:** `toggles.kb: true` and `paths.kb: ".feature-flow-kb"` ship as
 defaults, so every project has an active KB from its first run. Opt out in `.feature-flow.json`
 with `toggles.kb: false` (or `paths.kb: null`) — either cleanly deactivates capture and recall.
 The canonical contract is `docs/manifest-schema.md` §Knowledge base — the commands reference it
@@ -206,7 +205,6 @@ by name.
 - **Staleness:** an entry is flagged stale if a referenced file is missing/moved OR it is older than
   `kb.freshnessWindowDays` (default 90). Stale entries are **decorated, never dropped and never shown
   as fresh** — a KB serving knowledge written against since-changed code is worse than none.
-- **v1 non-goals (deferred to a fast-follow run):** **dedup** of near-duplicate entries and
-  **supersession** (a newer entry marking an older one obsolete) are NOT in v1 — duplicates persist
-  and are surfaced, not silently dropped. Also deferred: an `index.json`, a standalone `ff-learn`
-  command, content-similarity relevance, mid-run capture, auto-commit, and a cross-project KB.
+- **Not supported:** there is no dedup and no supersession — near-duplicate entries are kept and
+  surfaced, never merged or silently dropped. There is no `index.json`, no standalone `ff-learn` command, no
+  content-similarity relevance, no mid-run capture, no auto-commit, and no cross-project KB.

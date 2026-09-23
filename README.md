@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.17.0 · MIT licensed
+> **Status:** v0.17.1 · MIT licensed
 
 ## Why use it
 

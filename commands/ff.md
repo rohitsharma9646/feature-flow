@@ -41,8 +41,7 @@ feature, judge the *size*. **Lite** = a small, single-approach change (add a fla
 key, a small endpoint, a localized tweak) with one obvious approach and narrow blast radius.
 **Full** = anything needing 2–3 problem-level approaches weighed, a multi-component design,
 or broad blast radius. Announce the call (*"small change — starting a lite feature run"*).
-**Ambiguous → ask once. In doubt → full.** (Bugfix tier is still decided in diagnose —
-unchanged.)
+**Ambiguous → ask once. In doubt → full.** (Bugfix tier is decided in diagnose, not here.)
 
 ## Step 2 — Set up the run (do this now)
 
@@ -71,7 +70,7 @@ unchanged.)
    `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`; default `"ask"`):
    `"ask"` → ask the user once (AskUserQuestion) — **autopilot** (phases chain
    automatically, pausing only at sign-offs, the design choice, and Critical review
-   findings) vs **step-by-step** (each phase stops; current behavior); `true`/`false` →
+   findings) vs **step-by-step** (each phase stops for the user); `true`/`false` →
    use that value directly, no question. **Never choose the value yourself:** when config
    is `"ask"`, the boolean may come ONLY from the user's in-conversation answer — if you
    have no answer, you MUST ask before writing the manifest. Writing a manifest with a
