@@ -54,10 +54,8 @@ Critical (at most Important, and only when they clear the threshold). A reviewer
 gaps will find some even in sound work — chasing every one of them is how a fix cycle grows
 code the spec never asked for.
 
-Consolidate findings (de-duplicate across agents) into `review.md` from
-`${CLAUDE_PLUGIN_ROOT}/templates/review.md`: Critical vs Important, each with file:line,
-issue, and a concrete fix. If nothing meets the threshold, record the "no high-confidence
-issues" summary — do not invent findings to look thorough.
+Dispatch the spec-conformance reviewer (next section) **in the same parallel batch**, then
+consolidate once all of them have returned (§Consolidate).
 
 ## Spec conformance
 
@@ -79,7 +77,7 @@ No contract resolves (all pointers absent or missing on disk) → skip this disp
 
 **Its brief:** for each contract item, is it realized in the change? Report:
 - an acceptance criterion (or the diagnosis's chosen fix) that is not implemented or only
-  partially implemented → **Critical** (it would fail verify; catching it here is cheaper);
+  partially implemented → **Critical** (the change does not do what the run promised);
 - a change outside the stated scope, or touching something the spec lists as out of scope →
   **Important**;
 - a plan task with no corresponding change in the diff → **Important**.
@@ -88,6 +86,18 @@ It does **not** re-review bugs, style, or conventions (the focus reviewers own t
 over-engineering guard above applies to it too. Record its per-item verdict in `review.md`'s
 `## Spec conformance` section, and list each Critical / Important gap under the matching
 findings section as well, so the Critical-block rule below reads one place.
+
+**Partial review (§Cold-start).** When this is a pre-implementation / partial review
+(`phases.implement.status != "complete"`), a not-yet-implemented item is expected: record it
+as `pending (partial review)` in the table and do **not** raise it as Critical. Out-of-scope
+changes are still reported.
+
+## Consolidate
+
+Consolidate findings (de-duplicate across agents) into `review.md` from
+`${CLAUDE_PLUGIN_ROOT}/templates/review.md`: Critical vs Important, each with file:line,
+issue, and a concrete fix. If nothing meets the threshold, record the "no high-confidence
+issues" summary — do not invent findings to look thorough.
 
 ## Update manifest + hand off (order differs by track)
 
@@ -99,7 +109,8 @@ do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
   `review.md` for an existing `## Resolution` section recording a prior autopilot fix cycle
   — the review artifact is the durable cycle record. **No prior cycle:** apply fixes for the
   Critical findings, append a `## Resolution` section to `review.md` (pre-fix findings,
-  fixes applied, outcome), and re-run the reviewer dispatch **exactly once**; if the
+  fixes applied, outcome), and re-run the reviewer dispatch — focus reviewers **and** the
+  spec-conformance reviewer — **exactly once**; if the
   re-review is clear of Criticals, proceed below as a passing review. **A prior cycle
   exists, or Criticals remain after the re-review:** stop with the standard block message
   below — never a second cycle. Zero Critical findings → no cycle at all.

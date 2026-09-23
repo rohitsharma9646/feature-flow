@@ -182,6 +182,18 @@ assert_allow "Edit: manifest file missing on disk → fail-open" \
 assert_allow "Edit: non-manifest file → fast-exit allow" \
   "$(redit "$TMP/src/foo.js" 'a' 'b' false)"
 
+# E7b: Edit with an EMPTY old_string is Claude Code's create-a-file form (target missing or
+# empty) — it must be gated exactly like a Write of new_string, not failed open.
+m='{"track":"feature","tier":"full","currentPhase":"implement","signOff":{"signed":false}}'
+assert_deny  "Edit create (empty old_string, file missing) unsigned implement → Gate A" \
+  "$(redit "$TMP/.feature-flow/e-create/manifest.json" '' "$m" false)"
+rd="$(mkrun e-emptyfile)"; : > "$rd/manifest.json"
+assert_deny  "Edit create (empty old_string, empty file) unsigned implement → Gate A" \
+  "$(redit "$rd/manifest.json" '' "$m" false)"
+rd="$(mkrun e-emptyold)"; printf '{"track":"feature","currentPhase":"plan"}\n' > "$rd/manifest.json"
+assert_allow "Edit: empty old_string on a non-empty file → fail-open (tool rejects it)" \
+  "$(redit "$rd/manifest.json" '' "$m" false)"
+
 # E8: the dispatch surface itself — hooks.json must route Edit and MultiEdit to the gate,
 # or every fixture above is green while production never calls the hook.
 matcher="$(jq -r '.hooks.PreToolUse[] | select(.hooks[].command | test("enforce-gate")) | .matcher' hooks/hooks.json)"

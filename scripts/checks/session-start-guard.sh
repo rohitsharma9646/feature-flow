@@ -94,6 +94,15 @@ has "paths.base: run found"            "$c" "custom"
 has "paths.base: path uses custom base" "$c" "spec=.ff-runs/custom/spec.md"
 has "unsigned feature: signed off: no" "$c" "signed off: no"
 
+# S7b: control characters in manifest strings must never break the JSON envelope.
+mkrun p6 ctl '{"slug":"e\u0007bell\u000cff","track":"feature","currentPhase":"verify","updatedAt":"2026-09-20T10:00:00Z","artifacts":{"spec":"a\u0001b.md"}}'
+for s in compact startup; do
+  out="$(jq -cn --arg c "$TMP/p6" --arg s "$s" '{source:$s, cwd:$c}' | bash "$HOOK")"
+  printf '%s' "$out" | jq -e '.hookSpecificOutput.additionalContext | contains("Active feature-flow run")' >/dev/null 2>&1 \
+    && ok "control chars ($s): output is valid JSON with the run block" \
+    || err "control chars ($s): invalid JSON or block missing: $(printf '%s' "$out" | head -c 200)"
+done
+
 # S8: jq absent → static pointer only, still valid JSON (fail-open, never breaks startup).
 shim="$TMP/shim"; mkdir -p "$shim"
 for b in cat dirname grep sed; do ln -sf "$(command -v "$b")" "$shim/$b"; done

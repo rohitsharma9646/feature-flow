@@ -72,7 +72,14 @@ active_runs_block() {
 runs="$(active_runs_block)"
 [ -n "$runs" ] && pointer="$pointer"$'\n\n'"$runs"
 
-session_context=$(escape_for_json "$pointer")
+# The run block copies manifest strings verbatim, and escape_for_json covers only \ " \n \r \t.
+# With jq present, let it produce a fully escaped JSON string body (any U+0000–U+001F); without
+# jq there is no run block, so the static pointer needs nothing beyond escape_for_json.
+if command -v jq >/dev/null 2>&1; then
+  session_context="$(jq -rn --arg c "$pointer" '$c | tojson | .[1:-1]')"
+else
+  session_context=$(escape_for_json "$pointer")
+fi
 
 # Emit only the field the current platform consumes (Claude Code reads both
 # additional_context and hookSpecificOutput without dedup, so emit just one).

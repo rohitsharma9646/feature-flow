@@ -11,10 +11,12 @@ context").
 both gates. The matcher is now `Write|Edit|MultiEdit`. For an edit, `enforce-gate` rebuilds the
 manifest the edit would produce by applying each replacement in order to the on-disk file
 (literal match, first occurrence unless `replace_all`), then runs the unchanged Gate A/B logic
-on the result. It fails open when the target is missing or `old_string` isn't found, since
-Claude Code rejects those edits anyway. Rewrites through `Bash` are still outside the hook, and
-that is now documented as a known limit in §Enforcement. `enforce-gate-guard.sh` gains 13 cases,
-including a `replace_all` pair (same edit, different outcome) and a check that the matcher
+on the result. An Edit with an empty `old_string` on a missing or empty file is the tool's
+create form, so it is gated like a Write of `new_string`. The hook fails open only on edits
+Claude Code itself rejects: a non-empty `old_string` that isn't found, or an empty one on a
+non-empty file. Rewrites through `Bash` are still outside the hook, and that is now documented
+as a known limit in §Enforcement. `enforce-gate-guard.sh` gains 16 cases, including a
+`replace_all` pair (same edit, different outcome), the create form, and a check that the matcher
 routes every tool.
 
 **SessionStart re-anchors active runs.** The hook already fired on `startup|clear|compact` but
@@ -23,7 +25,8 @@ phase + status, autopilot, sign-off, `/feature-flow:ff-resume <slug>`, and resol
 paths. It honors `paths.base` and leaves out done / abandoned / closed runs. After `compact` it
 tells the model it was mid-run and must re-read state from disk. After `startup`/`clear` the
 wording is conditional. Everything is best-effort: without jq, a cwd, or a parseable manifest
-it emits exactly what it did before. Contract: §Enforcement → Session re-anchor. New
+it emits exactly what it did before. The envelope is now JSON-escaped by jq, so control
+characters in a hand-edited manifest can't break it. Contract: §Enforcement → Session re-anchor. New
 behavioral test: `scripts/checks/session-start-guard.sh`.
 
 **Spec-conformance reviewer + over-engineering guard.** `ff-review`'s focus reviewers
