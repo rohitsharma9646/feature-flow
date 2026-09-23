@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -21,9 +22,20 @@ func runHostPreflight(args []string, input io.Reader, stdout, stderr writer) int
 		return 2
 	}
 	raw, err := io.ReadAll(io.LimitReader(input, hostadapter.MaxEnvelopeBytes+1))
-	if err != nil || len(raw) == 0 || len(raw) > hostadapter.MaxEnvelopeBytes {
-		fmt.Fprintln(stderr, "host envelope unavailable or exceeds limit")
-		return 2
+	if err != nil {
+		return writeDecodeFailure(*hostValue, *modeValue, stdout, stderr)
+	}
+	if len(raw) == 0 {
+		return 0
+	}
+	if len(raw) > hostadapter.MaxEnvelopeBytes {
+		// Every Write, Edit, and Bash call reaches this hook, so an oversized
+		// envelope is only indeterminate when it could concern Feature Flow.
+		mentions, err := mentionsFeatureFlow(io.MultiReader(bytes.NewReader(raw), input))
+		if err != nil || mentions {
+			return writeDecodeFailure(*hostValue, *modeValue, stdout, stderr)
+		}
+		return 0
 	}
 	var decoded hostadapter.Decoded
 	switch *hostValue {
@@ -33,18 +45,7 @@ func runHostPreflight(args []string, input io.Reader, stdout, stderr writer) int
 		decoded, err = hostadapter.DecodeCodex(raw)
 	}
 	if err != nil {
-		decision := preflight.Decision{
-			SchemaVersion: preflight.SchemaVersion,
-			Applicable:    true,
-			Allowed:       false,
-			Diagnostics: []preflight.Diagnostic{
-				{Code: "FFI_SCHEMA_INVALID", Severity: preflight.SeverityError},
-			},
-		}
-		if *modeValue == "observe" {
-			decision.Allowed = true
-		}
-		return writeHostDecision(*hostValue, decision, stdout, stderr)
+		return writeDecodeFailure(*hostValue, *modeValue, stdout, stderr)
 	}
 	if !decoded.Recognized {
 		return 0
@@ -58,6 +59,49 @@ func runHostPreflight(args []string, input io.Reader, stdout, stderr writer) int
 		Authority: preflight.RuntimeAuthority,
 	}
 	return writeHostDecision(*hostValue, engine.Decide(decoded.Request), stdout, stderr)
+}
+
+func writeDecodeFailure(host, mode string, stdout, stderr writer) int {
+	decision := preflight.Decision{
+		SchemaVersion: preflight.SchemaVersion,
+		Applicable:    true,
+		Allowed:       mode == "observe",
+		Diagnostics: []preflight.Diagnostic{
+			{Code: "FFI_SCHEMA_INVALID", Severity: preflight.SeverityError},
+		},
+	}
+	return writeHostDecision(host, decision, stdout, stderr)
+}
+
+var featureFlowMarkers = [][]byte{[]byte(".feature-flow"), []byte("ff-integrity")}
+
+// mentionsFeatureFlow streams input looking for a Feature Flow manifest path
+// or integrity command, keeping only a marker-sized overlap between reads.
+func mentionsFeatureFlow(input io.Reader) (bool, error) {
+	overlap := 0
+	for _, marker := range featureFlowMarkers {
+		overlap = max(overlap, len(marker)-1)
+	}
+	buffer := make([]byte, 0, 64<<10+overlap)
+	chunk := make([]byte, 64<<10)
+	for {
+		n, err := input.Read(chunk)
+		buffer = append(buffer, chunk[:n]...)
+		for _, marker := range featureFlowMarkers {
+			if bytes.Contains(buffer, marker) {
+				return true, nil
+			}
+		}
+		if len(buffer) > overlap {
+			buffer = append(buffer[:0], buffer[len(buffer)-overlap:]...)
+		}
+		if err == io.EOF {
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+	}
 }
 
 func writeHostDecision(host string, decision preflight.Decision, stdout, stderr writer) int {

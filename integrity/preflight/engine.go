@@ -16,7 +16,10 @@ type Engine struct {
 
 func (e Engine) Decide(request Request) Decision {
 	if err := request.Validate(); err != nil {
-		return denied("FFI_SCHEMA_INVALID")
+		decision := denied("FFI_SCHEMA_INVALID")
+		// Observe mode never blocks, including on a request it cannot trust.
+		decision.Allowed = request.EnforcementMode == EnforcementObserve
+		return decision
 	}
 	if !Applicable(request) {
 		return Decision{SchemaVersion: SchemaVersion, Applicable: false, Allowed: true}

@@ -394,6 +394,48 @@ func terminalMetadataOnly(current, proposed map[string]any) bool {
 	return reflect.DeepEqual(left, right)
 }
 
+// PostTerminalMetadataOnly reports whether proposed updates a run that is
+// already done and changes only post-terminal state: delivery phase and
+// artifact, closedAt, updatedAt, and lock.
+func PostTerminalMetadataOnly(runDir string, proposed []byte) (bool, error) {
+	_, _, current, err := readCurrentManifest(runDir)
+	if err != nil {
+		return false, err
+	}
+	var document map[string]any
+	if err := json.Unmarshal(proposed, &document); err != nil {
+		return false, err
+	}
+	if current["currentPhase"] != "done" || document["currentPhase"] != "done" {
+		return false, nil
+	}
+	left, right := withoutPostTerminal(current), withoutPostTerminal(document)
+	return reflect.DeepEqual(left, right), nil
+}
+
+func withoutPostTerminal(document map[string]any) map[string]any {
+	out := make(map[string]any, len(document))
+	for key, value := range document {
+		out[key] = value
+	}
+	for _, key := range []string{"updatedAt", "closedAt", "lock"} {
+		delete(out, key)
+	}
+	for _, nested := range []struct{ field, key string }{
+		{"phases", "deliver"}, {"artifacts", "delivery"},
+	} {
+		if values, ok := object(out[nested.field]); ok {
+			copied := make(map[string]any, len(values))
+			for key, value := range values {
+				copied[key] = value
+			}
+			delete(copied, nested.key)
+			out[nested.field] = copied
+		}
+	}
+	return out
+}
+
 func readCurrentManifest(runDir string) ([]byte, string, map[string]any, error) {
 	raw, expected, err := storage.ReadManifest(runDir)
 	if err != nil {

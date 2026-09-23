@@ -117,3 +117,51 @@ func quote(value string) string {
 	raw, _ := json.Marshal(value)
 	return string(raw)
 }
+
+func TestDecodeClaudeWriteOutsideCWDIsUnrelated(t *testing.T) {
+	repository := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "scratch.txt")
+	raw := []byte(`{"hook_event_name":"PreToolUse","cwd":` + quote(repository) +
+		`,"tool_name":"Write","tool_input":{"file_path":` + quote(outside) + `,"content":"x"}}`)
+	decoded, err := DecodeClaude(raw)
+	if err != nil || decoded.Recognized {
+		t.Fatalf("decoded = %#v err=%v, want unrelated", decoded, err)
+	}
+}
+
+func TestDecodeClaudeManifestOutsideCWDFailsClosed(t *testing.T) {
+	repository := t.TempDir()
+	cwd := filepath.Join(repository, "sub")
+	target := filepath.Join(repository, ".feature-flow", "run", "manifest.json")
+	raw := []byte(`{"hook_event_name":"PreToolUse","cwd":` + quote(cwd) +
+		`,"tool_name":"Write","tool_input":{"file_path":` + quote(target) + `,"content":"{}"}}`)
+	if _, err := DecodeClaude(raw); err == nil {
+		t.Fatal("DecodeClaude() treated a manifest outside cwd as unrelated")
+	}
+}
+
+func TestDecodeClaudeMutationCommandDetection(t *testing.T) {
+	repository := t.TempDir()
+	run := filepath.Join(repository, ".feature-flow", "run")
+	for _, test := range []struct {
+		command    string
+		recognized bool
+	}{
+		{`grep -rn ff-integrity mutation docs`, false},
+		{`git commit -m "ff-integrity mutation fix"`, false},
+		{`echo bin/ff-integrity mutation --run ` + run, false},
+		{`"/opt/ff/bin/ff-integrity" mutation --run ` + quote(run) + ` --repo ` + quote(repository), true},
+		{`cd x && FOO=1 /opt/ff/bin/ff-integrity mutation --run=` + run + ` --repo=` + repository, true},
+	} {
+		raw := []byte(`{"hook_event_name":"PreToolUse","cwd":` + quote(repository) +
+			`,"tool_name":"Bash","tool_input":{"command":` + quote(test.command) + `}}`)
+		decoded, err := DecodeClaude(raw)
+		if err != nil || decoded.Recognized != test.recognized {
+			t.Fatalf("%s: decoded = %#v err=%v, want recognized=%v", test.command, decoded, err, test.recognized)
+		}
+		if test.recognized && (decoded.Request.Context.RunRoot != run ||
+			decoded.Request.Context.RepositoryRoot != repository) {
+			t.Fatalf("%s: context = %#v", test.command, decoded.Request.Context)
+		}
+	}
+}

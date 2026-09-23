@@ -62,29 +62,27 @@ func decodeCodexPatch(cwd, patch string) (Decoded, error) {
 	if err != nil {
 		return Decoded{}, err
 	}
-	var selected *patchSection
-	var target, runRoot string
-	for i := range sections {
-		normalized, candidateRunRoot, recognized, normalizeErr :=
-			normalizeManifestTarget(cwd, sections[i].Path)
-		if normalizeErr != nil {
-			return Decoded{}, normalizeErr
+	var effects []manifestEffect
+	for _, section := range sections {
+		sectionEffects, err := manifestEffects(cwd, section)
+		if err != nil {
+			return Decoded{}, err
 		}
-		if !recognized {
-			continue
-		}
-		if selected != nil {
-			return Decoded{}, errors.New("one hook invocation may mutate only one Feature Flow manifest")
-		}
-		selected = &sections[i]
-		target, runRoot = normalized, candidateRunRoot
+		effects = append(effects, sectionEffects...)
 	}
-	if selected == nil {
+	if len(effects) == 0 {
 		return Decoded{}, nil
 	}
-	proposed, err := applyPatchSection(cwd, *selected)
-	if err != nil {
-		return Decoded{}, fmt.Errorf("recognized Codex manifest patch is indeterminate: %w", err)
+	if len(effects) > 1 {
+		return Decoded{}, errors.New("one hook invocation may mutate only one Feature Flow manifest")
+	}
+	effect := effects[0]
+	var proposed []byte
+	if !effect.removed {
+		proposed, err = applyPatchSection(cwd, effect.section)
+		if err != nil {
+			return Decoded{}, fmt.Errorf("recognized Codex manifest patch is indeterminate: %w", err)
+		}
 	}
 	return Decoded{Recognized: true, Request: preflight.Request{
 		SchemaVersion: preflight.SchemaVersion,
@@ -92,10 +90,10 @@ func decodeCodexPatch(cwd, patch string) (Decoded, error) {
 		Event:         preflight.EventPreToolUse,
 		Operation:     preflight.OperationManifestMutation,
 		ToolClass:     preflight.ToolClassFileWrite,
-		Target:        target,
+		Target:        effect.target,
 		Context: preflight.TrustedContext{
 			RepositoryRoot: filepath.Clean(cwd),
-			RunRoot:        runRoot,
+			RunRoot:        effect.runRoot,
 		},
 		ProposedManifest: proposed,
 		RequiredCapabilities: []preflight.CapabilityName{
@@ -109,9 +107,47 @@ func decodeCodexPatch(cwd, patch string) (Decoded, error) {
 }
 
 type patchSection struct {
-	Kind  string
-	Path  string
-	Lines []string
+	Kind   string
+	Path   string
+	MoveTo string
+	Lines  []string
+}
+
+// manifestEffect is one Feature Flow manifest a patch section writes. A
+// removed manifest (deleted or moved away) has no proposed content.
+type manifestEffect struct {
+	target, runRoot string
+	section         patchSection
+	removed         bool
+}
+
+func manifestEffects(cwd string, section patchSection) ([]manifestEffect, error) {
+	source, sourceRun, sourceRecognized, err := normalizeManifestTarget(cwd, section.Path)
+	if err != nil {
+		return nil, err
+	}
+	if section.MoveTo == "" {
+		if !sourceRecognized {
+			return nil, nil
+		}
+		return []manifestEffect{{target: source, runRoot: sourceRun, section: section, removed: section.Kind == "delete"}}, nil
+	}
+	destination, _, destinationRecognized, err := normalizeManifestTarget(cwd, section.MoveTo)
+	if err != nil {
+		return nil, err
+	}
+	if sourceRecognized && destinationRecognized && source == destination {
+		return []manifestEffect{{target: source, runRoot: sourceRun, section: section}}, nil
+	}
+	if destinationRecognized {
+		// The moved-in content comes from a file outside the anchored manifest
+		// reader's reach, so the proposed manifest cannot be materialized.
+		return nil, errors.New("patch moves a file onto a Feature Flow manifest")
+	}
+	if sourceRecognized {
+		return []manifestEffect{{target: source, runRoot: sourceRun, section: section, removed: true}}, nil
+	}
+	return nil, nil
 }
 
 func parsePatchSections(raw string) ([]patchSection, error) {
@@ -133,6 +169,13 @@ func parsePatchSections(raw string) ([]patchSection, error) {
 			return nil, errors.New("patch section path is empty")
 		}
 		section := patchSection{Kind: kind, Path: strings.TrimSpace(name)}
+		if kind == "update" && i+1 < len(lines) && strings.HasPrefix(lines[i+1], "*** Move to: ") {
+			i++
+			section.MoveTo = strings.TrimSpace(strings.TrimPrefix(lines[i], "*** Move to: "))
+			if section.MoveTo == "" {
+				return nil, errors.New("patch move path is empty")
+			}
+		}
 		for i++; i < len(lines); i++ {
 			if strings.HasPrefix(lines[i], "*** Update File: ") ||
 				strings.HasPrefix(lines[i], "*** Add File: ") ||
@@ -146,6 +189,11 @@ func parsePatchSections(raw string) ([]patchSection, error) {
 		sections = append(sections, section)
 	}
 	return sections, nil
+}
+
+type patchChunk struct {
+	oldLines, newLines []string
+	endOfFile          bool
 }
 
 func applyPatchSection(cwd string, section patchSection) ([]byte, error) {
@@ -168,6 +216,10 @@ func applyPatchSection(cwd string, section patchSection) ([]byte, error) {
 	default:
 		return nil, errors.New("unknown patch section")
 	}
+	chunks, err := parseChunks(section.Lines)
+	if err != nil {
+		return nil, err
+	}
 	file := section.Path
 	if !filepath.IsAbs(file) {
 		file = filepath.Join(cwd, file)
@@ -179,46 +231,75 @@ func applyPatchSection(cwd string, section patchSection) ([]byte, error) {
 	normalizedCurrent := strings.ReplaceAll(string(currentRaw), "\r\n", "\n")
 	hadFinalNewline := strings.HasSuffix(normalizedCurrent, "\n")
 	current := strings.Split(strings.TrimSuffix(normalizedCurrent, "\n"), "\n")
-	for i := 0; i < len(section.Lines); {
-		if !strings.HasPrefix(section.Lines[i], "@@") {
-			i++
-			continue
-		}
-		i++
-		var oldLines, newLines []string
-		for i < len(section.Lines) && !strings.HasPrefix(section.Lines[i], "@@") {
-			line := section.Lines[i]
-			i++
-			if strings.HasPrefix(line, `\ No newline`) || line == "" {
-				continue
+	from := 0
+	for _, chunk := range chunks {
+		at := -1
+		if chunk.endOfFile {
+			if start := len(current) - len(chunk.oldLines); start >= from &&
+				findLines(current[start:], chunk.oldLines) == 0 {
+				at = start
+			} else if len(chunk.oldLines) == 0 {
+				at = len(current)
 			}
-			switch line[0] {
-			case ' ':
-				oldLines = append(oldLines, line[1:])
-				newLines = append(newLines, line[1:])
-			case '-':
-				oldLines = append(oldLines, line[1:])
-			case '+':
-				newLines = append(newLines, line[1:])
-			default:
-				return nil, errors.New("invalid update line")
-			}
+		} else if found := findLines(current[from:], chunk.oldLines); found >= 0 {
+			at = from + found
 		}
-		at := findLines(current, oldLines)
 		if at < 0 {
 			return nil, errors.New("patch context does not match current manifest")
 		}
-		next := make([]string, 0, len(current)-len(oldLines)+len(newLines))
+		next := make([]string, 0, len(current)-len(chunk.oldLines)+len(chunk.newLines))
 		next = append(next, current[:at]...)
-		next = append(next, newLines...)
-		next = append(next, current[at+len(oldLines):]...)
+		next = append(next, chunk.newLines...)
+		next = append(next, current[at+len(chunk.oldLines):]...)
 		current = next
+		from = at + len(chunk.newLines)
 	}
 	proposed := strings.Join(current, "\n")
 	if hadFinalNewline {
 		proposed += "\n"
 	}
 	return []byte(proposed), nil
+}
+
+// parseChunks splits update lines into hunks. A hunk starts at each "@@"
+// header; the first hunk may omit its header, and "*** End of File" anchors
+// the preceding hunk to the end of the file.
+func parseChunks(lines []string) ([]patchChunk, error) {
+	var chunks []patchChunk
+	var chunk *patchChunk
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "@@"):
+			chunks = append(chunks, patchChunk{})
+			chunk = &chunks[len(chunks)-1]
+			continue
+		case line == "*** End of File":
+			if chunk == nil {
+				return nil, errors.New("end-of-file marker outside a hunk")
+			}
+			chunk.endOfFile = true
+			chunk = nil
+			continue
+		case strings.HasPrefix(line, `\ No newline`) || line == "":
+			continue
+		}
+		if chunk == nil {
+			chunks = append(chunks, patchChunk{})
+			chunk = &chunks[len(chunks)-1]
+		}
+		switch line[0] {
+		case ' ':
+			chunk.oldLines = append(chunk.oldLines, line[1:])
+			chunk.newLines = append(chunk.newLines, line[1:])
+		case '-':
+			chunk.oldLines = append(chunk.oldLines, line[1:])
+		case '+':
+			chunk.newLines = append(chunk.newLines, line[1:])
+		default:
+			return nil, errors.New("invalid update line")
+		}
+	}
+	return chunks, nil
 }
 
 func findLines(haystack, needle []string) int {

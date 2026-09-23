@@ -191,3 +191,76 @@ func projection(decision preflight.Decision) string {
 	}
 	return fmt.Sprintf("%t|%t|%s", decision.Applicable, decision.Allowed, strings.Join(codes, ","))
 }
+
+func writeCodexManifest(t *testing.T, content string) string {
+	t.Helper()
+	repository := t.TempDir()
+	runRoot := filepath.Join(repository, ".feature-flow", "run")
+	if err := os.MkdirAll(runRoot, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(runRoot, "manifest.json"), []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return repository
+}
+
+func decodeCodexPatchFor(t *testing.T, repository, patch string) Decoded {
+	t.Helper()
+	raw := []byte(`{"hook_event_name":"PreToolUse","cwd":` + quote(repository) +
+		`,"tool_name":"apply_patch","tool_input":{"command":` + quote(patch) + `}}`)
+	decoded, err := DecodeCodex(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return decoded
+}
+
+func TestDecodeCodexApplyPatchWithoutHunkHeader(t *testing.T) {
+	repository := writeCodexManifest(t, "{\n  \"currentPhase\": \"plan\"\n}\n")
+	patch := "*** Begin Patch\n*** Update File: .feature-flow/run/manifest.json\n-  \"currentPhase\": \"plan\"\n+  \"currentPhase\": \"implement\"\n*** End Patch\n"
+	decoded := decodeCodexPatchFor(t, repository, patch)
+	if !strings.Contains(string(decoded.Request.ProposedManifest), `"currentPhase": "implement"`) {
+		t.Fatalf("proposed = %s", decoded.Request.ProposedManifest)
+	}
+}
+
+func TestDecodeCodexApplyPatchEndOfFileAnchorsAtEnd(t *testing.T) {
+	repository := writeCodexManifest(t, "{\n  \"a\": 1,\n  \"b\": 2\n}\n")
+	patch := "*** Begin Patch\n*** Update File: .feature-flow/run/manifest.json\n@@\n-  \"b\": 2\n-}\n+  \"b\": 3\n+}\n*** End of File\n*** End Patch\n"
+	decoded := decodeCodexPatchFor(t, repository, patch)
+	if string(decoded.Request.ProposedManifest) != "{\n  \"a\": 1,\n  \"b\": 3\n}\n" {
+		t.Fatalf("proposed = %q", decoded.Request.ProposedManifest)
+	}
+}
+
+func TestDecodeCodexApplyPatchMoveOntoManifestFailsClosed(t *testing.T) {
+	repository := writeCodexManifest(t, "{}\n")
+	if err := os.WriteFile(filepath.Join(repository, "draft.json"), []byte("{\"currentPhase\": \"plan\"}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	patch := "*** Begin Patch\n*** Update File: draft.json\n*** Move to: .feature-flow/run/manifest.json\n@@\n-{\"currentPhase\": \"plan\"}\n+{\"currentPhase\": \"implement\"}\n*** End Patch\n"
+	raw := []byte(`{"hook_event_name":"PreToolUse","cwd":` + quote(repository) +
+		`,"tool_name":"apply_patch","tool_input":{"command":` + quote(patch) + `}}`)
+	if _, err := DecodeCodex(raw); err == nil {
+		t.Fatal("DecodeCodex() accepted a move onto a manifest")
+	}
+}
+
+func TestDecodeCodexApplyPatchMoveAwayFromManifestIsDeletion(t *testing.T) {
+	repository := writeCodexManifest(t, "{}\n")
+	patch := "*** Begin Patch\n*** Update File: .feature-flow/run/manifest.json\n*** Move to: old.json\n*** End Patch\n"
+	decoded := decodeCodexPatchFor(t, repository, patch)
+	if !decoded.Recognized || len(decoded.Request.ProposedManifest) != 0 {
+		t.Fatalf("decoded = %#v proposed=%s", decoded, decoded.Request.ProposedManifest)
+	}
+}
+
+func TestDecodeCodexPatchOutsideCWDIsUnrelated(t *testing.T) {
+	repository := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "notes.txt")
+	patch := "*** Begin Patch\n*** Add File: " + outside + "\n+hello\n*** End Patch\n"
+	if decoded := decodeCodexPatchFor(t, repository, patch); decoded.Recognized {
+		t.Fatalf("decoded = %#v", decoded)
+	}
+}

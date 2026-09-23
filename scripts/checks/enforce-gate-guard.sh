@@ -60,6 +60,24 @@ if grep -q '"permissionDecision":"deny"' <<<"$out"; then
 fi
 grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
+out="$(payload "$tmp/repo/notes.txt" 'unrelated' | "$tmp/package/hooks/enforce-gate")"
+if [[ -n "$out" ]]; then
+  echo "FAIL: missing binary must stay silent for unrelated calls: $out" >&2
+  exit 1
+fi
+
+cp -R adapters "$tmp/package/adapters"
+mv "$tmp/package/bin/ff-integrity.missing" "$tmp/package/bin/ff-integrity.absent"
+out="$(payload "$tmp/repo/notes.txt" 'unrelated' |
+  PLUGIN_ROOT="$tmp/package" "$tmp/package/adapters/codex/hooks/run-integrity")"
+if [[ -n "$out" ]]; then
+  echo "FAIL: Codex launcher without binary must stay silent for unrelated calls: $out" >&2
+  exit 1
+fi
+out="$(payload "$target" "$signed" |
+  PLUGIN_ROOT="$tmp/package" "$tmp/package/adapters/codex/hooks/run-integrity")"
+grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
+
 if grep -E -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \
   hooks/enforce-gate hooks/run-hook.cmd; then
   echo "FAIL: host launch assets contain workflow policy" >&2

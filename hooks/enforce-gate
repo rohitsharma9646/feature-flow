@@ -10,7 +10,11 @@ case "$(uname -s 2>/dev/null || true)" in
 esac
 
 if [[ ! -x "$executable" ]]; then
-  printf '%s\n' '{"systemMessage":"Feature Flow integrity observe-only: FFI_CAPABILITY_DEGRADED"}'
+  # Without the kernel, report degradation only for calls that could concern
+  # Feature Flow; every other Write, Edit, and Bash call stays silent.
+  if grep -q -F -e '.feature-flow' -e 'ff-integrity'; then
+    printf '%s\n' '{"systemMessage":"Feature Flow integrity observe-only: FFI_CAPABILITY_DEGRADED"}'
+  fi
   exit 0
 fi
 

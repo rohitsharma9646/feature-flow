@@ -167,3 +167,24 @@ func diagnosticCodes(diagnostics []Diagnostic) []string {
 	}
 	return out
 }
+
+func TestEngineObserveModeDoesNotBlockInvalidRequest(t *testing.T) {
+	request := validRequest()
+	request.EnforcementMode = EnforcementObserve
+	request.ProposedManifest = []byte(`[]`)
+	engine := Engine{
+		Capabilities: func(Request) (CapabilityReport, error) { return enforceableReport(), nil },
+		Authority:    func(Request) ([]string, error) { return nil, nil },
+	}
+	decision := engine.Decide(request)
+	if !decision.Applicable || !decision.Allowed {
+		t.Fatalf("decision = %#v, want observe allow", decision)
+	}
+	if got := diagnosticCodes(decision.Diagnostics); len(got) != 1 || got[0] != "FFI_SCHEMA_INVALID" {
+		t.Fatalf("diagnostics = %v", got)
+	}
+	request.EnforcementMode = EnforcementEnforce
+	if decision := engine.Decide(request); decision.Allowed {
+		t.Fatalf("enforce decision = %#v, want deny", decision)
+	}
+}

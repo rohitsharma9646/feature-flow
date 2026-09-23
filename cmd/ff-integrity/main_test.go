@@ -12,6 +12,7 @@ import (
 
 	"github.com/rohitsharma9646/feature-flow/integrity/assurance"
 	"github.com/rohitsharma9646/feature-flow/integrity/classifier"
+	"github.com/rohitsharma9646/feature-flow/integrity/hostadapter"
 	"github.com/rohitsharma9646/feature-flow/integrity/preflight"
 	"github.com/rohitsharma9646/feature-flow/integrity/revision/gitobserve"
 	"github.com/rohitsharma9646/feature-flow/integrity/wp3"
@@ -430,5 +431,30 @@ func TestHostPreflightObserveReportsDecodeFailureWithoutDenying(t *testing.T) {
 			strings.Contains(stdout.String(), `"permissionDecision":"deny"`) {
 			t.Fatalf("%s exit=%d stdout=%s stderr=%s", host, exit, stdout.String(), stderr.String())
 		}
+	}
+}
+
+func TestHostPreflightEmptyOrOversizedEnvelopeDoesNotBlockUnrelatedCalls(t *testing.T) {
+	large := `{"hook_event_name":"PreToolUse","cwd":"/repo","tool_name":"Write","tool_input":{"file_path":"/repo/big.txt","content":"` +
+		strings.Repeat("x", hostadapter.MaxEnvelopeBytes) + `"}}`
+	for _, input := range []string{"", large} {
+		var stdout, stderr bytes.Buffer
+		exit := runHostPreflight([]string{"--host", "claude", "--mode", "enforce"},
+			strings.NewReader(input), &stdout, &stderr)
+		if exit != 0 || stdout.Len() != 0 {
+			t.Fatalf("len=%d exit=%d stdout=%s stderr=%s", len(input), exit, stdout.String(), stderr.String())
+		}
+	}
+}
+
+func TestHostPreflightOversizedManifestEnvelopeFailsClosed(t *testing.T) {
+	large := `{"hook_event_name":"PreToolUse","cwd":"/repo","tool_name":"Write","tool_input":{"content":"` +
+		strings.Repeat("x", hostadapter.MaxEnvelopeBytes) + `","file_path":"/repo/.feature-flow/run/manifest.json"}}`
+	var stdout, stderr bytes.Buffer
+	exit := runHostPreflight([]string{"--host", "claude", "--mode", "enforce"},
+		strings.NewReader(large), &stdout, &stderr)
+	if exit != 0 || !strings.Contains(stdout.String(), `"permissionDecision":"deny"`) ||
+		!strings.Contains(stdout.String(), "FFI_SCHEMA_INVALID") {
+		t.Fatalf("exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
 	}
 }

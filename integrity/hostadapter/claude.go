@@ -109,19 +109,11 @@ func DecodeClaude(raw []byte) (Decoded, error) {
 }
 
 func decodeClaudeMutationCommand(envelope claudeEnvelope) (Decoded, error) {
-	fields := strings.Fields(envelope.ToolInput.Command)
-	mutation := -1
-	for i := 0; i+1 < len(fields); i++ {
-		if (strings.HasSuffix(fields[i], "ff-integrity") || strings.HasSuffix(fields[i], "ff-integrity.exe")) &&
-			fields[i+1] == "mutation" {
-			mutation = i + 2
-			break
-		}
-	}
-	if mutation < 0 {
+	fields := mutationArguments(shellWords(envelope.ToolInput.Command))
+	if fields == nil {
 		return Decoded{}, nil
 	}
-	runRoot, repository := flagValue(fields[mutation:], "--run"), flagValue(fields[mutation:], "--repo")
+	runRoot, repository := flagValue(fields, "--run"), flagValue(fields, "--repo")
 	if runRoot == "" || repository == "" || !filepath.IsAbs(runRoot) || !filepath.IsAbs(repository) {
 		return Decoded{}, errors.New("declared mutation command lacks trusted absolute --run and --repo")
 	}
@@ -147,13 +139,115 @@ func decodeClaudeMutationCommand(envelope claudeEnvelope) (Decoded, error) {
 	}}, nil
 }
 
+type shellWord struct {
+	text     string
+	operator bool
+}
+
+// shellWords splits a command line into words and control operators, honoring
+// quotes and backslash escapes. It performs no expansion.
+func shellWords(command string) []shellWord {
+	var words []shellWord
+	var current strings.Builder
+	inWord := false
+	flush := func() {
+		if inWord {
+			words = append(words, shellWord{text: current.String()})
+			current.Reset()
+			inWord = false
+		}
+	}
+	for i := 0; i < len(command); i++ {
+		c := command[i]
+		switch {
+		case c == '\'':
+			inWord = true
+			end := strings.IndexByte(command[i+1:], '\'')
+			if end < 0 {
+				end = len(command) - i - 1
+			}
+			current.WriteString(command[i+1 : i+1+end])
+			i += end + 1
+		case c == '"':
+			inWord = true
+			for i++; i < len(command) && command[i] != '"'; i++ {
+				if command[i] == '\\' && i+1 < len(command) && strings.IndexByte("$`\"\\\n", command[i+1]) >= 0 {
+					i++
+				}
+				current.WriteByte(command[i])
+			}
+		case c == '\\' && i+1 < len(command):
+			inWord = true
+			i++
+			current.WriteByte(command[i])
+		case c == ' ' || c == '\t':
+			flush()
+		case strings.IndexByte(";&|()\n", c) >= 0:
+			flush()
+			words = append(words, shellWord{text: string(c), operator: true})
+		default:
+			inWord = true
+			current.WriteByte(c)
+		}
+	}
+	flush()
+	return words
+}
+
+// mutationArguments returns the arguments after "ff-integrity mutation" when
+// that executable is invoked in command position, or nil when it is not.
+func mutationArguments(words []shellWord) []string {
+	commandPosition := true
+	for i, word := range words {
+		if word.operator {
+			commandPosition = true
+			continue
+		}
+		if !commandPosition {
+			continue
+		}
+		switch {
+		case isAssignment(word.text), word.text == "exec", word.text == "command", word.text == "env":
+			continue
+		}
+		commandPosition = false
+		base := word.text[strings.LastIndexAny(word.text, `/\`)+1:]
+		if (base != "ff-integrity" && base != "ff-integrity.exe") ||
+			i+1 >= len(words) || words[i+1].operator || words[i+1].text != "mutation" {
+			continue
+		}
+		arguments := []string{}
+		for _, argument := range words[i+2:] {
+			if argument.operator {
+				break
+			}
+			arguments = append(arguments, argument.text)
+		}
+		return arguments
+	}
+	return nil
+}
+
+func isAssignment(word string) bool {
+	name, _, found := strings.Cut(word, "=")
+	if !found || name == "" {
+		return false
+	}
+	for i, r := range name {
+		if r != '_' && (r < 'A' || r > 'Z') && (r < 'a' || r > 'z') && (i == 0 || r < '0' || r > '9') {
+			return false
+		}
+	}
+	return true
+}
+
 func flagValue(fields []string, name string) string {
 	for i, field := range fields {
 		if field == name && i+1 < len(fields) {
-			return strings.Trim(fields[i+1], `"'`)
+			return fields[i+1]
 		}
 		if strings.HasPrefix(field, name+"=") {
-			return strings.Trim(strings.TrimPrefix(field, name+"="), `"'`)
+			return strings.TrimPrefix(field, name+"=")
 		}
 	}
 	return ""
@@ -211,7 +305,12 @@ func normalizeManifestTarget(cwd, candidate string) (string, string, bool, error
 	}
 	relative, err := filepath.Rel(filepath.Clean(cwd), filepath.Clean(target))
 	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return "", "", false, errors.New("hook target escapes trusted cwd")
+		// Only a manifest-shaped target outside cwd is indeterminate; any other
+		// file there is unrelated to Feature Flow.
+		if manifestShaped(target) {
+			return "", "", false, errors.New("hook target escapes trusted cwd")
+		}
+		return "", "", false, nil
 	}
 	slash := filepath.ToSlash(relative)
 	parts := strings.Split(slash, "/")
@@ -221,6 +320,12 @@ func normalizeManifestTarget(cwd, candidate string) (string, string, bool, error
 		return slash, "", false, nil
 	}
 	return slash, filepath.Join(filepath.Clean(cwd), ".feature-flow", parts[1]), true, nil
+}
+
+func manifestShaped(target string) bool {
+	parts := strings.Split(filepath.ToSlash(filepath.Clean(target)), "/")
+	return len(parts) >= 3 && parts[len(parts)-1] == "manifest.json" &&
+		parts[len(parts)-3] == ".feature-flow"
 }
 
 func contentBytes(raw json.RawMessage) (json.RawMessage, error) {

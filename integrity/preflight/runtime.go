@@ -29,6 +29,15 @@ func RuntimeAuthority(request Request) ([]string, error) {
 		if err := json.Unmarshal(request.ProposedManifest, &manifest); err != nil {
 			return []string{"FFI_SCHEMA_INVALID"}, nil
 		}
+		if request.Operation == OperationManifestMutation && manifest.CurrentPhase == "done" {
+			// Delivery and close write to a run that is already done; they
+			// re-enter neither the terminal transition nor its convergence.
+			if postTerminal, err := wp3.PostTerminalMetadataOnly(
+				request.Context.RunRoot, request.ProposedManifest,
+			); err == nil && postTerminal {
+				return nil, nil
+			}
+		}
 		if request.Operation == OperationTerminal || manifest.CurrentPhase == "done" {
 			if request.Context.DurableRoot == "" {
 				return []string{"FFI_CAPABILITY_DEGRADED"}, nil
