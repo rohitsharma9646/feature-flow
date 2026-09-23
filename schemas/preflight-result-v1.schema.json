@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://feature-flow.dev/schemas/preflight-result-v1.schema.json",
+  "title": "Feature Flow host-neutral preflight decision v1",
+  "type": "object",
+  "required": ["schemaVersion", "applicable", "allowed"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "applicable": {"type": "boolean"},
+    "allowed": {"type": "boolean"},
+    "diagnostics": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["code", "severity"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,63}$"},
+          "severity": {"enum": ["info", "warning", "error"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "capabilities": {
+      "$ref": "capability-report-v1.schema.json"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"applicable": {"const": false}},
+        "required": ["applicable"]
+      },
+      "then": {
+        "properties": {"allowed": {"const": true}}
+      }
+    }
+  ],
+  "additionalProperties": false
+}

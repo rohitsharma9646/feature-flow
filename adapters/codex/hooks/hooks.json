@@ -1,0 +1,19 @@
+{
+  "description": "Feature Flow native integrity lifecycle enforcement",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/adapters/codex/hooks/run-integrity\"",
+            "commandWindows": "\"%PLUGIN_ROOT%\\adapters\\codex\\hooks\\run-integrity.cmd\"",
+            "statusMessage": "Checking Feature Flow integrity",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

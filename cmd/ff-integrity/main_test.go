@@ -12,9 +12,70 @@ import (
 
 	"github.com/rohitsharma9646/feature-flow/integrity/assurance"
 	"github.com/rohitsharma9646/feature-flow/integrity/classifier"
+	"github.com/rohitsharma9646/feature-flow/integrity/hostadapter"
+	"github.com/rohitsharma9646/feature-flow/integrity/preflight"
 	"github.com/rohitsharma9646/feature-flow/integrity/revision/gitobserve"
 	"github.com/rohitsharma9646/feature-flow/integrity/wp3"
 )
+
+func TestCapabilitiesReportsDirectEnforcementAndUnknownLifecycleTrust(t *testing.T) {
+	for _, tc := range []struct {
+		host        string
+		exit        int
+		enforceable bool
+	}{
+		{"direct", 0, true},
+		{"claude", 1, false},
+		{"codex", 1, false},
+	} {
+		var stdout, stderr bytes.Buffer
+		exit := run([]string{"capabilities", "--host", tc.host, "--format", "json"}, &stdout, &stderr)
+		if exit != tc.exit {
+			t.Fatalf("%s exit=%d stderr=%s", tc.host, exit, stderr.String())
+		}
+		var report preflight.CapabilityReport
+		if err := json.Unmarshal(stdout.Bytes(), &report); err != nil {
+			t.Fatalf("%s decode: %v output=%s", tc.host, err, stdout.String())
+		}
+		if report.Enforceable != tc.enforceable {
+			t.Fatalf("%s enforceable=%v", tc.host, report.Enforceable)
+		}
+	}
+}
+
+func TestPreflightCLIUnrelatedRequestIsSilentAllowDecision(t *testing.T) {
+	request := preflight.Request{
+		SchemaVersion: preflight.SchemaVersion,
+		Host:          preflight.HostDirect,
+		Event:         preflight.EventCommandPreflight,
+		Operation:     preflight.OperationManifestMutation,
+		ToolClass:     preflight.ToolClassFileWrite,
+		Target:        "README.md",
+		Context: preflight.TrustedContext{
+			RepositoryRoot: t.TempDir(),
+			RunRoot:        t.TempDir(),
+		},
+		RequiredCapabilities: []preflight.CapabilityName{
+			preflight.CapabilityCommandPreflight,
+			preflight.CapabilityKernel,
+			preflight.CapabilitySchema,
+			preflight.CapabilityJSONOutput,
+		},
+		EnforcementMode: preflight.EnforcementEnforce,
+	}
+	raw, _ := json.Marshal(request)
+	input := filepath.Join(t.TempDir(), "request.json")
+	if err := os.WriteFile(input, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	if exit := run([]string{"preflight", "--input", input, "--format", "json"}, &stdout, &stderr); exit != 0 {
+		t.Fatalf("exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
+	if stdout.String() != "{\"schemaVersion\":1,\"applicable\":false,\"allowed\":true}\n" {
+		t.Fatalf("stdout=%q", stdout.String())
+	}
+}
 
 func TestDoctorAndPreviewDoNotWrite(t *testing.T) {
 	root := t.TempDir()
@@ -354,4 +415,46 @@ func writeRunAttestationRequest(t *testing.T, kind, key string, supersedes *stri
 
 func wp3TestProducer() assurance.Producer {
 	return assurance.Producer{Kind: "ci", Host: "ci", ID: "test"}
+}
+
+func TestHostPreflightObserveReportsDecodeFailureWithoutDenying(t *testing.T) {
+	for _, host := range []string{"claude", "codex"} {
+		var stdout, stderr bytes.Buffer
+		exit := runHostPreflight(
+			[]string{"--host", host, "--mode", "observe"},
+			strings.NewReader(`{"hook_event_name":"PreToolUse"`),
+			&stdout,
+			&stderr,
+		)
+		if exit != 0 || !strings.Contains(stdout.String(), `"systemMessage"`) ||
+			!strings.Contains(stdout.String(), "FFI_SCHEMA_INVALID") ||
+			strings.Contains(stdout.String(), `"permissionDecision":"deny"`) {
+			t.Fatalf("%s exit=%d stdout=%s stderr=%s", host, exit, stdout.String(), stderr.String())
+		}
+	}
+}
+
+func TestHostPreflightEmptyOrOversizedEnvelopeDoesNotBlockUnrelatedCalls(t *testing.T) {
+	large := `{"hook_event_name":"PreToolUse","cwd":"/repo","tool_name":"Write","tool_input":{"file_path":"/repo/big.txt","content":"` +
+		strings.Repeat("x", hostadapter.MaxEnvelopeBytes) + `"}}`
+	for _, input := range []string{"", large} {
+		var stdout, stderr bytes.Buffer
+		exit := runHostPreflight([]string{"--host", "claude", "--mode", "enforce"},
+			strings.NewReader(input), &stdout, &stderr)
+		if exit != 0 || stdout.Len() != 0 {
+			t.Fatalf("len=%d exit=%d stdout=%s stderr=%s", len(input), exit, stdout.String(), stderr.String())
+		}
+	}
+}
+
+func TestHostPreflightOversizedManifestEnvelopeFailsClosed(t *testing.T) {
+	large := `{"hook_event_name":"PreToolUse","cwd":"/repo","tool_name":"Write","tool_input":{"content":"` +
+		strings.Repeat("x", hostadapter.MaxEnvelopeBytes) + `","file_path":"/repo/.feature-flow/run/manifest.json"}}`
+	var stdout, stderr bytes.Buffer
+	exit := runHostPreflight([]string{"--host", "claude", "--mode", "enforce"},
+		strings.NewReader(large), &stdout, &stderr)
+	if exit != 0 || !strings.Contains(stdout.String(), `"permissionDecision":"deny"`) ||
+		!strings.Contains(stdout.String(), "FFI_SCHEMA_INVALID") {
+		t.Fatalf("exit=%d stdout=%s stderr=%s", exit, stdout.String(), stderr.String())
+	}
 }

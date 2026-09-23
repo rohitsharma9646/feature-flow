@@ -16,6 +16,7 @@ import (
 	"github.com/rohitsharma9646/feature-flow/integrity/doctor"
 	"github.com/rohitsharma9646/feature-flow/integrity/migration"
 	"github.com/rohitsharma9646/feature-flow/integrity/observe"
+	"github.com/rohitsharma9646/feature-flow/integrity/preflight"
 	"github.com/rohitsharma9646/feature-flow/integrity/revision"
 	"github.com/rohitsharma9646/feature-flow/integrity/revision/gitobserve"
 	"github.com/rohitsharma9646/feature-flow/integrity/storage"
@@ -34,7 +35,7 @@ type writer interface {
 
 func run(args []string, stdout, stderr writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: ff-integrity <doctor|migrate|baseline|observe|revision|attest|mutation|scope|converge> ...")
+		fmt.Fprintln(stderr, "usage: ff-integrity <doctor|migrate|baseline|observe|revision|attest|mutation|scope|converge|preflight|capabilities|host-preflight> ...")
 		return 2
 	}
 	switch args[0] {
@@ -105,6 +106,12 @@ func run(args []string, stdout, stderr writer) int {
 			return runConvergeCommand(args[1:], stdout, stderr)
 		}
 		return runJSONOperation(args[1:], stdout, stderr, converge)
+	case "preflight":
+		return runPreflight(args[1:], stdout, stderr)
+	case "capabilities":
+		return runCapabilities(args[1:], stdout, stderr)
+	case "host-preflight":
+		return runHostPreflight(args[1:], os.Stdin, stdout, stderr)
 	default:
 		fmt.Fprintln(stderr, "unknown command")
 		return 2
@@ -416,7 +423,8 @@ func runDoctor(args []string, stdout, stderr writer) int {
 	all := flags.Bool("all", false, "inspect every immediate run")
 	format := flags.String("format", "human", "human or json")
 	root := flags.String("root", ".feature-flow", "trusted run root")
-	args = flagsFirst(args, map[string]bool{"--format": true, "--root": true})
+	capabilityHost := flags.String("capabilities-host", "", "include direct, claude, or codex capability state")
+	args = flagsFirst(args, map[string]bool{"--format": true, "--root": true, "--capabilities-host": true})
 	if err := flags.Parse(args); err != nil || (*format != "human" && *format != "json") {
 		return 2
 	}
@@ -444,6 +452,16 @@ func runDoctor(args []string, stdout, stderr writer) int {
 		return 2
 	}
 	report := doctor.Diagnose(runs)
+	if *capabilityHost != "" {
+		capabilities, capabilityErr := runtimeCapabilityReport(
+			preflight.Host(*capabilityHost), preflight.EnforcementEnforce, false,
+		)
+		if capabilityErr != nil {
+			fmt.Fprintln(stderr, capabilityErr)
+			return 2
+		}
+		report = doctor.WithCapabilities(report, capabilities)
+	}
 	var rendered []byte
 	if *format == "json" {
 		rendered = doctor.RenderJSON(report)

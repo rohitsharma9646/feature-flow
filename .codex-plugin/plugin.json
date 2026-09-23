@@ -15,6 +15,7 @@
     "verification"
   ],
   "skills": "./skills/",
+  "hooks": "./adapters/codex/hooks/hooks.json",
   "interface": {
     "displayName": "Feature Flow",
     "shortDescription": "Run gated, resumable feature and bugfix workflows.",

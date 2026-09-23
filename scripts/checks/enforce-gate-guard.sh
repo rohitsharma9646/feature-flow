@@ -1,125 +1,88 @@
 #!/usr/bin/env bash
-# Behavioral guard for the M1 enforcement hook (hooks/enforce-gate).
-# Feeds crafted PreToolUse JSON to the hook and asserts allow / deny / warn.
-# Unlike the structural grep guards, this exercises real decision logic.
-set -u
-cd "$(dirname "$0")/../.." || exit 2
-HOOK="hooks/enforce-gate"
-fail=0
-err() { echo "FAIL: $1"; fail=1; }
-ok()  { echo "ok:   $1"; }
+# Behavioral and structural guard for the thin native Claude lifecycle adapter.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
 
-TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
+go_tool="${GO:-go}"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+mkdir -p "$tmp/package/bin" "$tmp/package/hooks" "$tmp/repo/.feature-flow/run"
+"$go_tool" build -o "$tmp/package/bin/ff-integrity" ./cmd/ff-integrity
+cp hooks/enforce-gate "$tmp/package/hooks/enforce-gate"
+chmod +x "$tmp/package/hooks/enforce-gate"
 
-# payload <file_path> <content-string> <cwd> : build a PreToolUse Write payload.
-# `content` is a STRING (Write passes file content as a string), matching reality.
-payload() { jq -cn --arg fp "$1" --arg c "$2" --arg cwd "$3" \
-  '{tool_name:"Write", tool_input:{file_path:$fp, content:$c}, cwd:$cwd}'; }
+payload() {
+  jq -cn --arg fp "$1" --arg content "$2" --arg cwd "$tmp/repo" \
+    '{hook_event_name:"PreToolUse",tool_name:"Write",cwd:$cwd,
+      tool_input:{file_path:$fp,content:$content}}'
+}
 
-mkrun() { local d="$TMP/.feature-flow/$1"; mkdir -p "$d"; printf '%s' "$d"; }
+manifest="$(jq \
+  '.currentPhase="implement"
+   | .phases.implement={"status":"in_progress","artifact":null}
+   | .signOff.signed=false
+   | .signOff.date=null
+   | .signOff.actor=null
+   | .signOff.evidenceRef=null' \
+  integrity/testdata/manifests/current-feature.json)"
+target="$tmp/repo/.feature-flow/run/manifest.json"
+printf '%s\n' "$manifest" > "$target"
 
-assert_deny()  { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' \
-  && printf '%s' "$2" | grep -q 'Gate [AB]' \
-  && ok "$1" || err "$1 — expected DENY naming a gate, got: ${2:-<empty>}"; }   # AC7: reason names the gate
-assert_allow() { [ -z "$2" ] \
-  && ok "$1" || err "$1 — expected ALLOW (no output), got: $2"; }
-assert_warn()  { printf '%s' "$2" | grep -q '"systemMessage"' \
-  && ok "$1" || err "$1 — expected systemMessage warn, got: ${2:-<empty>}"; }
+out="$(payload "$target" "$manifest" |
+  "$tmp/package/bin/ff-integrity" host-preflight --host claude --mode enforce)"
+grep -q '"permissionDecision":"deny"' <<<"$out"
+grep -q 'FFI_TERMINAL_INCONSISTENT' <<<"$out"
 
-run() { payload "$1" "$2" "${3:-$TMP}" | bash "$HOOK"; }  # echoes hook stdout
+signed="$(jq '.signOff.signed=true | .signOff.date="2026-08-03"' <<<"$manifest")"
+out="$(payload "$target" "$signed" |
+  "$tmp/package/bin/ff-integrity" host-preflight --host claude --mode enforce)"
+test -z "$out"
 
-# ---- Gate A: enter implement -------------------------------------------------
-rd="$(mkrun a-feat)"
-m='{"track":"feature","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false},"artifacts":{}}'
-assert_deny  "GateA: feature unsigned → implement" "$(run "$rd/manifest.json" "$m")"
-m='{"track":"feature","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":true},"artifacts":{}}'
-assert_allow "GateA: feature signed → implement"   "$(run "$rd/manifest.json" "$m")"
-m='{"track":"bugfix","tier":"lite","currentPhase":"implement","phases":{"diagnose":{"status":"in_progress"},"implement":{"status":"in_progress"}},"signOff":{"signed":false}}'
-assert_deny  "GateA: bugfix-lite diagnose incomplete → implement" "$(run "$rd/manifest.json" "$m")"
-m='{"track":"bugfix","tier":"lite","currentPhase":"implement","phases":{"diagnose":{"status":"complete"},"implement":{"status":"in_progress"}},"signOff":{"signed":false}}'
-assert_allow "GateA: bugfix-lite diagnose complete → implement (no sign-off needed)" "$(run "$rd/manifest.json" "$m")"
-m='{"track":"bugfix","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false}}'
-assert_deny  "GateA: bugfix-full unsigned → implement" "$(run "$rd/manifest.json" "$m")"
-# feature/lite is covered by the feature/* arm with NO hook change (M2/AC8)
-m='{"track":"feature","tier":"lite","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false},"artifacts":{}}'
-assert_deny  "GateA: feature-lite unsigned → implement (feature/* arm covers lite)" "$(run "$rd/manifest.json" "$m")"
-m='{"track":"feature","tier":"lite","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":true},"artifacts":{}}'
-assert_allow "GateA: feature-lite signed → implement" "$(run "$rd/manifest.json" "$m")"
+out="$(payload "$target" '{not-json' |
+  "$tmp/package/bin/ff-integrity" host-preflight --host claude --mode enforce)"
+grep -q '"permissionDecision":"deny"' <<<"$out"
+grep -q 'FFI_SCHEMA_INVALID' <<<"$out"
 
-# ---- Gate B: reach done ------------------------------------------------------
-# v0.9.0/AC10: the historic stub (heading but no evidence content) must now DENY.
-rd="$(mkrun b-ok)"; printf '# Verify\n\n## Verdict\npass\n' > "$rd/verify.md"
-m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"complete"}},"artifacts":{"verify":"verify.md"}}'
-assert_deny  "GateB/AC10: legacy stub verify.md (no Contract mapping) → denied" "$(run "$rd/manifest.json" "$m")"
+out="$(payload "$tmp/repo/README.md" '.feature-flow/run/manifest.json' |
+  "$tmp/package/hooks/enforce-gate")"
+test -z "$out"
 
-rd="$(mkrun b-filled)"
-printf '# Verify\n\n## Contract mapping\n\n### AC1: thing works\n- **Evidence:** `make test` — exit 0 — all green\n\n## Verdict\npass\n' > "$rd/verify.md"
-assert_allow "GateB/AC10: filled report (Contract mapping + status token) → allowed" "$(run "$rd/manifest.json" "$m")"
+out="$(payload "$target" "$manifest" | "$tmp/package/hooks/enforce-gate")"
+grep -q '"systemMessage"' <<<"$out"
+grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
-rd="$(mkrun b-headingonly)"; printf '# Verify\n\n## Contract mapping\n\nlooks fine to me\n' > "$rd/verify.md"
-assert_deny  "GateB/AC10: Contract mapping without a captured status token → denied" "$(run "$rd/manifest.json" "$m")"
+mv "$tmp/package/bin/ff-integrity" "$tmp/package/bin/ff-integrity.missing"
+out="$(payload "$target" "$signed" | "$tmp/package/hooks/enforce-gate")"
+grep -q '"systemMessage"' <<<"$out"
+if grep -q '"permissionDecision":"deny"' <<<"$out"; then
+  echo "FAIL: observe-mode missing binary must not deny" >&2
+  exit 1
+fi
+grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
-# The SHIPPED TEMPLATE itself (verbatim, unfilled) must never pass Gate B — pins the
-# placeholder-contains-a-real-status-token regression class (a bare digit in a skeleton
-# line would make the content check vacuous).
-rd="$(mkrun b-template)"; cp templates/verify.md "$rd/verify.md"
-assert_deny  "GateB/AC10: verbatim unfilled template → denied" "$(run "$rd/manifest.json" "$m")"
+out="$(payload "$tmp/repo/notes.txt" 'unrelated' | "$tmp/package/hooks/enforce-gate")"
+if [[ -n "$out" ]]; then
+  echo "FAIL: missing binary must stay silent for unrelated calls: $out" >&2
+  exit 1
+fi
 
-rd="$(mkrun b-missing)"
-m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"complete"}},"artifacts":{"verify":"verify.md"}}'
-assert_deny  "GateB: feature done, verify.md absent" "$(run "$rd/manifest.json" "$m")"
+cp -R adapters "$tmp/package/adapters"
+mv "$tmp/package/bin/ff-integrity.missing" "$tmp/package/bin/ff-integrity.absent"
+out="$(payload "$tmp/repo/notes.txt" 'unrelated' |
+  PLUGIN_ROOT="$tmp/package" "$tmp/package/adapters/codex/hooks/run-integrity")"
+if [[ -n "$out" ]]; then
+  echo "FAIL: Codex launcher without binary must stay silent for unrelated calls: $out" >&2
+  exit 1
+fi
+out="$(payload "$target" "$signed" |
+  PLUGIN_ROOT="$tmp/package" "$tmp/package/adapters/codex/hooks/run-integrity")"
+grep -q 'FFI_CAPABILITY_DEGRADED' <<<"$out"
 
-rd="$(mkrun b-empty)"; : > "$rd/verify.md"
-assert_deny  "GateB: feature done, verify.md empty" "$(run "$rd/manifest.json" "$m")"
+if grep -E -n 'signOff|artifacts|assurance|revision|currentPhase|Gate [AB]|jq ' \
+  hooks/enforce-gate hooks/run-hook.cmd; then
+  echo "FAIL: host launch assets contain workflow policy" >&2
+  exit 1
+fi
 
-rd="$(mkrun b-noheading)"; printf 'plain text, no heading\n' > "$rd/verify.md"
-assert_deny  "GateB: feature done, verify.md has no heading" "$(run "$rd/manifest.json" "$m")"
-
-rd="$(mkrun b-status)"; printf '# Verify\n' > "$rd/verify.md"
-m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"in_progress"}},"artifacts":{"verify":"verify.md"}}'
-assert_deny  "GateB: feature done but verify.status != complete" "$(run "$rd/manifest.json" "$m")"
-
-# AC5: renamed pointer honored (no hardcoded filename)
-# (content enriched for v0.9.0/AC10 — this fixture tests the pointer, not content depth)
-rd="$(mkrun b-renamed)"; printf '# Verify\n\n## Contract mapping\n\nAC1 — exit 0\n' > "$rd/verify-out.md"
-m='{"track":"feature","currentPhase":"done","phases":{"verify":{"status":"complete"}},"artifacts":{"verify":"verify-out.md"}}'
-assert_allow "GateB/AC5: honors renamed artifacts.verify pointer" "$(run "$rd/manifest.json" "$m")"
-
-# bugfix needs BOTH verify + review. review.md stays a bare heading on purpose —
-# the AC10 content check is verify-specific and must NOT apply to review.
-rd="$(mkrun b-bugfix-ok)"; printf '# Verify\n\n## Contract mapping\n\nRED then GREEN — exit 0\n' > "$rd/verify.md"; printf '# Review\n' > "$rd/review.md"
-m='{"track":"bugfix","currentPhase":"done","phases":{"verify":{"status":"complete"},"review":{"status":"complete"}},"artifacts":{"verify":"verify.md","review":"review.md"}}'
-assert_allow "GateB: bugfix done + verify + review" "$(run "$rd/manifest.json" "$m")"
-rd="$(mkrun b-bugfix-noreview)"; printf '# Verify\n\n## Contract mapping\n\nRED then GREEN — exit 0\n' > "$rd/verify.md"
-assert_deny  "GateB: bugfix done, review.md absent" "$(run "$rd/manifest.json" "$m")"
-
-# ---- Fast-exit + fail-open ---------------------------------------------------
-assert_allow "non-manifest write → fast-exit allow" "$(run "$TMP/src/foo.js" 'console.log(1)')"
-rd="$(mkrun fo-parse)"
-assert_allow "unparseable proposed content → fail-open" "$(run "$rd/manifest.json" '{not valid json')"
-m='{"currentPhase":"implement","phases":{"implement":{"status":"in_progress"}}}'
-assert_allow "missing track → fail-open" "$(run "$rd/manifest.json" "$m")"
-
-# kill switch: enforce=false allows an otherwise-illegal transition
-printf '{"toggles":{"enforce":false}}' > "$TMP/.feature-flow.json"
-m='{"track":"feature","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false}}'
-assert_allow "kill switch: toggles.enforce=false → allow" "$(run "$rd/manifest.json" "$m")"
-rm -f "$TMP/.feature-flow.json"
-
-# jq absent → warn + allow. Restricted PATH (coreutils shim, NO jq); absolute bash.
-shim="$TMP/shim"; mkdir -p "$shim"
-for b in cat dirname grep sed; do ln -sf "$(command -v "$b")" "$shim/$b"; done
-out="$(payload "$rd/manifest.json" "$m" "$TMP" | PATH="$shim" "$(command -v bash)" "$HOOK")"
-assert_warn "jq absent → systemMessage warning (fail-open)" "$out"
-
-# ---- Dispatch seam: route a deny case through the run-hook.cmd WRAPPER, not the
-# script directly. A chmod/path/wrapper regression would leave every other fixture
-# green while enforcement is silently off in production — this is the only check
-# that exercises hooks.json's actual dispatch target.
-rd="$(mkrun seam)"
-m='{"track":"feature","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":false}}'
-out="$(payload "$rd/manifest.json" "$m" "$TMP" | bash hooks/run-hook.cmd enforce-gate)"
-assert_deny "dispatch seam: run-hook.cmd → enforce-gate denies" "$out"
-
-if [ "$fail" -eq 0 ]; then echo "PASS: enforce-gate guard"; else echo "RED: enforce-gate guard failed"; fi
-exit "$fail"
+"$go_tool" test ./integrity/hostadapter ./integrity/preflight
+echo "PASS: native Claude adapter enforces on demand, stages observe-only, and ignores unrelated writes"

@@ -16,6 +16,10 @@ Static review of the implemented change. Output: `review.md`.
 > STOPs become continuations — see **Autopilot** in
 > `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 
+> **Integrity boundary — before every manifest state write:** run the canonical Command-level
+> preflight in `docs/manifest-schema.md`; follow its legacy/current mode rule and stop on an
+> enforce-mode denial or invocation failure.
+
 ## Manifest contract
 
 1. **Resolve the run** per **Run resolution** in

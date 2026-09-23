@@ -19,6 +19,10 @@ follow it; do not restate it here.
 > **Autopilot never chains into delivery** (§Autopilot, "Delivery is never chained") — it is always
 > invoked by hand.
 
+> **Integrity boundary — before every manifest state write:** run the canonical Command-level
+> preflight in `docs/manifest-schema.md`; follow its legacy/current mode rule and stop on an
+> enforce-mode denial or invocation failure.
+
 ## Manifest contract
 
 1. **Resolve the run** per **Run resolution** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`

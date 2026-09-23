@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"time"
 
@@ -317,6 +318,34 @@ func ConvergeRun(runDir, repository, durableRoot string, limits gitobserve.Limit
 	if err != nil {
 		return assurance.ConvergenceResult{}, err
 	}
+	return convergeDocument(runDir, repository, durableRoot, limits, document, proposedDone)
+}
+
+// ConvergeProposedRun binds terminal evaluation to the exact proposed manifest
+// intercepted by preflight. A terminal write may change only terminal metadata;
+// assurance, revision, artifact, phase, and sign-off state must already be
+// present in the current authoritative manifest.
+func ConvergeProposedRun(runDir, repository, durableRoot string, limits gitobserve.Limits, proposed []byte) (assurance.ConvergenceResult, error) {
+	_, _, current, err := readCurrentManifest(runDir)
+	if err != nil {
+		return assurance.ConvergenceResult{}, err
+	}
+	if result := classifier.Classify(proposed); result.Classification != classifier.CurrentStructuralValid {
+		return assurance.ConvergenceResult{}, errors.New("proposed manifest is not current structural valid")
+	}
+	var document map[string]any
+	if err := json.Unmarshal(proposed, &document); err != nil {
+		return assurance.ConvergenceResult{}, err
+	}
+	if !terminalMetadataOnly(current, document) {
+		return assurance.ConvergenceResult{
+			Codes: []string{"FFI_TERMINAL_INCONSISTENT"},
+		}, nil
+	}
+	return convergeDocument(runDir, repository, durableRoot, limits, document, true)
+}
+
+func convergeDocument(runDir, repository, durableRoot string, limits gitobserve.Limits, document map[string]any, proposedDone bool) (assurance.ConvergenceResult, error) {
 	baseline, _, err := loadAuthorizedBaseline(runDir, document)
 	if err != nil {
 		return assurance.ConvergenceResult{}, err
@@ -347,6 +376,64 @@ func ConvergeRun(runDir, repository, durableRoot string, limits gitobserve.Limit
 	input.Review = review
 	input.Verification = verification
 	return assurance.Converge(input), nil
+}
+
+func terminalMetadataOnly(current, proposed map[string]any) bool {
+	left := make(map[string]any, len(current))
+	right := make(map[string]any, len(proposed))
+	for key, value := range current {
+		left[key] = value
+	}
+	for key, value := range proposed {
+		right[key] = value
+	}
+	for _, key := range []string{"currentPhase", "updatedAt", "closedAt", "lock"} {
+		delete(left, key)
+		delete(right, key)
+	}
+	return reflect.DeepEqual(left, right)
+}
+
+// PostTerminalMetadataOnly reports whether proposed updates a run that is
+// already done and changes only post-terminal state: delivery phase and
+// artifact, closedAt, updatedAt, and lock.
+func PostTerminalMetadataOnly(runDir string, proposed []byte) (bool, error) {
+	_, _, current, err := readCurrentManifest(runDir)
+	if err != nil {
+		return false, err
+	}
+	var document map[string]any
+	if err := json.Unmarshal(proposed, &document); err != nil {
+		return false, err
+	}
+	if current["currentPhase"] != "done" || document["currentPhase"] != "done" {
+		return false, nil
+	}
+	left, right := withoutPostTerminal(current), withoutPostTerminal(document)
+	return reflect.DeepEqual(left, right), nil
+}
+
+func withoutPostTerminal(document map[string]any) map[string]any {
+	out := make(map[string]any, len(document))
+	for key, value := range document {
+		out[key] = value
+	}
+	for _, key := range []string{"updatedAt", "closedAt", "lock"} {
+		delete(out, key)
+	}
+	for _, nested := range []struct{ field, key string }{
+		{"phases", "deliver"}, {"artifacts", "delivery"},
+	} {
+		if values, ok := object(out[nested.field]); ok {
+			copied := make(map[string]any, len(values))
+			for key, value := range values {
+				copied[key] = value
+			}
+			delete(copied, nested.key)
+			out[nested.field] = copied
+		}
+	}
+	return out
 }
 
 func readCurrentManifest(runDir string) ([]byte, string, map[string]any, error) {

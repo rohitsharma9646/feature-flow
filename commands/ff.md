@@ -46,6 +46,10 @@ unchanged.)
 
 ## Step 2 — Set up the run (do this now)
 
+> **Integrity boundary — before every manifest creation or state write:** run the canonical
+> Command-level preflight in `docs/manifest-schema.md`; follow its legacy/current mode rule and
+> stop on an enforce-mode denial or invocation failure.
+
 0. **If you are in plan mode, leave it before writing anything.** feature-flow's first real
    action is writing `manifest.json` to disk, and **plan mode forbids non-plan writes** — a
    session that stays in plan mode falls back to a generic native plan (e.g. a file under

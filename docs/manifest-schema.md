@@ -312,9 +312,8 @@ commands reference it instead of restating their own:
    write, never self-chosen — `createdAt`, empty `phases`, `signOff`).
 2. **Check the gate** for this phase (e.g. `/ff-implement` requires `signOff.signed`
    on the feature/full track; a confirmed `diagnosis.md` on the lite bugfix track).
-   On Claude Code these two gates are additionally **machine-enforced** by the `enforce-gate`
-   PreToolUse hook (see **Enforcement** below); on Codex (no hooks) and when `toggles.enforce`
-   is `false`, the prose gate is the sole control.
+   On Claude Code and Codex these transitions are additionally **machine-enforced** by thin
+   `PreToolUse` adapters over the native integrity preflight (see **Enforcement** below).
 3. **Do the phase work**, reading any required upstream artifacts.
 4. **Write the artifact** to the run dir (or the configured override path).
 5. **Update the manifest**: set this phase's `status` + `artifact`, bump `updatedAt`
@@ -354,31 +353,57 @@ command that mutates it:
    - `lock` is **advisory and back-compatible**: a manifest without the field is simply
      unlocked. Never block a run solely because the field is missing.
 
-## Enforcement (Claude Code)
+## Integrity preflight enforcement
 
-Two manifest transitions are **machine-enforced** by a `PreToolUse` hook
-(`hooks/enforce-gate`), on by default (`toggles.enforce: true`):
+Claude Code and Codex packages invoke the same versioned native preflight from `PreToolUse`.
+Host adapters decode documented lifecycle fields, derive trusted roots, invoke the kernel, and
+map the normalized decision; they contain no sign-off, artifact, revision, assurance, or terminal
+policy.
 
-- **Gate A** — a write that enters `implement` (`currentPhase: "implement"`, or
-  `phases.implement.status` advanced) is **denied** unless the track's sign-off precondition
-  holds: `signOff.signed == true` (feature / bugfix-full) or `phases.diagnose.status == "complete"`
-  (bugfix-lite).
-- **Gate B** — a write that sets `currentPhase: "done"` is **denied** unless the proposed
-  terminal phase(s) are `complete` AND the artifact(s) named by `artifacts.verify` (feature) or
-  `artifacts.verify` + `artifacts.review` (bugfix) exist on disk, are non-empty, and contain a
-  markdown heading. **For `artifacts.verify` specifically** the file must additionally contain
-  a `## Contract mapping` heading and at least one captured status token (an exit code or
-  HTTP/status code — see §Evidence, Evidence record shape); the check is deliberately shallow —
-  it denies an empty-shell report, it does not grade evidence quality or waiver coverage
-  (that judgment is `ff-verify`'s prose responsibility). `artifacts.review` keeps the generic
-  existence+heading check.
+- A decoded target outside `.feature-flow/<slug>/manifest.json`, and a shell call outside an
+  explicitly declared `ff-integrity mutation` boundary, exits silently before repository
+  observation.
+- A recognized Feature Flow mutation with malformed or indeterminate input, or with a required
+  unavailable capability, is denied. Capability failure uses `FFI_CAPABILITY_DEGRADED`.
+- A manifest transition delegates structural classification, implementation readiness, revision
+  and assurance state, and terminal convergence to the WP1-WP3 native authorities.
+- Codex plugin hooks are not enforceable until the current hook definition is trusted. Standalone
+  capability inspection reports trust as `unknown`; an untrusted, disabled, missing, or
+  unexecutable hook must never be described as enforced.
+- Unix and Windows packages invoke their target-native binary. Launchers perform path selection
+  and missing-binary response mapping only; they contain no workflow policy and require no `jq`
+  or runtime download.
 
-The hook is **fail-open**: it denies only a determinate-illegal transition and otherwise allows
-(no manifest write · `jq` absent · unparseable proposed manifest · missing `track`/`currentPhase`
-· `toggles.enforce: false`). It is **Claude-Code-only** — the Codex package excludes `hooks/`, so
-Codex runs the same workflow under the **prose** gates (the hook backstops the prose; it does not
-replace it). Kill switch: set `toggles.enforce: false` in `.feature-flow.json`. Behavioral test:
-`scripts/checks/enforce-gate-guard.sh`.
+WP4 packages activate lifecycle adapters in explicit `observe` mode because existing run creation
+still emits legacy manifests and WP5 owns their migration plus promotion to enforcement. Observe
+mode never blocks an applicable operation: it returns the same ordered diagnostics that enforce
+mode would deny, plus truthful degraded capability state, and reports `enforceable:false`. It is
+never presented as enforcement. The same adapter's `--mode enforce` path fails closed and is the
+promotion target once WP5's migration gate passes.
+
+### Command-level preflight
+
+Lifecycle enforcement is backed by a command-level check at every declared Feature Flow mutation
+boundary. The phase procedure constructs a bounded v1 request from trusted run/repository paths
+and invokes:
+
+`ff-integrity preflight --input <request.json> --format json`
+
+Before every manifest creation or state write, apply this rule. A current-v1 manifest uses enforce
+mode. A missing, corrupt, or legacy manifest uses the signed WP4 observe stage and must surface its
+diagnostics without claiming enforcement; WP5 removes this exception after migration. In enforce
+mode, an applicable denial or invocation failure stops before the write. The request and result contract
+comes from `schemas/preflight-request-v1.schema.json` and
+`schemas/preflight-result-v1.schema.json`; command prose must not restate policy. Code mutations
+then execute through `ff-integrity mutation`, whose before/after observation and compare-and-swap
+remain the final authority. Repeated lifecycle and command checks are read-only and idempotent.
+
+Capability inspection is explicit:
+
+`ff-integrity capabilities --host direct|claude|codex --format json`
+
+An observe-only rollback is degraded and is never labelled enforced. Behavioral coverage lives in
+`scripts/checks/enforce-gate-guard.sh` and the WP4 conformance corpus.
 
 ## Disk inference procedure
 

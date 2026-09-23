@@ -1,0 +1,11 @@
+#!/bin/sh
+# Native Codex launcher. It contains no workflow policy.
+executable="${PLUGIN_ROOT:-}/bin/ff-integrity"
+if [ ! -x "$executable" ]; then
+  # Report degradation only for calls that could concern Feature Flow.
+  if grep -q -F -e '.feature-flow' -e 'ff-integrity'; then
+    printf '%s\n' '{"systemMessage":"Feature Flow integrity observe-only: FFI_CAPABILITY_DEGRADED"}'
+  fi
+  exit 0
+fi
+exec "$executable" host-preflight --host codex --mode observe

@@ -38,11 +38,11 @@ for id in X-LOSSLESS X-IDEMPOTENT X-AMBIGUOUS X-POINTER X-POINTER-DRIFT \
   fi
 done
 
-if rg -n 'ff-integrity(?:-classify)?|integrity/(?:doctor|migration|storage)' \
-    commands hooks templates config >/dev/null; then
-  err "existing lifecycle surface activates WP2"
+if rg -n 'ff-integrity (?:doctor|migrate)|integrity/(?:doctor|migration|storage)' \
+    hooks adapters/codex/hooks >/dev/null; then
+  err "WP4 lifecycle surface activates WP2 diagnosis, migration, or storage"
 else
-  ok "WP2 remains directly invocable only"
+  ok "WP2 doctor and migration remain directly invocable only"
 fi
 
 if [ "$fail" -eq 0 ]; then
