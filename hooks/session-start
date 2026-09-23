@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# SessionStart hook for the feature-flow plugin.
+# Emits a SHORT discovery pointer (NOT the skill content) so a fresh session
+# knows the workflow exists and how to start it. The full workflow lives in the
+# `feature-flow` skill and the /feature-flow:ff* commands, loaded on demand.
+
+set -euo pipefail
+
+# A SHORT pointer. Single-quoted so backticks/quotes stay literal. Deliberately
+# does NOT include the skill's own content — that loads only when the skill runs.
+pointer='feature-flow plugin is installed. For a non-trivial feature or a bug fix, prefer its durable, resumable, evidence-verified workflow instead of an ad-hoc edit: invoke the `feature-flow` skill, or run `/feature-flow:ff "<your request>"` to start a gated run. It auto-picks the feature track (explore->clarify->design->plan->implement->review->verify) or the test-first bugfix track (diagnose->regression-test->fix->verify->review), keeps all state in `.feature-flow/<slug>/`, and verifies with really-executed tests. Recover an interrupted run with `/feature-flow:ff-status` and `/feature-flow:ff-resume`.'
+
+# Escape string for JSON embedding using bash parameter substitution (single
+# C-level passes, no per-char loop).
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+session_context=$(escape_for_json "$pointer")
+
+# Emit only the field the current platform consumes (Claude Code reads both
+# additional_context and hookSpecificOutput without dedup, so emit just one).
+# Uses printf, not heredoc, to avoid the bash 5.3+ heredoc hang.
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "additional_context": "%s"\n}\n' "$session_context"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
+else
+  printf '{\n  "additionalContext": "%s"\n}\n' "$session_context"
+fi
+
+exit 0

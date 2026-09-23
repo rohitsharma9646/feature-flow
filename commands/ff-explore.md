@@ -1,0 +1,91 @@
+---
+description: "[feature] Explore the codebase to inform a feature: fan out read-only explorers, summarize findings into the run."
+argument-hint: "<feature request, or run after /feature-flow:ff sets up the manifest>"
+---
+
+# /feature-flow:ff-explore — feature exploration phase
+
+You are running the **explore** phase of the feature track. This is the entry phase;
+no upstream artifact is required (cold-start safe).
+
+> **Precedence — read first.** You are executing the feature-flow workflow. Its phases
+> REPLACE any generic brainstorming / writing-plans / make-plan / docs-first planning: do
+> **not** invoke those skills, and do **not** write to `~/.claude/plans/`, `docs/plans/`,
+> or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
+> and its `manifest.json`. Follow this command's steps literally, create files with the
+> Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
+> STOPs become continuations — see **Autopilot** in
+> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+
+## Manifest contract (follow exactly)
+
+1. **Resolve the run** per **Run resolution** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
+   most-recently-updated run → ask if ambiguous; cold-start derives a new slug from
+   `$ARGUMENTS`).
+2. **Read or create the manifest** at `<base>/<slug>/manifest.json` (schema:
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If `$ARGUMENTS` starts a new run,
+   derive a short kebab `slug` from it, create the run dir, **resolve `autopilot` first**
+   (run-start procedure — see **Autopilot** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; never choose the value yourself),
+   and write a manifest with `track: "feature"`, the **resolved** `tier` (lite/full per
+   `ff.md` Step 1; in doubt full — never hardcode `"full"`), the resolved
+   `autopilot`, empty `phases`, `signOff.required: true`.
+   If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
+3. **Re-run guard:** if `phases.explore.status` is already `"complete"`, stop and ask for
+   explicit confirmation before overwriting `explore.md` — see **Re-run guard** in
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+4. Set `phases.explore.status = "in_progress"`, bump `currentPhase = "explore"`.
+
+## KB recall (when enabled)
+
+Run this **before the explorer fan-out** in `## Do the work`. It is a **no-op unless the KB is
+active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and dispatch the explorers
+with no KB context.
+
+When active, follow the **Knowledge base** recall rule in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+(glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
+steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
+(the feature request)**, and surface matches to the **explorer agents** as context — **stale**
+entries flagged `[STALE — <reason>]`, never dropped. Empty store / no match → one-line note, proceed.
+
+## Do the work
+
+First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op unless the KB is active.
+Then read `models.explorer` from config (`.feature-flow.json` →
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
+agent. Dispatch `explorerAgents` (default 3) **`ff-code-explorer`** agents in parallel, each
+with a differentiated focus so the coverage is genuinely distinct:
+- **similar features** — find existing features closest to the request and how they're built.
+- **architecture** — map the layers, entry points, and conventions the feature must fit.
+- **patterns/abstractions** — the reusable patterns, utilities, and extension points available.
+
+**Lite tier (`tier == "lite"`): dispatch exactly ONE `ff-code-explorer`** with a single
+combined focus (where the change lives + what to reuse) instead of the `explorerAgents`
+fan-out — a small feature does not need 3-way coverage. Full/unset → the `explorerAgents`
+fan-out above.
+
+Read the files the agents flag as essential. Synthesize a findings summary: where the
+feature will live, what to reuse, constraints discovered, and open questions for clarify.
+
+When you search the repo yourself, use the **Grep**/**Glob** tools — never Bash
+`grep -r`/`find` over the root (they ignore `.gitignore` and walk ignored dependency/build
+trees; see **Searching the repo** in `${CLAUDE_PLUGIN_ROOT}/skills/feature-flow/SKILL.md`).
+
+## Write the artifact + update manifest
+
+**Use the Write tool** to write the findings summary to `<run dir>/explore.md`, following
+the structure in `${CLAUDE_PLUGIN_ROOT}/templates/explore.md`. Set
+`phases.explore = { status: "complete", artifact: "explore.md" }`, bump `updatedAt`.
+
+**STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
+the progress strip and proceed directly into the clarify phase per
+`${CLAUDE_PLUGIN_ROOT}/commands/ff-clarify.md` — see **Autopilot** in
+`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: explore is the only
+phase you run here. Tell the user: *"Explore complete — findings in `explore.md`. Run
+`/feature-flow:ff-clarify` next."* End the message with the one-line progress strip (e.g.
+`explore[done] → clarify[NEXT] → design → plan → implement → review → verify`) — see
+**Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+Then end your turn — do not begin clarify yourself.
