@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.18.0 · MIT licensed
+> **Status:** v0.19.0 · MIT licensed
 
 ## Why use it
 
@@ -89,7 +89,7 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 | **design** | Architect agents fan out (minimal / clean / pragmatic); scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
 | **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
 | **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
-| **review** | Reviewer agents report issues; a Critical finding blocks the run | `review.md` |
+| **review** | Reviewer agents report issues, plus a spec-conformance reviewer that checks the diff against the spec/plan (missing criterion = Critical, out-of-scope change = Important); a Critical finding blocks the run | `review.md` |
 | **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion (plus full-tier design failure scenarios and spec success metrics) to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
 
 Every stop ends with a progress strip, e.g.
@@ -127,8 +127,14 @@ On Claude Code, two gates are **machine-enforced** by a PreToolUse hook (on by d
 (and, on bugfix, review) evidence on disk — for `verify.md` that now includes a content check
 (a `## Contract mapping` section and at least one captured exit/HTTP/status code), so an
 empty-shell report can no longer pass. The hook **fails open** — it blocks only a provably
-illegal state write and otherwise stays out of the way. Disable with `toggles.enforce: false`. On
+illegal state write and otherwise stays out of the way. It gates `Write`, `Edit`, and `MultiEdit`
+of a manifest alike (an Edit is judged on the manifest it would produce); a manifest rewritten
+through a shell command is outside its reach. Disable with `toggles.enforce: false`. On
 Codex (no hook mechanism) these gates are enforced by prose instruction, not code.
+
+A second hook re-anchors context: at session start, after `/clear`, and after an automatic
+compaction, it lists this project's active runs (slug, phase, sign-off, resume command, artifact
+paths) so the model continues from the on-disk manifest instead of a lossy summary.
 
 ## Evidence-based verification
 
@@ -208,7 +214,7 @@ Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 |---|---|---|
 | `explorerAgents` | `3` | Parallel explorer agents in *explore* |
 | `architectAgents` | `3` | Parallel architect agents in *design* |
-| `reviewerAgents` | `3` | Parallel reviewer agents in *review* |
+| `reviewerAgents` | `3` | Parallel reviewer agents in *review* (the spec-conformance reviewer is extra, not counted) |
 | `diagnosticianAgents` | `1` | Diagnostician agents in *diagnose* |
 | `models.*` | `"sonnet"` | Model for each agent role: `explorer`, `architect`, `reviewer`, `diagnostician`, `testRunner` |
 | `reviewThreshold` | `80` | Reviewers report only issues with confidence ≥ this (0–100) |

@@ -116,12 +116,15 @@ With `paths.durable` set, the durable decision docs (spec/design/plan/diagnosis)
 teammate reviewing the PR sees the reasoning; see **Durable artifact resolution** in
 `docs/manifest-schema.md`. Every command: **read the manifest → check the gate → do the phase
 → write the artifact → update the manifest.** Resume and status read this file; if it's
-missing, resume infers the phase from which artifacts exist on disk.
+missing, resume infers the phase from which artifacts exist on disk. On Claude Code the
+SessionStart hook lists active runs at startup, after `/clear`, and after compaction — when it
+says you were mid-run, trust the manifest and artifacts on disk over the compacted summary.
 
 ## Soft gates (honor them)
 
 The gates are prose you must respect. On Claude Code, two of them are additionally
-**machine-enforced** by the `enforce-gate` PreToolUse hook — it denies a manifest write that
+**machine-enforced** by the `enforce-gate` PreToolUse hook — it denies a manifest write (Write,
+Edit, or MultiEdit — an Edit is judged on the manifest it would produce) that
 enters `implement` without sign-off, or reaches `done` without verify/review evidence (requires
 `jq`; disable with `toggles.enforce: false`). On Codex the gates remain prose-only. The hook
 backstops the prose; honoring the gates below is still your job:
@@ -145,6 +148,11 @@ backstops the prose; honoring the gates below is still your job:
   pending the user's explicit waiver. Contract: `docs/manifest-schema.md` §Evidence;
   doctrine: **Real verification, not reasoning** below. A bugfix without a RED→GREEN
   regression test is incomplete.
+- **Review gate:** a Critical finding in `review.md` blocks forward routing. Besides the focus
+  reviewers, `/feature-flow:ff-review` dispatches a **spec-conformance** reviewer against the
+  run's contract (spec / diagnosis / plan): an unimplemented acceptance criterion is Critical,
+  an out-of-scope change Important. Reviewers report only gaps that affect correctness or the
+  stated requirements — style and speculative hardening are never Critical.
 
 ## Proportional ceremony
 

@@ -5,7 +5,20 @@
 **Date:** <date>
 
 > Findings come from `ff-code-reviewer` agents fanned out with differentiated focuses
-> (e.g. simplicity / bugs / conventions). Only issues scoring ≥ threshold are reported.
+> (e.g. simplicity / bugs / conventions), plus one spec-conformance reviewer that checks the
+> change against the run's contract. Only issues scoring ≥ threshold are reported.
+
+## Spec conformance
+
+> One row per contract item (acceptance criterion, diagnosis fix, plan task). An unimplemented
+> or partial criterion is also listed under Critical; out-of-scope changes and unrealized plan
+> tasks under Important. No contract → `Spec conformance: skipped — no contract artifact resolved`.
+
+| Contract item | Verdict (implemented / partial / missing) | Where (`file:line`) |
+|---|---|---|
+| <AC1: …> | <implemented> | `<path>:<line>` |
+
+**Out-of-scope changes:** <none | list with `file:line`>
 
 ## Critical (≥ threshold, will impact functionality)
 
