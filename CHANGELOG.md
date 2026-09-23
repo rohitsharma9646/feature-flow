@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.19.0] — 2026-09-23 — Edit-proof gates, session re-anchor, spec-conformance review
+
+Three changes taken from Claude Code's best-practices guide ("hooks are deterministic", "the
+context window is the resource to manage", "review the diff against the plan in a fresh
+context").
+
+**Gates now cover Edit and MultiEdit.** `hooks/hooks.json` matched only `Write`, so an `Edit` to
+`manifest.json` that flipped `currentPhase` to `done`, or entered `implement` unsigned, skipped
+both gates. The matcher is now `Write|Edit|MultiEdit`. For an edit, `enforce-gate` rebuilds the
+manifest the edit would produce by applying each replacement in order to the on-disk file
+(literal match, first occurrence unless `replace_all`), then runs the unchanged Gate A/B logic
+on the result. It fails open when the target is missing or `old_string` isn't found, since
+Claude Code rejects those edits anyway. Rewrites through `Bash` are still outside the hook, and
+that is now documented as a known limit in §Enforcement. `enforce-gate-guard.sh` gains 13 cases,
+including a `replace_all` pair (same edit, different outcome) and a check that the matcher
+routes every tool.
+
+**SessionStart re-anchors active runs.** The hook already fired on `startup|clear|compact` but
+only printed a static pointer. It now adds up to 3 active runs, newest first: slug, track/tier,
+phase + status, autopilot, sign-off, `/feature-flow:ff-resume <slug>`, and resolved artifact
+paths. It honors `paths.base` and leaves out done / abandoned / closed runs. After `compact` it
+tells the model it was mid-run and must re-read state from disk. After `startup`/`clear` the
+wording is conditional. Everything is best-effort: without jq, a cwd, or a parseable manifest
+it emits exactly what it did before. Contract: §Enforcement → Session re-anchor. New
+behavioral test: `scripts/checks/session-start-guard.sh`.
+
+**Spec-conformance reviewer + over-engineering guard.** `ff-review`'s focus reviewers
+(simplicity / bugs / conventions) never checked the diff against what the run promised. One
+extra `ff-code-reviewer` now runs **in addition to** `reviewerAgents` and gets the diff plus
+the contract via manifest pointers (spec + plan on feature, diagnosis + plan on bugfix):
+- an unimplemented or partial criterion is **Critical**;
+- an out-of-scope change or a plan task with no change is **Important**;
+- no contract → it is skipped, with a note in `review.md`.
+
+`templates/review.md` gains a `## Spec conformance` table. Every reviewer, including this one,
+now reports only gaps that affect correctness or the stated requirements. Style and speculative
+hardening are never Critical, so autopilot's one fix cycle can't turn reviewer nitpicks into new
+code. New structural guard: `scripts/checks/spec-conformance-guard.sh`. Whether the reviewer
+actually *catches* a missing criterion on a live run is behavioral. That is not covered in CI and
+is a candidate forward-test case.
+
 ## [0.18.0] — 2026-09-23 — Retrospective (`ff-retro`) + forward-testing of semantic behaviors
 
 Two additions that close feature-flow's own feedback loop.

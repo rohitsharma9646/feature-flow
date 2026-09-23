@@ -22,6 +22,56 @@ escape_for_json() {
     printf '%s' "$s"
 }
 
+# Active-run re-anchor (v0.19.0). After a compaction or /clear the conversation no longer
+# holds the run's state, but its manifest does. Emit a compact block per active run (not
+# done / abandoned / closed; newest first, max 3) so the model resumes from disk instead of
+# from a lossy summary. Best-effort: no jq, no cwd, no runs, or an unparseable manifest ->
+# that part is simply omitted and the static pointer above is emitted unchanged.
+INPUT=""
+[ -t 0 ] || INPUT="$(cat 2>/dev/null || true)"
+
+active_runs_block() {
+  command -v jq >/dev/null 2>&1 || return 0
+  local cwd source base dir f row rows=""
+  cwd="$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)" || return 0
+  { [ -n "$cwd" ] && [ -d "$cwd" ]; } || return 0
+  source="$(printf '%s' "$INPUT" | jq -r '.source // empty' 2>/dev/null)"
+  base=""
+  [ -f "$cwd/.feature-flow.json" ] && base="$(jq -r '.paths.base // empty' "$cwd/.feature-flow.json" 2>/dev/null)"
+  [ -n "$base" ] || base=".feature-flow"
+  case "$base" in /*) dir="$base" ;; *) dir="$cwd/$base" ;; esac
+  for f in "$dir"/*/manifest.json; do
+    [ -f "$f" ] || continue
+    row="$(jq -c --arg dir "$(basename "$(dirname "$f")")" --arg base "$base" '
+      select(type == "object" and (.currentPhase | type) == "string"
+             and .currentPhase != "done" and .currentPhase != "abandoned"
+             and (.closedAt // null) == null)
+      | (.slug // $dir) as $slug | (.tier // "full") as $tier
+      | { updatedAt: (.updatedAt // ""),
+          line: ("- \($slug) — \(.track // "?")/\($tier) · phase: \(.currentPhase) (\(.phases[.currentPhase].status // "unknown"))"
+            + " · autopilot: \(if .autopilot == true then "on" else "off" end)"
+            + " · signed off: \(if .track == "bugfix" and $tier == "lite" then "n/a" elif .signOff.signed == true then "yes" else "no" end)"
+            + " · resume: /feature-flow:ff-resume \($slug)"
+            + ([(.artifacts // {}) | to_entries[] | select((.value | type) == "string" and .value != "")
+                | "\(.key)=\(if (.value | contains("/")) then .value else "\($base)/\($dir)/\(.value)" end)"]
+               | if length > 0 then "\n  artifacts: " + join(", ") else "" end)) }' "$f" 2>/dev/null)" || continue
+    [ -n "$row" ] && rows="$rows$row"$'\n'
+  done
+  [ -n "$rows" ] || return 0
+  printf '%s' "$rows" | jq -rs --arg src "$source" '
+    (if $src == "compact"
+     then "Active feature-flow run(s) in this project (from on-disk manifests). You were mid-run before context compaction — continue the most recent run below from its current phase, and re-read its manifest and artifacts from these paths rather than relying on the compacted summary:"
+     else "Active feature-flow run(s) in this project (from on-disk manifests). If the user'"'"'s request relates to one of them, re-enter it with its resume command and re-read its artifacts from disk; otherwise ignore this:"
+     end) as $head
+    | sort_by(.updatedAt) | reverse
+    | [$head] + (.[:3] | map(.line))
+      + (if length > 3 then ["(+\(length - 3) more — /feature-flow:ff-list)"] else [] end)
+    | join("\n")' 2>/dev/null || true
+}
+
+runs="$(active_runs_block)"
+[ -n "$runs" ] && pointer="$pointer"$'\n\n'"$runs"
+
 session_context=$(escape_for_json "$pointer")
 
 # Emit only the field the current platform consumes (Claude Code reads both

@@ -121,5 +121,75 @@ m='{"track":"feature","tier":"full","currentPhase":"implement","phases":{"implem
 out="$(payload "$rd/manifest.json" "$m" "$TMP" | bash hooks/run-hook.cmd enforce-gate)"
 assert_deny "dispatch seam: run-hook.cmd → enforce-gate denies" "$out"
 
+# ---- Edit / MultiEdit (v0.19.0): the gates judge the POST-edit manifest -----------
+# Before v0.19.0 hooks.json matched only Write, so an Edit that flipped currentPhase to
+# "done" bypassed both gates. The hook now reconstructs the proposed manifest from the
+# on-disk file + the edit(s), then runs the same Gate A/B logic.
+# payload_edit <file_path> <old> <new> <replace_all:true|false> [cwd]
+payload_edit() { jq -cn --arg fp "$1" --arg o "$2" --arg n "$3" --argjson ra "$4" --arg cwd "${5:-$TMP}" \
+  '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$o, new_string:$n, replace_all:$ra}, cwd:$cwd}'; }
+# payload_multi <file_path> <edits-json-array> [cwd]
+payload_multi() { jq -cn --arg fp "$1" --argjson e "$2" --arg cwd "${3:-$TMP}" \
+  '{tool_name:"MultiEdit", tool_input:{file_path:$fp, edits:$e}, cwd:$cwd}'; }
+redit()  { payload_edit "$@" | bash "$HOOK"; }
+rmulti() { payload_multi "$@" | bash "$HOOK"; }
+
+# E1: Edit flips a verify-phase run to done with no verify evidence on disk → Gate B.
+rd="$(mkrun e-done)"
+printf '{\n  "track": "feature",\n  "tier": "full",\n  "currentPhase": "verify",\n  "phases": {"verify": {"status": "complete"}},\n  "artifacts": {"verify": "verify.md"}\n}\n' > "$rd/manifest.json"
+assert_deny  "Edit: currentPhase verify→done without verify.md → Gate B" \
+  "$(redit "$rd/manifest.json" '"currentPhase": "verify"' '"currentPhase": "done"' false)"
+
+# E2: same Edit once real evidence exists → allowed (the gate, not the tool, decides).
+printf '# Verify\n\n## Contract mapping\n\nAC1 — exit 0\n' > "$rd/verify.md"
+assert_allow "Edit: currentPhase verify→done with valid verify.md → allowed" \
+  "$(redit "$rd/manifest.json" '"currentPhase": "verify"' '"currentPhase": "done"' false)"
+
+# E3: Edit enters implement on an unsigned spec → Gate A.
+rd="$(mkrun e-impl)"
+printf '{"track":"feature","tier":"full","currentPhase":"plan","phases":{},"signOff":{"signed":false}}\n' > "$rd/manifest.json"
+assert_deny  "Edit: currentPhase plan→implement unsigned → Gate A" \
+  "$(redit "$rd/manifest.json" '"currentPhase":"plan"' '"currentPhase":"implement"' false)"
+
+# E4: MultiEdit applies edits IN ORDER — entering implement without signing → Gate A;
+# signing in the same MultiEdit → allowed.
+assert_deny  "MultiEdit: enter implement, sign-off untouched → Gate A" \
+  "$(rmulti "$rd/manifest.json" '[{"old_string":"\"currentPhase\":\"plan\"","new_string":"\"currentPhase\":\"implement\""}]')"
+assert_allow "MultiEdit: sign off + enter implement → allowed" \
+  "$(rmulti "$rd/manifest.json" '[{"old_string":"\"signed\":false","new_string":"\"signed\":true"},{"old_string":"\"currentPhase\":\"plan\"","new_string":"\"currentPhase\":\"implement\""}]')"
+
+# E5: an unrelated Edit on a legal manifest → allowed.
+rd="$(mkrun e-benign)"
+printf '{"track":"feature","tier":"full","currentPhase":"implement","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":true},"updatedAt":"a"}\n' > "$rd/manifest.json"
+assert_allow "Edit: unrelated field change on a legal manifest → allowed" \
+  "$(redit "$rd/manifest.json" '"updatedAt":"a"' '"updatedAt":"b"' false)"
+
+# E6: replace_all is honored. The first "verify" occurrence is lastNote, not currentPhase:
+# replace_all=false changes only lastNote (currentPhase stays verify → allow);
+# replace_all=true also rewrites currentPhase to done (no evidence → Gate B).
+rd="$(mkrun e-replaceall)"
+printf '{"lastNote":"verify","track":"feature","currentPhase":"verify","phases":{},"artifacts":{}}\n' > "$rd/manifest.json"
+assert_allow "Edit: replace_all=false rewrites only the first occurrence → allowed" \
+  "$(redit "$rd/manifest.json" '"verify"' '"done"' false)"
+assert_deny  "Edit: replace_all=true rewrites currentPhase too → Gate B" \
+  "$(redit "$rd/manifest.json" '"verify"' '"done"' true)"
+
+# E7: fail-open on indeterminate edits (Claude Code rejects these edits itself).
+assert_allow "Edit: old_string not found → fail-open" \
+  "$(redit "$rd/manifest.json" '"no-such-text"' '"currentPhase":"done"' false)"
+assert_allow "Edit: manifest file missing on disk → fail-open" \
+  "$(redit "$TMP/.feature-flow/e-absent/manifest.json" '"currentPhase":"verify"' '"currentPhase":"done"' false)"
+assert_allow "Edit: non-manifest file → fast-exit allow" \
+  "$(redit "$TMP/src/foo.js" 'a' 'b' false)"
+
+# E8: the dispatch surface itself — hooks.json must route Edit and MultiEdit to the gate,
+# or every fixture above is green while production never calls the hook.
+matcher="$(jq -r '.hooks.PreToolUse[] | select(.hooks[].command | test("enforce-gate")) | .matcher' hooks/hooks.json)"
+for t in Write Edit MultiEdit; do
+  printf '%s' "$t" | grep -qxE "$matcher" \
+    && ok "hooks.json PreToolUse matcher routes $t to enforce-gate" \
+    || err "hooks.json PreToolUse matcher '$matcher' does not match $t"
+done
+
 if [ "$fail" -eq 0 ]; then echo "PASS: enforce-gate guard"; else echo "RED: enforce-gate guard failed"; fi
 exit "$fail"

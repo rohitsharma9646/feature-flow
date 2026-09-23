@@ -47,10 +47,47 @@ The reviewers have no shell and cannot run `git`, so hand each one the change un
 run `git diff HEAD` yourself (staged + unstaged) and pass its output, or — on a greenfield /
 non-git project — pass the list of files this run touched.
 
+**Over-engineering guard (every reviewer, including the spec-conformance one below).** Tell
+each reviewer: report only gaps that affect correctness or the stated requirements; style
+preferences, extra abstraction, and speculative hardening for cases that cannot occur are never
+Critical (at most Important, and only when they clear the threshold). A reviewer asked to find
+gaps will find some even in sound work — chasing every one of them is how a fix cycle grows
+code the spec never asked for.
+
 Consolidate findings (de-duplicate across agents) into `review.md` from
 `${CLAUDE_PLUGIN_ROOT}/templates/review.md`: Critical vs Important, each with file:line,
 issue, and a concrete fix. If nothing meets the threshold, record the "no high-confidence
 issues" summary — do not invent findings to look thorough.
+
+## Spec conformance
+
+The focus reviewers above judge the code on its own terms; none of them checks it against
+**what this run promised**. Dispatch **one more `ff-code-reviewer`** (same `models.reviewer`,
+same `reviewThreshold`), in parallel with the focus fan-out and **in addition to
+`reviewerAgents`** — it is never counted against that setting, so `reviewerAgents: 1` still
+gets a conformance check.
+
+**Its input:** the same diff (or touched-file list) the focus reviewers get, plus the run's
+**contract**, each resolved via its manifest pointer — never a bare filename:
+- **Feature track:** the spec (`manifest.artifacts.spec`: acceptance criteria + `## Out of
+  scope`) and, on full tier, the plan (`manifest.artifacts.plan`: its tasks).
+- **Bugfix track:** the diagnosis (`manifest.artifacts.diagnosis`: root cause + chosen fix
+  approach) and, when the bug escalated, the plan (`manifest.artifacts.plan`).
+
+No contract resolves (all pointers absent or missing on disk) → skip this dispatch and write
+`Spec conformance: skipped — no contract artifact resolved` in `review.md`.
+
+**Its brief:** for each contract item, is it realized in the change? Report:
+- an acceptance criterion (or the diagnosis's chosen fix) that is not implemented or only
+  partially implemented → **Critical** (it would fail verify; catching it here is cheaper);
+- a change outside the stated scope, or touching something the spec lists as out of scope →
+  **Important**;
+- a plan task with no corresponding change in the diff → **Important**.
+
+It does **not** re-review bugs, style, or conventions (the focus reviewers own those), and the
+over-engineering guard above applies to it too. Record its per-item verdict in `review.md`'s
+`## Spec conformance` section, and list each Critical / Important gap under the matching
+findings section as well, so the Critical-block rule below reads one place.
 
 ## Update manifest + hand off (order differs by track)
 
