@@ -80,6 +80,14 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
 - **Feature track:** map **each acceptance criterion** from the spec (at `artifacts.spec`, as
   resolved in Cold-start) → `pass` / `fail` / `manual-unverified` (with a reason), each backed
   by evidence from the test runner.
+- **Feature track — end-to-end check (both tiers):** additionally map the spec's `## End-to-end
+  check` row (resolved via the already-read `artifacts.spec` — no new pointer) into an `### E2E`
+  contract item, **exactly as an acceptance criterion is mapped** — same `pass` / `fail` /
+  `manual-unverified` derivation, Confidence ladder, and evidence-gap stop + waiver line below.
+  Prove it by actually running the stated command / flow end to end, not by pointing at the AC
+  evidence. Absent `## End-to-end check`, or a section with no row (an older spec) → skip, no
+  E2E block, no gap — a **presence check on the section**, not a tier check (§Discovery fields →
+  Actuation 3).
 - **Feature track — success metrics:** additionally map **each row** of the spec's `## Success
   metrics` (resolved via the already-read `artifacts.spec` — no new pointer) into its own `### SM<n>`
   contract item, **exactly as an acceptance criterion is mapped** — same `pass` / `fail` /

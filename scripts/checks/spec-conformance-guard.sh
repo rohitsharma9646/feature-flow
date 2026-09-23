@@ -49,7 +49,7 @@ need "SC2: passes the same diff the focus reviewers get" "$sc" 'same (diff|chang
 
 # SC3 — severity mapping
 need "SC3: unimplemented / partial criterion → Critical" "$sc" '(not implemented|unimplemented|partially implemented)[^.]*\*\*Critical\*\*'
-need "SC3: out-of-scope change → Important" "$sc" 'out[- ]of[- ]scope[^.]*\*\*Important\*\*'
+need "SC3: out-of-scope change → Important" "$sc" '(out[- ]of[- ]scope|outside the stated scope)[^.]*\*\*Important\*\*'
 need "SC3: unrealized plan task → Important" "$sc" 'plan task[^.]*\*\*Important\*\*'
 
 # SC4 — over-engineering guard in the dispatch AND the agent

@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.20.0] — 2026-09-23 — Fresh-context hand-offs, clarify interview, touchpoints + end-to-end check
+
+Two more changes from Claude Code's best-practices guide: "a clean session with a better prompt
+beats a long one", and "have Claude interview you, then write a self-contained spec that ends with
+an end-to-end verification step".
+
+**Fresh-context hint at step-by-step hand-offs.** §Progress strip gains one rule. When a phase
+completes in step-by-step mode and hands off to the next command, the message adds
+``Fresh context: `/clear`, then `/feature-flow:ff-<next>` — the run's state is on disk.`` Every
+phase already ends its hand-off through §Progress strip, so the one rule reaches all of them. The
+hint never appears in autopilot, at a sign-off / decision / blocking pause, or on a `done` report.
+After `/clear`, v0.19.0's SessionStart re-anchor re-lists the run.
+
+**Clarify interviews with AskUserQuestion in both modes.** Closed-choice questions now use
+AskUserQuestion in step-by-step mode too (it was autopilot-only): picking a solution option,
+confirming an edge-case behaviour, keeping an assumption. That means one decision per question,
+the recommendation first, and independent questions batched. Open-ended probes (the premise
+"why") stay plain text so a menu doesn't lead the answer.
+
+**Spec gains `## Touchpoints` and `## End-to-end check` (both tiers).**
+- *Touchpoints* lists the concrete files / interfaces the change should touch, from `explore.md`.
+  The spec-conformance reviewer now uses it as its scope reference.
+- *End-to-end check* is one binary check that proves the whole feature works as a user would use
+  it. `ff-verify` maps it into an `### E2E` contract item exactly like an acceptance criterion:
+  same Confidence ladder, same evidence-gap stop and waiver, and it's proven by actually running
+  the stated command or flow. Both sections are presence-gated, so older specs are unaffected.
+  Contract: §Discovery fields → Touchpoints / End-to-end check / Actuation 3.
+
+**Fix:** the v0.19.0 spec-conformance reviewer was told to read the spec's `## Out of scope`
+section. The template calls it `## Non-goals`, so it now reads `## Non-goals` (plus
+`## Touchpoints`).
+
+New structural guard: `scripts/checks/fresh-context-interview-guard.sh`. Whether the model
+actually emits the hint, asks via the picker, and proves the E2E check on a live run is behavioral
+and not covered in CI.
+
 ## [0.19.0] — 2026-09-23 — Edit-proof gates, session re-anchor, spec-conformance review
 
 Three changes taken from Claude Code's best-practices guide ("hooks are deterministic", "the

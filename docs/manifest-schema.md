@@ -186,7 +186,7 @@ path — no orphaned or unreferenced evidence claims.
 
 Four levels, applied **per contract item** (acceptance criterion, bugfix item,
 a design-time failure scenario — full tier, §Design trade-offs & devil's advocate —
-or a full-tier success metric, §Discovery fields), derived
+a full-tier success metric, or the spec's end-to-end check — both §Discovery fields), derived
 **mechanically** — anyone can recount them from the report; no numeric scores anywhere
 (the v0.5.0 rejection of numeric confidence as unfalsifiable LLM output is upheld):
 
@@ -459,6 +459,18 @@ order (e.g. a bugfix where review ran before verify renders `verify[NEXT]`). The
 `<slug>[abandoned]` / `<slug>[closed]` rendering applies **only** to `ff-list`/`ff-status`
 output; abandoned/closed early-exit STOP messages emit no strip (those runs execute no
 phases).
+
+**Fresh-context hint.** On a **step-by-step phase-end hand-off** — the phase completed and the
+message tells the user which phase command to run next — add one line after the strip:
+
+    Fresh context: `/clear`, then `/feature-flow:ff-<next>` — the run's state is on disk.
+
+A phase re-reads everything it needs from the manifest and artifacts, so the next phase loses
+nothing by starting clean and gains a context free of this phase's exploration and tool output
+(on Claude Code the SessionStart hook re-lists the active run after `/clear` — §Enforcement →
+Session re-anchor). The hint is **never in autopilot** (the chain continues in-session), **never
+at a sign-off, decision, or blocking pause** (the user answers those in the same session —
+clearing would drop the question), and never on a run-complete (`done`) report.
 
 **In autopilot** (`manifest.autopilot: true`): phases completed automatically (chained,
 not user-invoked) render `<phase>[auto]` instead of `<phase>[done]` — derived at render
@@ -1034,11 +1046,40 @@ naming the reason (e.g. `AC_i depends-on AC_j: covered by the same Task <n>`), n
 and never forced with a forward-pointing `Depends on`. Rendered in the Outcome gate's requirement-graph rule bullet
 (`templates/plan.md`), alongside the existing AC-coverage and Assumption-validation gap bullets.
 
+### Touchpoints
+
+A `## Touchpoints` list (added v0.20.0) of the concrete files, modules, and interfaces the change
+is expected to touch, taken from `explore.md` — *which* parts, never *how* (that is `ff-design`).
+**Both tiers.** Actuation: the `ff-review` spec-conformance reviewer reads it as its scope
+reference — a changed file far outside it is the usual out-of-scope signal (reported Important),
+a necessary neighbour of a touchpoint is not. Absent section (older spec) → the reviewer judges
+scope from the ACs and `## Non-goals` alone.
+
+### End-to-end check
+
+A `## End-to-end check` row (added v0.20.0): one check that proves the **whole** feature works as a
+user would use it — a command, request, or flow run end to end with its observable result — under
+the same binary discipline as an acceptance criterion (not a divergent grammar), and not a
+restatement of one AC. **Both tiers, lite included** — it is the cheapest proof that the parts
+compose. Like success metrics it is a verify-time item, not part of the sign-off render.
+
+### Actuation 3 — the E2E contract item (feeds ff-verify)
+
+`ff-verify` maps the `## End-to-end check` row into an `### E2E` block in `verify.md`'s
+`## Contract mapping` **exactly as an acceptance criterion is mapped** — Actuation 1's shape
+verbatim: same Confidence ladder, same Evidence gap stop, same waiver line, no new stop or row. It
+is proven by running the stated command / flow end to end, never by pointing at per-AC evidence.
+**Presence, not tier, gates** (the section lives in the shared spec template): absent or empty →
+no E2E block, no gap. The `### E2E:` placeholder is digit-free for Gate B, proven by
+`enforce-gate-guard.sh`'s `b-template` fixture like `### SM1:`.
+
 ### Tier / track scope
 
-**Feature track, full tier only.** Lite features omit both sections (no design/plan weight added to
-lite); the bugfix track has no `spec.md` and no requirement graph. Both actuations skip cleanly by
-presence check when the sections are absent — a pre-WS-7 spec is byte-identically unaffected.
+**Success metrics and the requirement graph: feature track, full tier only.** Lite features omit
+both sections (no design/plan weight added to lite); the bugfix track has no `spec.md` and no
+requirement graph. **Touchpoints and the end-to-end check: feature track, both tiers.** Every
+actuation skips cleanly by presence check when its section is absent — a pre-WS-7 (or pre-v0.20.0)
+spec is byte-identically unaffected.
 
 ### v1 non-goals
 

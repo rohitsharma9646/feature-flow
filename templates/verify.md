@@ -60,6 +60,14 @@ design, a lite run, or a design naming none → no FS blocks, not an empty secti
 **presence check on the section's rows, not a tier check** — absent section, or a section with no
 rows [lite tier, or a pre-WS-7 spec] → no SM blocks, not an empty section):
 
+### E2E: <end-to-end check verbatim>
+- **Method:** <evidence kinds used, or "manual — unverified">
+- **Evidence:**
+  - `<command>` — exit <n> | HTTP <nnn> — <excerpt>
+  - artifact: `evidence/<kind>-<n>-<desc>.<ext>` (if any)
+- **Confidence:** <one of the four levels>
+- **Gap (only if below Verified):** <what's missing, why, what evidence is required>
+
 ### SM1: <success metric verbatim>
 - **Method:** <evidence kinds used, or "manual — unverified">
 - **Evidence:**

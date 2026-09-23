@@ -20,7 +20,8 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
 - **Feature** — adding new behavior. Phases:
   `explore → clarify → design → plan → implement → review → verify`.
   *clarify* challenges the premise (is this the right need?), weighs 2-3 problem-level solution
-  approaches, and locks testable acceptance criteria — plus, on non-trivial full-tier work, optional
+  approaches, and locks testable acceptance criteria, the change's **touchpoints**, and one
+  **end-to-end check** (both tiers; *verify* proves it as an `E2E` contract item) — plus, on non-trivial full-tier work, optional
   **success metrics** (each a binary threshold *verify* later proves or blocks done on) and a
   **requirement graph** of AC dependencies that feeds *plan*'s task graph — it owns the WHAT; *design* owns the HOW
   (architects fan out, score a lean trade-off matrix, and stress-test the pick with a
@@ -76,7 +77,9 @@ assistant) drive it — the user never has to know the command names:
 
 After the first phase, the modes diverge. **Step-by-step** (`autopilot: false` or absent):
 continue **phase by phase** — each later phase is its own command the user (or you) invokes
-next, so every human gate is honored and a dropped session is recoverable. **Autopilot**
+next, so every human gate is honored and a dropped session is recoverable. Each phase-end
+hand-off also suggests `/clear` before the next phase (the **Fresh-context hint** in §Progress
+strip) — the run's state is on disk, so a clean context costs nothing and sheds this phase's noise. **Autopilot**
 (`manifest.autopilot: true`): ceremonial phase-end STOPs become continuations — chain
 forward per **Autopilot** in `docs/manifest-schema.md`, pausing at every mandatory gate.
 

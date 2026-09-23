@@ -41,6 +41,15 @@ assumption — see `docs/manifest-schema.md §Assumption records` for the contra
 
 - <Hard limits: compatibility, performance, security, scope, deadlines.>
 
+## Touchpoints
+
+The files, modules, and interfaces this change is expected to touch — from `explore.md`, named
+concretely (`path/to/file`, `Class.method`, CLI flag, endpoint), not "the export code". Not a
+design: *which* parts, not *how*. The spec-conformance reviewer reads this as the scope reference;
+a change outside it is a scope question, not automatically a defect.
+
+- `<path or interface>` — <why it is involved>
+
 ## Edge cases
 
 - <Boundary condition and the intended behavior for it.>
@@ -56,6 +65,14 @@ explicit "manual — unverified" line in `verify.md`.
 
 - [ ] AC1: <observable, testable statement>
 - [ ] AC2: <observable, testable statement>
+
+## End-to-end check
+
+One check that proves the **whole** feature works as a user would use it — a command, request, or
+flow run end to end, with its observable result — not a restatement of one AC. Same binary
+discipline as the acceptance criteria. `ff-verify` maps it into an `### E2E` contract item.
+
+- [ ] E2E: <run `<command / flow>`> → <observable end result>
 
 ## Success metrics
 

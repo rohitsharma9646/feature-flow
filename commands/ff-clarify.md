@@ -95,16 +95,26 @@ field is filled or mentioned (see the Lite-tier paragraph above). These feed dow
 sign-off ask: a metric becomes a `### SM<n>` verify contract item and a graph edge feeds `ff-plan`'s
 task dependencies (§Discovery fields).
 
-The interrogation is an **in-session pause in both modes** — in autopilot, ask the
-questions (AskUserQuestion), then continue writing the spec and proceed to the sign-off
-gate in the same turn once the user answers.
+**How to ask.** Ask closed-choice questions — picking a solution option (Beat 2), confirming or
+rejecting an edge-case behaviour (Beat 3), keeping or dropping an assumption (Beat 4) — with
+**AskUserQuestion in both modes**: one decision per question, the recommended option first and
+labelled, a one-line trade-off per option, several independent questions batched into one call.
+The open-ended probes stay plain text — the premise "why", "what are you doing today?" — because
+a menu would lead the answer (the playbook's Mom Test rule). Ask about the hard parts the user may
+not have considered; never ask what `explore.md` or the request already answers.
+
+The interrogation is an **in-session pause in both modes** — in autopilot, once the user answers,
+continue writing the spec and proceed to the sign-off gate in the same turn.
 
 Then write `spec.md` from `${CLAUDE_PLUGIN_ROOT}/templates/spec.md`, filling Problem, Expected
 outcome, **Solution approaches considered** (chosen + rejected, each justified), Scope,
 **Constraints** (hard limits: compatibility, performance, security, deadlines — from the
-user's answers or `explore.md`), Edge cases, Non-goals, the WHAT-changing **Assumptions**,
-and binary **Acceptance criteria** (plus, for non-trivial full-tier work only, **Success metrics**
-and a **Requirement graph** — omitted entirely on lite). Resolve
+user's answers or `explore.md`), **Touchpoints** (the concrete files / interfaces the change is
+expected to touch, from `explore.md`), Edge cases, Non-goals, the WHAT-changing **Assumptions**,
+binary **Acceptance criteria**, and one **End-to-end check** — the single command or flow that
+proves the whole feature works as a user would use it (every tier, lite included; §Discovery
+fields) — plus, for non-trivial full-tier work only, **Success metrics**
+and a **Requirement graph** (omitted entirely on lite). Resolve
 the spec's path per the **Durable artifact resolution** rule in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (legacy `paths.spec` → `paths.durable` →
 sandbox `<run dir>/spec.md`; **create the target directory if absent**). Record the resolved

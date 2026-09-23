@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.19.0 · MIT licensed
+> **Status:** v0.20.0 · MIT licensed
 
 ## Why use it
 
@@ -85,7 +85,7 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 | Phase | What happens | Artifact |
 |---|---|---|
 | **explore** | Read-only agents map the codebase | `explore.md` |
-| **clarify** | Challenges the premise, locks acceptance criteria, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
+| **clarify** | Challenges the premise (closed-choice questions via a picker), locks acceptance criteria plus the files it expects to touch and one **end-to-end check**, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
 | **design** | Architect agents fan out (minimal / clean / pragmatic); scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
 | **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
 | **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
@@ -94,6 +94,8 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 
 Every stop ends with a progress strip, e.g.
 `explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify`.
+In step-by-step mode a phase hand-off also suggests `/clear` before the next phase: the run's state
+is on disk, so the next phase starts with a clean context and loses nothing.
 
 A bug report takes the other track:
 

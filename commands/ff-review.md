@@ -67,8 +67,9 @@ gets a conformance check.
 
 **Its input:** the same diff (or touched-file list) the focus reviewers get, plus the run's
 **contract**, each resolved via its manifest pointer — never a bare filename:
-- **Feature track:** the spec (`manifest.artifacts.spec`: acceptance criteria + `## Out of
-  scope`) and, on full tier, the plan (`manifest.artifacts.plan`: its tasks).
+- **Feature track:** the spec (`manifest.artifacts.spec`: acceptance criteria, `## Non-goals`,
+  and `## Touchpoints` — the files / interfaces the change was expected to touch, its scope
+  reference) and, on full tier, the plan (`manifest.artifacts.plan`: its tasks).
 - **Bugfix track:** the diagnosis (`manifest.artifacts.diagnosis`: root cause + chosen fix
   approach) and, when the bug escalated, the plan (`manifest.artifacts.plan`).
 
@@ -78,7 +79,9 @@ No contract resolves (all pointers absent or missing on disk) → skip this disp
 **Its brief:** for each contract item, is it realized in the change? Report:
 - an acceptance criterion (or the diagnosis's chosen fix) that is not implemented or only
   partially implemented → **Critical** (the change does not do what the run promised);
-- a change outside the stated scope, or touching something the spec lists as out of scope →
+- a change outside the stated scope (a file far outside `## Touchpoints` is the usual signal — a
+  necessary neighbour of a touchpoint is not), or touching something the spec lists under
+  `## Non-goals` →
   **Important**;
 - a plan task with no corresponding change in the diff → **Important**.
 
