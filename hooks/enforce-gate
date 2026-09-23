@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PreToolUse enforcement hook (M1): deny illegal manifest-state transitions.
-# Fires on Write; inert for everything except .feature-flow/*/manifest.json.
+# Fires on Write/Edit/MultiEdit; inert for everything except .feature-flow/*/manifest.json.
 # Fail-OPEN on any indeterminate state (no jq, unparseable, missing fields,
 # toggles.enforce=false). Deny ONLY on a determinate, illegal transition.
 #
@@ -36,8 +36,40 @@ esac
 cwd="$(jqr '.cwd // empty')"
 run_dir="$(dirname "$file_path")"
 
-# Proposed manifest = the content being written; invalid JSON -> fail-open.
-content="$(jqr '.tool_input.content // empty')"
+# jqraw <filter>: exact raw string (jq -j adds no newline; the x sentinel keeps any
+# trailing newlines that $(...) would otherwise strip).
+jqraw() { local v; v="$(printf '%s' "$INPUT" | jq -j "$1" 2>/dev/null; printf x)"; printf '%s' "${v%x}"; }
+
+# Proposed manifest = what the file will hold AFTER this tool call; invalid JSON -> fail-open.
+# Write carries it whole. Edit/MultiEdit carry replacements: apply them, in order, to the
+# on-disk manifest (literal match; first occurrence unless replace_all) and gate the result.
+case "$(jqr '.tool_name // empty')" in
+  Edit|MultiEdit)
+    content=""                                           # missing file == empty file
+    [ -f "$file_path" ] && { content="$(cat "$file_path"; printf x)"; content="${content%x}"; }
+    edits='.tool_input | if (.edits | type) == "array" then .edits else [{old_string, new_string, replace_all}] end'
+    n="$(jqr "$edits | length")"
+    case "$n" in ''|*[!0-9]*) exit 0 ;; esac
+    i=0
+    while [ "$i" -lt "$n" ]; do
+      old="$(jqraw "($edits)[$i].old_string // \"\"")"
+      new="$(jqraw "($edits)[$i].new_string // \"\"")"
+      if [ -z "$old" ]; then
+        # Empty old_string on a missing/empty file is the tool's CREATE form: the file becomes
+        # new_string, gated like a Write. On a non-empty file the tool rejects it -> fail-open.
+        { [ "$i" -eq 0 ] && [ -z "$content" ]; } || exit 0
+        content="$new"
+      elif [ "${content#*"$old"}" = "$content" ]; then     # old_string not present (literal)
+        exit 0                                           # no match (incl. missing file) -> the edit fails anyway
+      elif [ "$(jqr "($edits)[$i].replace_all // false")" = "true" ]; then
+        content="${content//"$old"/"$new"}"
+      else
+        content="${content/"$old"/"$new"}"
+      fi
+      i=$((i + 1))
+    done ;;
+  *) content="$(jqr '.tool_input.content // empty')" ;;
+esac
 printf '%s' "$content" | jq -e . >/dev/null 2>&1 || exit 0
 mq() { printf '%s' "$content" | jq -r "$1" 2>/dev/null; }
 
