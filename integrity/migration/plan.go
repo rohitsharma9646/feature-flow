@@ -217,7 +217,7 @@ func isBool(value any) bool {
 
 func knownPhase(value string) bool {
 	switch value {
-	case "explore", "clarify", "design", "plan", "diagnose", "implement", "review", "verify", "deliver":
+	case "explore", "clarify", "design", "plan", "diagnose", "implement", "review", "verify", "deliver", "retro":
 		return true
 	default:
 		return false

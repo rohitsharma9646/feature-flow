@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.17.1 · MIT licensed
+> **Status:** v0.18.0 · MIT licensed
 
 ## Why use it
 
@@ -174,6 +174,7 @@ Full contract: `docs/manifest-schema.md` §Knowledge base.
 | `/feature-flow:ff-review` | [shared] Reviewer fan-out → `review.md`; Critical findings block |
 | `/feature-flow:ff-verify` | [shared] Really run tests/build/lint + evidence surfaces; confidence-graded report; one autopilot repair-and-re-verify cycle on a genuine failure; gaps block done |
 | `/feature-flow:ff-deliver` | [shared] Optional, post-`done`: assemble `delivery.md` (release notes / deploy / rollback / migration / known issues) from upstream artifacts; never blocks done |
+| `/feature-flow:ff-retro` | [shared] Optional, post-`done`: classify what the workflow's safeguards did (worked / failed / missing / ambiguous / bypassed), route each lesson to one owner → `retro.md`, written only after you confirm each finding |
 | `/feature-flow:ff-status` | Print a run's track, tier, phase statuses, sign-off, artifacts |
 | `/feature-flow:ff-resume` | Re-enter an interrupted run at the first incomplete phase |
 | `/feature-flow:ff-list` | List ALL runs (incl. abandoned/closed) |
@@ -251,6 +252,10 @@ Working on the plugin itself, not just using it:
   after source edits with `scripts/package-codex-plugin.sh --install-link` (updates the
   `~/.agents/plugins/marketplace.json` symlink to `dist/codex/feature-flow`), then reinstall and
   start a new Codex thread.
+- **Forward tests** — `scripts/forward-test.sh [behavior...]` proves the 7 semantic behaviors (STOPs,
+  gap lines, repair cycle) fire in a fresh headless Claude session and stay quiet on a control input.
+  It is local-only (needs Claude credentials, about $4 for the full suite) and never run in CI. Re-run
+  the affected behavior after editing its instruction text. See `evals/forward/README.md`.
 
 ## License
 

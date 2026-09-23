@@ -1,0 +1,20 @@
+{
+  "slug": "ts-locale",
+  "track": "feature",
+  "tier": "full",
+  "createdAt": "2026-09-22T09:00:00Z",
+  "updatedAt": "2026-09-22T09:40:00Z",
+  "closedAt": null,
+  "autopilot": false,
+  "currentPhase": "clarify",
+  "phases": {
+    "explore": { "status": "complete", "artifact": "explore.md" },
+    "clarify": { "status": "in_progress", "artifact": ".feature-flow/ts-locale/spec.md" }
+  },
+  "signOff": { "required": true, "signed": false },
+  "lock": null,
+  "artifacts": {
+    "explore": "explore.md",
+    "spec": ".feature-flow/ts-locale/spec.md"
+  }
+}

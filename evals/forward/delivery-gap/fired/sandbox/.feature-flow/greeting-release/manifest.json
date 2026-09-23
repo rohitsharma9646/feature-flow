@@ -1,0 +1,27 @@
+{
+  "slug": "greeting-release",
+  "track": "feature",
+  "tier": "full",
+  "createdAt": "2026-09-20T09:00:00Z",
+  "updatedAt": "2026-09-21T16:00:00Z",
+  "closedAt": null,
+  "autopilot": false,
+  "currentPhase": "done",
+  "phases": {
+    "explore": { "status": "complete", "artifact": "explore.md" },
+    "clarify": { "status": "complete", "artifact": ".feature-flow/greeting-release/spec.md" },
+    "design": { "status": "complete", "artifact": ".feature-flow/greeting-release/design.md" },
+    "plan": { "status": "complete", "artifact": ".feature-flow/greeting-release/plan.md" },
+    "implement": { "status": "complete", "artifact": null },
+    "review": { "status": "complete", "artifact": "review.md" },
+    "verify": { "status": "complete", "artifact": ".feature-flow/greeting-release/verify.md" }
+  },
+  "signOff": { "required": true, "signed": true, "date": "2026-09-20" },
+  "lock": null,
+  "artifacts": {
+    "spec": ".feature-flow/greeting-release/spec.md",
+    "design": ".feature-flow/greeting-release/design.md",
+    "plan": ".feature-flow/greeting-release/plan.md",
+    "verify": ".feature-flow/greeting-release/verify.md"
+  }
+}

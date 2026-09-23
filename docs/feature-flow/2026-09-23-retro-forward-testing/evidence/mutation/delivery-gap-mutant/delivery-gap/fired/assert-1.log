@@ -1,0 +1,4 @@
+  ok:   delivery.md written (/tmp/ff-forward-coEBN9/.feature-flow/greeting-release/delivery.md)
+  FAIL: no ⚠ DELIVERY GAP line naming Task 2
+  ok:   phases.deliver complete
+  ok:   currentPhase stays done

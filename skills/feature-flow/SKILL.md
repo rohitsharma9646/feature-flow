@@ -37,6 +37,13 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   it never blocks `done`, is off for `tier: lite` unless requested, and autopilot never runs it; you
   invoke it by hand. A plan migration task missing its rollback line surfaces here as a non-blocking
   `⚠ DELIVERY GAP`. See `docs/manifest-schema.md` §Delivery.
+- **Retrospective (optional, both tracks, both tiers).** After a run is `done`,
+  `/feature-flow:ff-retro` classifies what the **workflow's own safeguards** did on the run (gates,
+  STOPs, repair/fix cycles, waivers → `worked | failed | missing | ambiguous | bypassed`) and routes
+  each material lesson to one owner (repo instructions, a command/skill, a guard, a regression /
+  forward test, …). It proposes candidates and **writes `retro.md` only after you accept / edit /
+  reject each one**; it never applies a fix, and autopilot never runs it. See
+  `docs/manifest-schema.md` §Retrospective.
 
 ## Starting a run — you do NOT have to type a command
 
@@ -91,7 +98,7 @@ one repair-and-re-verify cycle, then the gap-report stop). Honor the STOPs.
 individual phases `/feature-flow:ff-explore`, `/feature-flow:ff-clarify`, `/feature-flow:ff-design`,
 `/feature-flow:ff-plan`, `/feature-flow:ff-diagnose`, `/feature-flow:ff-implement`,
 `/feature-flow:ff-review`, `/feature-flow:ff-verify`, `/feature-flow:ff-deliver` (optional,
-post-`done` delivery notes), plus the run-management commands:
+post-`done` delivery notes), `/feature-flow:ff-retro` (optional, post-`done` retrospective), plus the run-management commands:
 `/feature-flow:ff-status` (inspect a run), `/feature-flow:ff-resume` (re-enter an interrupted
 run), `/feature-flow:ff-list` (list all runs, including abandoned/closed),
 `/feature-flow:ff-abandon <slug>` (drop a run from automatic resolution), and

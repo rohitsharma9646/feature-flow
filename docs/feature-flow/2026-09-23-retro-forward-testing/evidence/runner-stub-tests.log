@@ -1,0 +1,57 @@
+### AC15: no claude on PATH
+forward-test: 'claude' CLI not found on PATH — install Claude Code to run forward tests
+exit=2
+### AC15: unknown behavior
+forward-test: unknown behavior 'nosuch' — valid: crash err flaky ok
+exit=2
+### AC13/AC14: PASS, FAIL, ERROR(budget), ERROR(assert crash) + per-arm/total cost
+  ok/fired run 1/1: PASS ($0.25)
+PASS ok/fired  ($0.25)
+  ok/control run 1/1: FAIL — assertion failed (see assert-1.log) ($0.25)
+FAIL ok/control  ($0.25)  — assertion failed (see assert-1.log)
+  err/fired run 1/1: ERROR — session error (error_max_budget_usd) ($0.5)
+ERROR err/fired  ($0.5)  — session error (error_max_budget_usd)
+  err/control run 1/1: ERROR — assert.sh crashed (exit 7) ($0.25)
+ERROR err/control  ($0.25)  — assert.sh crashed (exit 7)
+forward-test: 1/4 PASS, 1 FAIL, 2 ERROR · total $1.25 · /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/t1/o1
+exit=1
+### AC14: ERROR(timeout), ERROR(CLI exit)
+  crash/fired run 1/1: ERROR — timeout after 1s ($0)
+ERROR crash/fired  ($0)  — timeout after 1s
+  crash/control run 1/1: ERROR — claude exited 3 ($0)
+ERROR crash/control  ($0)  — claude exited 3
+forward-test: 0/2 PASS, 0 FAIL, 2 ERROR · total $0 · /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/t1/o2
+exit=1
+### AC16: --repeat 2 with alternating assert -> FAIL
+  flaky/fired run 1/2: PASS ($0.25)
+  flaky/fired run 2/2: FAIL — assertion failed (see assert-2.log) ($0.25)
+FAIL flaky/fired  ($0.5)  — assertion failed (see assert-2.log)
+  flaky/control run 1/2: PASS ($0.25)
+  flaky/control run 2/2: PASS ($0.25)
+PASS flaky/control  ($0.5)
+forward-test: 1/2 PASS, 1 FAIL, 0 ERROR · total $1.0 · /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/t1/o3
+exit=1
+### AC13 all-pass exit 0 (--model exercised)
+  allok/fired run 1/1: PASS ($0.25)
+PASS allok/fired  ($0.25)
+  allok/control run 1/1: PASS ($0.25)
+PASS allok/control  ($0.25)
+forward-test: 2/2 PASS, 0 FAIL, 0 ERROR · total $0.5 · /tmp/claude-1000/-home-netzwelt-feature-flow/dd235294-64e3-4888-9b8e-86b690b32189/scratchpad/t1/o4
+exit=0
+### AC17: output dir contents
+o1/err/control/assert-1.log
+o1/err/control/changes-1.txt
+o1/err/control/run-1.err
+o1/err/control/run-1.json
+o1/err/fired/changes-1.txt
+o1/err/fired/run-1.err
+o1/err/fired/run-1.json
+o1/ok/control/assert-1.log
+o1/ok/control/changes-1.txt
+o1/ok/control/run-1.err
+o1/ok/control/run-1.json
+o1/ok/fired/assert-1.log
+o1/ok/fired/changes-1.txt
+o1/ok/fired/run-1.err
+o1/ok/fired/run-1.json
+o1/summary.md

@@ -1,0 +1,5 @@
+  ok:   no limiter written
+  ok:   no source changes
+  ok:   STOP names the decision conflict
+  ok:   no self-authored override
+  ok:   not a sign-off-gate stop

@@ -1,0 +1,13 @@
+NON-BLOCKING matches: 0
+.github/workflows/ci.yml:42:      # whether the 7 semantic behaviors actually FIRE is proven by the LOCAL forward-test r
+.github/workflows/ci.yml:43:      # (scripts/forward-test.sh, fired vs control in fresh sessions) — never run here, si
+CHANGELOG.md:24:**Forward tests — `scripts/forward-test.sh` + `evals/forward/`.** The 7 behavioral catches that CI
+CHANGELOG.md:91:**Known coverage gap (named, not silent)** *(v0.18.0: the `SM<n>` catch (AC6) is now covered by the loca
+CHANGELOG.md:162:**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runn
+CHANGELOG.md:224:**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runn
+CHANGELOG.md:284:**Known coverage gap (named, not silent)** *(v0.18.0: `ff-implement`'s critical-path STOP is now covere
+CHANGELOG.md:324:**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runn
+CHANGELOG.md:366:**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runn
+CHANGELOG.md:406:**Known coverage gap (named, not silent)** *(v0.18.0: firing now covered by the local forward-test runn
+CHANGELOG.md:450:**Known coverage gap (named, not silent)** *(v0.18.0: the STOP is now covered by the local forward-test
+8

@@ -1,0 +1,1 @@
+/feature-flow:ff-implement rate-limit — build the limiter as a fixed-window counter per client per minute; it's the simplest thing that works.
