@@ -30,7 +30,8 @@ flat()    { tr '\n' ' ' | tr -s '[:space:]' ' '; }
 # need <label> <text> <fixed-string, case-insensitive>
 need()    { printf '%s' "$2" | flat | grep -qiF -- "$3" && ok "$1" || err "$1 — missing '$3'"; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 TPL_S="templates/spec.md"
 TPL_V="templates/verify.md"
 
@@ -119,7 +120,7 @@ need "TP5: Confidence ladder names the end-to-end check as a contract-item class
 
 # --- dist parity -------------------------------------------------------------------
 DIST="dist/codex/feature-flow"
-for rel in "$SCHEMA" "$TPL_S" "$TPL_V" commands/ff-clarify.md commands/ff-verify.md commands/ff-review.md; do
+for rel in docs/manifest-schema.md "$TPL_S" "$TPL_V" commands/ff-clarify.md commands/ff-verify.md commands/ff-review.md; do
   cmp -s "$rel" "$DIST/$rel" && ok "dist parity: $rel" \
     || err "dist parity: $rel differs from $DIST/$rel (re-run scripts/package-codex-plugin.sh)"
 done

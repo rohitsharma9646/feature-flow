@@ -30,7 +30,8 @@ ok()  { echo "ok:   $1"; }
 # up to (excluding) the next '## '. '### ' sub-headings stay inside.
 section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$1"; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 TPL="templates/decision.md"
 
 # --- (a) AC1: template headers/fields (verbatim shipped template) ------------
@@ -56,30 +57,30 @@ done
 # --- (b) AC2: schema wiring --------------------------------------------------
 # durable-artifact list names `decision`
 awk '/maps logical names/,/## Run resolution/' "$SCHEMA" | grep -qE 'Durable artifacts' \
-  && ok "$SCHEMA: durable-artifacts list present" \
-  || err "$SCHEMA: must have the Durable artifacts list"
+  && ok "$SCHEMA_LABEL: durable-artifacts list present" \
+  || err "$SCHEMA_LABEL: must have the Durable artifacts list"
 grep -qE '`spec`, `design`, `decision`, `plan`' "$SCHEMA" \
-  && ok "$SCHEMA: durable list includes decision" \
-  || err "$SCHEMA: durable-artifacts list must include \`decision\`"
+  && ok "$SCHEMA_LABEL: durable list includes decision" \
+  || err "$SCHEMA_LABEL: durable-artifacts list must include \`decision\`"
 # disk-inference phase tuple names decision
 section "$SCHEMA" '^## Disk inference procedure' | grep -q 'design`, `decision`' \
-  && ok "$SCHEMA: disk-inference tuple includes decision" \
-  || err "$SCHEMA: disk-inference phase tuple must include \`decision\`"
+  && ok "$SCHEMA_LABEL: disk-inference tuple includes decision" \
+  || err "$SCHEMA_LABEL: disk-inference phase tuple must include \`decision\`"
 # artifacts.decision field note + absent-field default
 grep -q 'artifacts.decision' "$SCHEMA" \
-  && ok "$SCHEMA: documents artifacts.decision" \
-  || err "$SCHEMA: must document artifacts.decision"
+  && ok "$SCHEMA_LABEL: documents artifacts.decision" \
+  || err "$SCHEMA_LABEL: must document artifacts.decision"
 grep -qiE 'no decision recorded' "$SCHEMA" \
-  && ok "$SCHEMA: artifacts.decision absent-field default documented" \
-  || err "$SCHEMA: must document the artifacts.decision absent-field default (no decision recorded)"
+  && ok "$SCHEMA_LABEL: artifacts.decision absent-field default documented" \
+  || err "$SCHEMA_LABEL: must document the artifacts.decision absent-field default (no decision recorded)"
 # canonical Decision recall subsection
 grep -q '^### Decision recall' "$SCHEMA" \
-  && ok "$SCHEMA: '### Decision recall' canonical subsection present" \
-  || err "$SCHEMA: must define the '### Decision recall' subsection"
+  && ok "$SCHEMA_LABEL: '### Decision recall' canonical subsection present" \
+  || err "$SCHEMA_LABEL: must define the '### Decision recall' subsection"
 # override recording string, canonical
 grep -qF 'Decision override by user' "$SCHEMA" \
-  && ok "$SCHEMA: names the Decision override by user (<date>) recording" \
-  || err "$SCHEMA: must name the 'Decision override by user (<date>): <reason>' override recording"
+  && ok "$SCHEMA_LABEL: names the Decision override by user (<date>) recording" \
+  || err "$SCHEMA_LABEL: must name the 'Decision override by user (<date>): <reason>' override recording"
 
 # --- (c) AC3: ff-design writes the decision ---------------------------------
 grep -q 'artifacts.decision' commands/ff-design.md \
@@ -131,12 +132,12 @@ grep -q 'artifacts.decision' commands/ff-clarify.md \
 # --- (g) AC7: Autopilot mandatory-pauses row --------------------------------
 ap="$(section "$SCHEMA" '^## Autopilot')"
 printf '%s\n' "$ap" | grep -qi 'Decision conflict stop' \
-  && ok "$SCHEMA §Autopilot: has the Decision conflict stop row" \
-  || err "$SCHEMA §Autopilot: mandatory-pauses table must have a Decision conflict stop row"
+  && ok "$SCHEMA_LABEL §Autopilot: has the Decision conflict stop row" \
+  || err "$SCHEMA_LABEL §Autopilot: mandatory-pauses table must have a Decision conflict stop row"
 printf '%s\n' "$ap" | grep -qi 'Decision conflict stop' && \
 printf '%s\n' "$ap" | awk 'tolower($0) ~ /decision conflict stop/' | grep -qi 'unconditional' \
-  && ok "$SCHEMA §Autopilot: Decision conflict stop is unconditional" \
-  || err "$SCHEMA §Autopilot: the Decision conflict stop row must state it is unconditional"
+  && ok "$SCHEMA_LABEL §Autopilot: Decision conflict stop is unconditional" \
+  || err "$SCHEMA_LABEL §Autopilot: the Decision conflict stop row must state it is unconditional"
 
 # --- (h) Codex dist parity: the new template + edited packaged files ---------
 # scripts/ is excluded from the package, so this guard is never in dist/.
