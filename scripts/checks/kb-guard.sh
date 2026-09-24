@@ -180,7 +180,7 @@ done
 DIST="dist/codex/feature-flow"
 for rel in \
   config/defaults.json \
-  docs/manifest-schema.md \
+  docs/manifest-schema.md docs/schema/*.md \
   templates/kb-entry.md \
   commands/ff-verify.md \
   commands/ff-review.md \

@@ -110,7 +110,7 @@ printf '%s\n' "$schema_json" | grep -qiE '"repaircycles"' \
 
 # --- dist: Codex dist parity for every touched packaged file -----------------
 DIST="dist/codex/feature-flow"
-for rel in "$CMD" "$TPL" "$RUNNER" docs/manifest-schema.md skills/feature-flow/SKILL.md README.md; do
+for rel in "$CMD" "$TPL" "$RUNNER" docs/manifest-schema.md docs/schema/*.md skills/feature-flow/SKILL.md README.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"
   else

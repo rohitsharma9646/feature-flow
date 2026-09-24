@@ -86,6 +86,7 @@ REQUIRED_PATHS=(
   "templates"
   "config"
   "docs/manifest-schema.md"
+  "docs/schema"
   "docs/grilling-playbook.md"
   "README.md"
   "LICENSE"

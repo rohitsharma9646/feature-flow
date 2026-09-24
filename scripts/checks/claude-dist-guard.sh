@@ -35,9 +35,13 @@ want_top=".claude-plugin LICENSE README.md agents commands config docs hooks ski
 got_top="$(listing "$PKG")"
 [ "$got_top" = "$want_top" ] && ok "top-level entries are exactly the allowlist" \
   || err "top-level entries differ — want [$want_top] got [$got_top]"
-[ "$(listing "$PKG/docs")" = "grilling-playbook.md manifest-schema.md " ] \
-  && ok "docs/ holds only manifest-schema.md + grilling-playbook.md" \
-  || err "docs/ must hold exactly manifest-schema.md + grilling-playbook.md (got [$(listing "$PKG/docs")])"
+[ "$(listing "$PKG/docs")" = "grilling-playbook.md manifest-schema.md schema " ] \
+  && ok "docs/ holds only manifest-schema.md + schema/ + grilling-playbook.md" \
+  || err "docs/ must hold exactly manifest-schema.md + schema/ + grilling-playbook.md (got [$(listing "$PKG/docs")])"
+want_schema="assumption-records.md autopilot.md delivery.md design-tradeoffs.md discovery-fields.md disk-inference.md enforcement.md evidence.md knowledge-base.md planning-intelligence.md retrospective.md sign-off-rendering.md terminal-convergence.md "
+[ "$(listing "$PKG/docs/schema" 2>/dev/null)" = "$want_schema" ] \
+  && ok "docs/schema/ holds exactly the 13 topic files" \
+  || err "docs/schema/ must hold exactly the 13 topic files (got [$(listing "$PKG/docs/schema" 2>/dev/null)])"
 [ "$(listing "$PKG/.claude-plugin")" = "marketplace.json plugin.json " ] \
   && ok ".claude-plugin/ holds only plugin.json + marketplace.json" \
   || err ".claude-plugin/ must hold exactly plugin.json + marketplace.json (got [$(listing "$PKG/.claude-plugin")])"

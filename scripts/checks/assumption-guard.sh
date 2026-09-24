@@ -169,7 +169,7 @@ fi
 # --- dist parity: every edited packaged file ---------------------------------
 DIST="dist/codex/feature-flow"
 for rel in templates/spec.md templates/diagnosis.md templates/plan.md \
-           docs/manifest-schema.md commands/ff-clarify.md commands/ff-diagnose.md commands/ff-plan.md; do
+           docs/manifest-schema.md docs/schema/*.md commands/ff-clarify.md commands/ff-diagnose.md commands/ff-plan.md; do
   if cmp -s "$rel" "$DIST/$rel"; then
     ok "dist parity: $rel"
   else

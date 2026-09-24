@@ -61,5 +61,12 @@ for p in $(printf '%s\n' "$idx" | grep -oE 'docs/schema/[a-z-]+\.md' | sort -u);
   [ -f "$p" ] && ok "L3: indexed path $p exists" || err "L3: Topic index lists $p, which does not exist"
 done
 
+# --- L5: the Codex dist carries the core and every topic file byte-identically -------------------
+DIST="dist/codex/feature-flow"
+for rel in "$SCHEMA_CORE" docs/schema/*.md; do
+  cmp -s "$rel" "$DIST/$rel" && ok "L5: dist parity: $rel" \
+    || err "L5: dist parity: $rel differs from or is missing in $DIST/$rel (re-run scripts/package-codex-plugin.sh)"
+done
+
 if [ "$fail" -eq 0 ]; then echo "PASS: schema-layout guard"; else echo "RED: schema-layout guard failed"; fi
 exit "$fail"

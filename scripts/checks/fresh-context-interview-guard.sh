@@ -120,7 +120,7 @@ need "TP5: Confidence ladder names the end-to-end check as a contract-item class
 
 # --- dist parity -------------------------------------------------------------------
 DIST="dist/codex/feature-flow"
-for rel in docs/manifest-schema.md "$TPL_S" "$TPL_V" commands/ff-clarify.md commands/ff-verify.md commands/ff-review.md; do
+for rel in docs/manifest-schema.md docs/schema/*.md "$TPL_S" "$TPL_V" commands/ff-clarify.md commands/ff-verify.md commands/ff-review.md; do
   cmp -s "$rel" "$DIST/$rel" && ok "dist parity: $rel" \
     || err "dist parity: $rel differs from $DIST/$rel (re-run scripts/package-codex-plugin.sh)"
 done

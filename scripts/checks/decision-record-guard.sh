@@ -144,7 +144,7 @@ printf '%s\n' "$ap" | awk 'tolower($0) ~ /decision conflict stop/' | grep -qi 'u
 DIST="dist/codex/feature-flow"
 for rel in \
   templates/decision.md \
-  docs/manifest-schema.md \
+  docs/manifest-schema.md docs/schema/*.md \
   commands/ff-design.md \
   commands/ff-implement.md \
   commands/ff-clarify.md

@@ -151,7 +151,7 @@ printf '%s\n' "$schema_json" | grep -qiE '"(tradeOffMatrix|devilsAdvocate|failur
 
 # --- dist: Codex dist parity for every touched packaged file -----------------
 DIST="dist/codex/feature-flow"
-for rel in templates/design.md templates/verify.md docs/manifest-schema.md \
+for rel in templates/design.md templates/verify.md docs/manifest-schema.md docs/schema/*.md \
            commands/ff-design.md commands/ff-verify.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

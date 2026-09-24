@@ -104,7 +104,7 @@ grep -q 'ff-deliver' README.md                    && ok "README.md references ff
 
 # --- dist parity: every touched packaged file -----------------------------------------------
 DIST="dist/codex/feature-flow"
-for rel in commands/ff-deliver.md templates/delivery.md docs/manifest-schema.md \
+for rel in commands/ff-deliver.md templates/delivery.md docs/manifest-schema.md docs/schema/*.md \
            skills/feature-flow/SKILL.md README.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

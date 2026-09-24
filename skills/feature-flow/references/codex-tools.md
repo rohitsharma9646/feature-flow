@@ -41,6 +41,7 @@ Common paths:
 - `${CLAUDE_PLUGIN_ROOT}/commands/ff.md` -> `commands/ff.md`
 - `${CLAUDE_PLUGIN_ROOT}/config/defaults.json` -> `config/defaults.json`
 - `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` -> `docs/manifest-schema.md`
+- `${CLAUDE_PLUGIN_ROOT}/docs/schema/*.md` -> `docs/schema/*.md`
 - `${CLAUDE_PLUGIN_ROOT}/templates/*.md` -> `templates/*.md`
 - run state remains project-local under `.feature-flow/<slug>/`
 

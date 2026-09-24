@@ -62,6 +62,7 @@ claude_paths=(
   "config"
   "hooks"
   "docs/manifest-schema.md"
+  "docs/schema"
   "docs/grilling-playbook.md"
   "README.md"
   "LICENSE"

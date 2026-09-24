@@ -29,7 +29,7 @@ Options:
 The package contains only Claude runtime content:
   .claude-plugin (plugin.json + a marketplace.json serving the plugin from "./"),
   commands, agents, skills, hooks, templates, config,
-  docs/manifest-schema.md, docs/grilling-playbook.md, README.md, LICENSE.
+  docs/manifest-schema.md, docs/schema/, docs/grilling-playbook.md, README.md, LICENSE.
 USAGE
 }
 
@@ -65,6 +65,7 @@ RUNTIME_PATHS=(
   "templates"
   "config"
   "docs/manifest-schema.md"
+  "docs/schema"
   "docs/grilling-playbook.md"
   "README.md"
   "LICENSE"

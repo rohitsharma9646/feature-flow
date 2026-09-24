@@ -177,7 +177,7 @@ printf '%s' "$ap" | flat | grep -qiE 'success metric stop|requirement graph stop
 # --- dist: Codex dist parity for every touched packaged file -----------------
 DIST="dist/codex/feature-flow"
 for rel in templates/spec.md templates/verify.md templates/plan.md \
-           docs/manifest-schema.md commands/ff-clarify.md commands/ff-verify.md commands/ff-plan.md \
+           docs/manifest-schema.md docs/schema/*.md commands/ff-clarify.md commands/ff-verify.md commands/ff-plan.md \
            skills/feature-flow/SKILL.md README.md; do
   if cmp -s "$rel" "$DIST/$rel"; then
     ok "dist parity: $rel"

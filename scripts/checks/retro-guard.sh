@@ -132,7 +132,7 @@ grep -q 'ff-retro' README.md                    && ok "README.md references ff-r
 
 # --- dist parity: every touched packaged file -----------------------------------------------
 DIST="dist/codex/feature-flow"
-for rel in commands/ff-retro.md templates/retro.md docs/manifest-schema.md commands/ff-verify.md \
+for rel in commands/ff-retro.md templates/retro.md docs/manifest-schema.md docs/schema/*.md commands/ff-verify.md \
            commands/ff-review.md skills/feature-flow/SKILL.md README.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

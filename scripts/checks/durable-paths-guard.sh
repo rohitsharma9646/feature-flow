@@ -121,7 +121,7 @@ grep -qiE 'promot|paths.durable' skills/feature-flow/SKILL.md \
 DIST="dist/codex/feature-flow"
 for rel in \
   config/defaults.json \
-  docs/manifest-schema.md \
+  docs/manifest-schema.md docs/schema/*.md \
   commands/ff.md \
   commands/ff-clarify.md \
   commands/ff-plan.md \
