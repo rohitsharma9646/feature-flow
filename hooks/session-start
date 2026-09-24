@@ -30,9 +30,26 @@ escape_for_json() {
 INPUT=""
 [ -t 0 ] || INPUT="$(cat 2>/dev/null || true)"
 
+# current_task <cwd> <manifest>: for a run in implement with a task ledger (v0.23.0), print the
+# first task the ledger does not mark complete, with its last fix round — e.g. "Task 3 (round 2)".
+# Prints nothing when there is no ledger or every task is complete.
+current_task() {
+  local led
+  led="$(jq -r 'select(.currentPhase == "implement") | .artifacts.ledger // empty' "$2" 2>/dev/null)" || return 0
+  [ -n "$led" ] || return 0
+  case "$led" in /*) ;; *) led="$1/$led" ;; esac
+  [ -f "$led" ] || return 0
+  awk '
+    function emit() { if (t != "" && !c) { print t (r != "" ? " (round " r ")" : ""); found = 1 } }
+    /^## Task [0-9]+/ { emit(); if (found) exit; t = $0; sub(/^## /, "", t); sub(/:.*/, "", t); c = 0; r = "" }
+    /^\*\*Status:\*\* complete/ { c = 1 }
+    /^\*\*Fix round [0-9]+\/3:\*\*/ { r = $0; sub(/^\*\*Fix round /, "", r); sub(/\/3.*/, "", r) }
+    END { if (!found) emit() }' "$led" 2>/dev/null || true
+}
+
 active_runs_block() {
   command -v jq >/dev/null 2>&1 || return 0
-  local cwd source base dir f row rows=""
+  local cwd source base dir f row task rows=""
   cwd="$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)" || return 0
   { [ -n "$cwd" ] && [ -d "$cwd" ]; } || return 0
   source="$(printf '%s' "$INPUT" | jq -r '.source // empty' 2>/dev/null)"
@@ -42,7 +59,8 @@ active_runs_block() {
   case "$base" in /*) dir="$base" ;; *) dir="$cwd/$base" ;; esac
   for f in "$dir"/*/manifest.json; do
     [ -f "$f" ] || continue
-    row="$(jq -c --arg dir "$(basename "$(dirname "$f")")" --arg base "$base" '
+    task="$(current_task "$cwd" "$f")"
+    row="$(jq -c --arg dir "$(basename "$(dirname "$f")")" --arg base "$base" --arg task "$task" '
       select(type == "object" and (.currentPhase | type) == "string"
              and .currentPhase != "done" and .currentPhase != "abandoned"
              and (.closedAt // null) == null)
@@ -51,6 +69,7 @@ active_runs_block() {
           line: ("- \($slug) — \(.track // "?")/\($tier) · phase: \(.currentPhase) (\(.phases[.currentPhase].status // "unknown"))"
             + " · autopilot: \(if .autopilot == true then "on" else "off" end)"
             + " · signed off: \(if .track == "bugfix" and $tier == "lite" then "n/a" elif .signOff.signed == true then "yes" else "no" end)"
+            + (if $task != "" then " · task: \($task)" else "" end)
             + " · resume: /feature-flow:ff-resume \($slug)"
             + ([(.artifacts // {}) | to_entries[] | select((.value | type) == "string" and .value != "")
                 | "\(.key)=\(if (.value | contains("/")) then .value else "\($base)/\($dir)/\(.value)" end)"]

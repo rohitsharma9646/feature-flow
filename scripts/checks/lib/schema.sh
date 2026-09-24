@@ -22,6 +22,7 @@ Sign-off rendering|sign-off-rendering
 Terminal convergence|terminal-convergence
 Knowledge base|knowledge-base
 Planning intelligence|planning-intelligence
+Task controller|task-controller
 Assumption records|assumption-records
 Design trade-offs & devil's advocate|design-tradeoffs
 Discovery fields|discovery-fields

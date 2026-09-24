@@ -36,7 +36,11 @@ argument-hint: "[slug, if more than one run exists]"
    continuing.
 5. Announce the resume point and the reason (which artifact was missing/incomplete), then
    run the resume-point phase to completion, honoring its gates (sign-off, design choice)
-   exactly as a fresh run would. Then branch on mode: if `manifest.autopilot` is `true`,
+   exactly as a fresh run would. **Resuming implement with a task ledger**
+   (`manifest.artifacts.ledger` resolves): the controller continues at the first task the ledger
+   does not mark complete — and inside it at the next fix round, keeping the recorded Base —
+   never from Task 1 (**Ledger** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md`);
+   announce that task. Then branch on mode: if `manifest.autopilot` is `true`,
    **continue the chain** from the resume point to the next mandatory pause — honoring
    every gate exactly as a live autopilot run would — see **Autopilot** in
    `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, run **only that

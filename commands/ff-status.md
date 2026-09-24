@@ -26,6 +26,10 @@ allowed-tools: Read, Glob, Grep
      `manifest.artifacts.<name>` (the sole locating authority; fall back to the run dir only
      when the manifest is absent) and print the **real resolved path**, so a doc promoted to
      `<paths.durable>/<date>-<slug>/` shows as present at that path rather than “missing”
+   - **task progress** — when `currentPhase` is `implement` and `manifest.artifacts.ledger`
+     resolves: the ledger path, how many tasks are `complete (…)`, and the current task (the
+     first not complete) with its fix round and status (`blocked` / `stopped` included) — see
+     **Ledger** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md`
    - the one-line progress strip — see **Progress strip** in
      `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 5. **Missing or corrupt manifest:** do NOT just defer to resume. Apply the **Disk inference

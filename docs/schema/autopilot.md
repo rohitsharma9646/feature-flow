@@ -33,6 +33,9 @@ or self-answers a gate:**
 | Not-reproduced stop (`ff-diagnose`) | cross-turn | ends the chain unconditionally — autopilot does not retry |
 | Decision conflict stop (`ff-design` vs prior decisions; `ff-implement` vs this run's own decision) | cross-turn | **unconditional** STOP in both modes — autopilot does not auto-resolve or retry (unlike the Critical-review fix cycle); the chain resumes only when the user realigns the approach or replies with an explicit `Decision override by user (<date>): <reason>` — never self-authored — see §Knowledge base → **Decision recall** |
 | Critical-path stop (`ff-implement` vs the plan's derived critical path) | cross-turn | **unconditional** STOP in both modes — autopilot does not auto-resolve or retry (same severity as the Decision conflict stop above); the chain resumes only when the user realigns the work to respect the critical path or replies with an explicit `Critical-path override by user (<date>): <reason>` — recorded in the plan's `## Critical path`, never self-authored — see §Planning intelligence → **Critical-path check** |
+| Plan placeholder stop (`ff-implement` controller pre-flight) | cross-turn | a task in the plan breaks the No Placeholders list — end the turn naming the task and the offending text, routing to `/feature-flow:ff-plan`; no task is dispatched; the chain resumes on a re-run after the plan is fixed — see §Task controller → **Controller activation** |
+| Task blocked stop (`ff-implement` controller) | cross-turn | capped — a task's implementer reports `BLOCKED`, or `NEEDS_CONTEXT` a third time after two context re-dispatches — end the turn naming the task and the blocker; the chain resumes when the user supplies the decision or context and re-runs `ff-implement` (the ledger resumes that task) — see §Task controller → **Status contract** |
+| Critical-after-cap stop (`ff-implement` controller) | cross-turn | capped — a Critical finding still open after a task's three fix rounds (**Per-task fix loop**, below) — end the turn naming the task and the findings; Important-only findings become recorded rulings instead and never stop; the chain resumes when the user fixes the code and re-runs `ff-implement`, or writes `Task <N> finding accepted by user (<date>): <reason>` in the ledger — never self-authored — see §Task controller → **Rulings** |
 | Critical review block (`ff-review`) | cross-turn | one fix-and-re-review cycle (below), then stop if Criticals remain |
 | Verify repair-and-re-verify cycle (`ff-verify`) | cross-turn | capped — one repair-and-re-verify cycle (below) on a genuine AC/bugfix failure (a captured non-success status), then the Evidence gap stop if it still fails; a pure evidence gap or a failed `FS<n>` never triggers a cycle |
 | Stale-phase stop (done-transition on a revision-bound run — `ff-verify`, or `ff-review` on bugfix) | cross-turn | capped — one stale-phase re-run cycle (below) when the other phase's revision is stale, then STOP naming the phase if it is still stale; step-by-step always STOPs naming the phase |
@@ -75,6 +78,14 @@ still fails, the failure is a pure gap or a failed `FS<n>`, or the run is step-b
 `in_progress` throughout; the cap is **per-phase** (independent of review's cycle) and carries **no
 manifest field** — the `## Repair` section is the sole record. The waiver is untouched by this
 cycle (it never upgrades confidence; autopilot never records one).
+
+**Per-task fix loop (`ff-implement` controller, both modes).** Each task the controller dispatches is
+reviewed on its own diff; an open finding starts a fix loop of at most three rounds — two resuming the
+same implementer, one fresh implementer on `models.escalation` — each ending in a scoped re-review.
+The cap and every round live in the task ledger (`<run dir>/tasks/ledger.md`); there is **no manifest
+field** and no config key for it. After the third round an open Critical is the Critical-after-cap
+stop above; Important-only findings become rulings. The rules are **Fix loop** and **Rulings** in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md` — not restated here.
 
 **Stale-phase re-run cycle (revision-bound runs, autopilot only).** Triggered at a done-transition
 when the other assurance phase's revision is missing or differs from the current fingerprint
