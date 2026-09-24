@@ -40,9 +40,12 @@ the project you are working in.
   "updatedAt": "<ISO8601>",
   "closedAt": null,
   "autopilot": false,
+  "revisionBound": true,
   "currentPhase": "explore|clarify|design|plan|diagnose|implement|review|verify|done|abandoned",
   "phases": {
-    "<phase>": { "status": "pending|in_progress|complete", "artifact": "<relative path or null>" }
+    "<phase>": { "status": "pending|in_progress|complete", "artifact": "<relative path or null>" },
+    "review":  { "status": "complete", "artifact": "review.md", "revision": "<git tree id or null>" },
+    "verify":  { "status": "complete", "artifact": "verify.md", "revision": "<git tree id or null>" }
   },
   "signOff": { "required": true, "signed": false, "date": null },
   "lock": null,
@@ -85,6 +88,19 @@ the project you are working in.
   below. Set **once** at run start by the run-start procedure, read-only afterwards. **Absent
   field = `false`** (every pre-v0.3.0 manifest): treat as step-by-step everywhere — no error,
   no mid-run ask, no migration.
+- **`revisionBound`** (boolean, added v0.22.0): this run binds review and verify to one code
+  revision — see **Enforcement (Claude Code)** in `docs/schema/enforcement.md` (Gate B, §Revision
+  fingerprint) and **Revision agreement** in `docs/schema/terminal-convergence.md`. Written
+  `true` **once** at manifest creation by every entry point that creates a manifest (`ff`, and the
+  cold-start paths of `ff-explore` / `ff-clarify` / `ff-diagnose`), alongside `autopilot`; never
+  changed afterwards. **Absent field = not revision-bound** (every pre-v0.22.0 manifest): no revision
+  is stamped or checked, Gate B behaves exactly as in v0.21.0 — no error, no migration.
+- **`phases.review.revision`** / **`phases.verify.revision`** (added v0.22.0, revision-bound runs
+  only): the working-tree fingerprint (a git tree id, §Revision fingerprint) the phase attested,
+  written by `ff-review` / `ff-verify` when the phase completes — after any in-phase fix or repair
+  cycle — and overwritten on every re-run. `null` = not a git repository, or the fingerprint could
+  not be computed (the artifact's `**Revision:**` line says why). Absent = the phase has not
+  completed on a revision-bound run, or the run predates v0.22.0.
 - **`phases.<phase>.artifact`** holds the resolved path of the artifact that phase produced
   (or `null` if it writes no file, e.g. explore may summarize inline). It is a
   **human-readable display mirror only — no command uses it to locate a file**;

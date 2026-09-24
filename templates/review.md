@@ -3,6 +3,7 @@
 **Reviewing:** <what was reviewed — branch / diff / working tree / specific files>
 **Threshold:** <reviewThreshold, default 80>
 **Date:** <date>
+**Revision:** <working-tree fingerprint this review covered, or "not recorded — <reason>">
 
 > Findings come from `ff-code-reviewer` agents fanned out with differentiated focuses
 > (e.g. simplicity / bugs / conventions), plus one spec-conformance reviewer that checks the
@@ -38,3 +39,15 @@
 
 > No issues met the confidence threshold. The change meets standards. Brief summary:
 > <one or two sentences on what was checked and why it's sound.>
+
+## Stale re-run
+
+> **Revision-bound runs, autopilot only, exactly one cycle.** Present **only** when the
+> done-transition found this phase's revision stale and re-ran it once
+> (`docs/schema/autopilot.md` §Autopilot, **Stale-phase re-run cycle**). Its mere presence **is**
+> the one-cycle cap: a second stale finding with it already present STOPs, never a second re-run.
+
+**Stale revision:** <the revision this phase had stamped>
+**Current revision:** <the fingerprint at the done-transition>
+**Changed paths:** <paths that differ, as listed by the revision check>
+**Outcome:** <agreement restored — done-transition continued | still stale / blocking — stopped>

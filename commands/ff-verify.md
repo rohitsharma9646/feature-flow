@@ -161,6 +161,20 @@ never self-authored — the **Evidence gap stop** row in §Autopilot,
 run build/lint/smoke instead and never call a no-tests run a pass. On the bugfix track, a
 fix without a regression test (RED→GREEN evidence) is reported **incomplete**, not done.
 
+## Stamp the revision (revision-bound runs)
+
+Only when `manifest.revisionBound` is `true` (absent → skip this section entirely; a pre-v0.22.0
+run records no revision), and only when this command is about to mark verify complete — after any
+repair-and-re-verify cycle, because that cycle changes code. Compute the working-tree fingerprint of
+the project directory exactly as **Revision fingerprint** in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/enforcement.md` specifies — on Claude Code run
+`bash "${CLAUDE_PLUGIN_ROOT}/hooks/lib/revision.sh" "<project dir>"`; where `hooks/` is not shipped,
+pipe that section's block unchanged. Never re-type or paraphrase it: a variant yields a different id
+and `done` is then denied. Record the printed id in `phases.verify.revision` (written with the
+manifest update below) **and** in `verify.md`'s `**Revision:**` line. Empty output or a non-zero exit
+(not a git repository, `git` missing) → record `null` and `not recorded — <reason>`. Stamping never
+blocks the phase; a re-run of this command overwrites the stamp.
+
 ## Update manifest + hand off (order differs by track)
 
 Which command marks the run `done` is the canonical **Terminal convergence** rule in
@@ -180,14 +194,27 @@ copy, never move the sandbox original). Record the resolved path
 in **both** `artifacts.verify` and `phases.verify.artifact`: set
 `phases.verify = { status: "complete", artifact: "<resolved verify path>" }`, bump `updatedAt`.
 
-- **Feature track:** verify is the **terminal** phase. If all contract items pass, first run
+**Revision agreement check** — runs at this command's done-transition (both bullets below), before
+KB capture and the `done` write. Revision-bound run: follow **Revision agreement** in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/terminal-convergence.md` — compare `phases.review.revision` to the
+verify revision just stamped. Stale or missing → the **Stale-phase re-run cycle** in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md` re-runs review — the focus reviewers and the
+spec-conformance reviewer (autopilot), or **STOP** telling the user review is stale — which paths
+changed — and to re-run `/feature-flow:ff-review`, then `/feature-flow:ff-verify` (step-by-step);
+never set `done` on a stale revision. Not checked → say why in the completion report:
+`revision binding skipped — run predates v0.22.0` (no `revisionBound`) or `revision binding skipped
+— <not a git repository | fingerprint not computable>`.
+
+- **Feature track:** verify is the **terminal** phase. If all contract items pass, first run the
+  **Revision agreement check** above, then run
   **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is active),
   then set `currentPhase = "done"`. **STOP** and report the run complete. In the completion report, name `/feature-flow:ff-deliver` (delivery notes) and `/feature-flow:ff-retro` (retrospective on the workflow's safeguards) as **optional next steps** — neither is ever chained (§Autopilot).
 - **Bugfix track:** review is the terminal phase, so the two can be run in either order —
   converge on `done` only when **both** verify and review are complete:
   - If `phases.review.status == "complete"` (review already ran) and verify passed, both
     terminal phases are satisfied → this command is the one reaching the done-transition, so
-    first run **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is
+    first run the **Revision agreement check** above, then run
+    **KB capture** (see `## KB capture (when enabled)` below — a no-op unless the KB is
     active), then set `currentPhase = "done"` and report the run complete. In the completion report, name `/feature-flow:ff-deliver` (delivery notes) and `/feature-flow:ff-retro` (retrospective on the workflow's safeguards) as **optional next steps** — neither is ever chained (§Autopilot).
   - Otherwise review still has to run. If `manifest.autopilot` is `true`, emit the progress
     strip and proceed directly into the review phase per

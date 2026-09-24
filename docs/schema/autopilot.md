@@ -35,6 +35,7 @@ or self-answers a gate:**
 | Critical-path stop (`ff-implement` vs the plan's derived critical path) | cross-turn | **unconditional** STOP in both modes — autopilot does not auto-resolve or retry (same severity as the Decision conflict stop above); the chain resumes only when the user realigns the work to respect the critical path or replies with an explicit `Critical-path override by user (<date>): <reason>` — recorded in the plan's `## Critical path`, never self-authored — see §Planning intelligence → **Critical-path check** |
 | Critical review block (`ff-review`) | cross-turn | one fix-and-re-review cycle (below), then stop if Criticals remain |
 | Verify repair-and-re-verify cycle (`ff-verify`) | cross-turn | capped — one repair-and-re-verify cycle (below) on a genuine AC/bugfix failure (a captured non-success status), then the Evidence gap stop if it still fails; a pure evidence gap or a failed `FS<n>` never triggers a cycle |
+| Stale-phase stop (done-transition on a revision-bound run — `ff-verify`, or `ff-review` on bugfix) | cross-turn | capped — one stale-phase re-run cycle (below) when the other phase's revision is stale, then STOP naming the phase if it is still stale; step-by-step always STOPs naming the phase |
 | Evidence gap stop (`ff-verify`) | cross-turn | any contract item below `Verified (single-source)` blocks `done` — end the turn with the gap report (what could not be verified, why, what evidence is required); autopilot never records a waiver itself; chain resumes on the user's waiver (see §Evidence, Evidence waiver) or a re-run after the gap is addressed |
 | Assumption validation stop (`ff-clarify`; `ff-diagnose` full tier) | cross-turn | an unvalidated `validation-required: y` assumption blocks a clean sign-off — end the turn with the `### Unvalidated assumptions` echo block (which assumptions are still unvalidated); autopilot never records a waiver itself; chain resumes once the user resolves each — validate it, waive it (`Assumption validation waived by user (<date>): <reason>`), or acknowledge it stays open (carried to the plan as a `**Validates:**` task; see §Assumption records → Actuation 1). Same waivable shape as the Evidence-gap-stop row above |
 | KB capture confirm-gate (`ff-verify` feature-terminal / `ff-review` bugfix-terminal), only when `toggles.kb` active | cross-turn | distill candidates, end the turn for the user to accept/edit/reject; never write entries unconfirmed; chain resumes to `currentPhase="done"` on the answer or `ff-resume` — see §Knowledge base |
@@ -74,6 +75,23 @@ still fails, the failure is a pure gap or a failed `FS<n>`, or the run is step-b
 `in_progress` throughout; the cap is **per-phase** (independent of review's cycle) and carries **no
 manifest field** — the `## Repair` section is the sole record. The waiver is untouched by this
 cycle (it never upgrades confidence; autopilot never records one).
+
+**Stale-phase re-run cycle (revision-bound runs, autopilot only).** Triggered at a done-transition
+when the other assurance phase's revision is missing or differs from the current fingerprint
+(**Revision agreement** in `docs/schema/terminal-convergence.md`). The stale phase's own artifact is
+the durable one-cycle record, exactly as `## Resolution` / `## Repair`: before starting, check it
+(`review.md` when review is stale, `verify.md` when verify is stale) for an existing
+`## Stale re-run` section. **None** → re-run that phase's **Do the work** once, exactly as its own
+command specifies (review: the focus reviewers **and** the spec-conformance reviewer; verify: the
+full `ff-test-runner` dispatch and contract mapping, evidence cleared as on any fresh verify), append
+`## Stale re-run` to its artifact (the old revision, the new one, the changed paths, the outcome),
+re-stamp its `phases.<phase>.revision`, then re-check agreement. Agreement, and the re-run found
+nothing blocking (no Critical finding; every contract item at `Verified (single-source)` or better)
+→ continue the done-transition. **A prior `## Stale re-run` section exists, the re-run itself
+changed code (its fixes moved the fingerprint again), a Critical finding or an evidence gap
+remains, or the run is step-by-step** → STOP naming the phase to re-run and the changed paths —
+never a second cycle. The re-run's own fix or repair cycle, if it has not been used yet, still
+applies inside it; the cap carries **no manifest field** — the section is the sole record.
 
 **Run-start procedure (every entry point that creates a manifest: `ff`, and the cold-start
 paths of `ff-explore` / `ff-clarify` / `ff-diagnose`).** The value is resolved
