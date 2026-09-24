@@ -8,7 +8,7 @@
 > **Consumes, never restates.** Every section below is derived from an upstream artifact resolved
 > via `manifest.artifacts.<name>`. A source that cannot be resolved is reported as such (e.g.
 > "no plan.md — rollback not derivable"), never invented. Delivery is optional and **never blocks
-> `done`** — see `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Delivery.
+> `done`** — see `${CLAUDE_PLUGIN_ROOT}/docs/schema/delivery.md` §Delivery.
 
 ## Release notes
 

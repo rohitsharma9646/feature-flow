@@ -33,7 +33,8 @@ ok()  { echo "ok:   $1"; }
 section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$1"; }
 lineno()  { grep -nE "$2" "$1" | head -1 | cut -d: -f1; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 TPL_D="templates/design.md"
 TPL_V="templates/verify.md"
 
@@ -123,21 +124,21 @@ fi
 
 # --- AC9: schema canonical section + subsections + ladder class + no-new-row --
 grep -q "^## Design trade-offs" "$SCHEMA" \
-  && ok "$SCHEMA: '## Design trade-offs & devil's advocate' canonical section present" \
-  || err "$SCHEMA: must define the '## Design trade-offs & devil's advocate' canonical section"
+  && ok "$SCHEMA_LABEL: '## Design trade-offs & devil's advocate' canonical section present" \
+  || err "$SCHEMA_LABEL: must define the '## Design trade-offs & devil's advocate' canonical section"
 dt="$(section "$SCHEMA" '^## Design trade-offs')"
 for h in '### Trade-off matrix' '### Devil' '### Actuation' '### decision.md reconciliation' '### v1 non-goals'; do
   printf '%s\n' "$dt" | grep -qF "$h" \
-    && ok "$SCHEMA §Design trade-offs: '$h' present" \
-    || err "$SCHEMA §Design trade-offs: must keep '$h'"
+    && ok "$SCHEMA_LABEL §Design trade-offs: '$h' present" \
+    || err "$SCHEMA_LABEL §Design trade-offs: must keep '$h'"
 done
 printf '%s\n' "$dt" | grep -qiF 'no new §Autopilot row' \
-  && ok "$SCHEMA §Design trade-offs: states no new §Autopilot row (reuses Evidence gap stop)" \
-  || err "$SCHEMA §Design trade-offs: must state no new §Autopilot row is added"
+  && ok "$SCHEMA_LABEL §Design trade-offs: states no new §Autopilot row (reuses Evidence gap stop)" \
+  || err "$SCHEMA_LABEL §Design trade-offs: must state no new §Autopilot row is added"
 ev="$(section "$SCHEMA" '^## Evidence$')"
 printf '%s\n' "$ev" | grep -qiF 'design-time failure scenario' \
-  && ok "$SCHEMA §Evidence: Confidence ladder names the design-time-failure-scenario class" \
-  || err "$SCHEMA §Evidence: Confidence ladder must name 'design-time failure scenario' as a third contract-item class"
+  && ok "$SCHEMA_LABEL §Evidence: Confidence ladder names the design-time-failure-scenario class" \
+  || err "$SCHEMA_LABEL §Evidence: Confidence ladder must name 'design-time failure scenario' as a third contract-item class"
 
 # --- AC10: no new config key / manifest field (targeted negative check) ------
 grep -qiE 'tradeoffmatrix|devilsadvocate|failurescenario' config/defaults.json \
@@ -145,12 +146,12 @@ grep -qiE 'tradeoffmatrix|devilsadvocate|failurescenario' config/defaults.json \
   || ok "config/defaults.json: no new config key (always-on, as required)"
 schema_json="$(awk '/^## Schema/{s=1;next} /^## Field notes/{s=0} s' "$SCHEMA")"
 printf '%s\n' "$schema_json" | grep -qiE '"(tradeOffMatrix|devilsAdvocate|failureScenarios)"' \
-  && err "$SCHEMA: manifest JSON schema must NOT gain a new top-level field for this workstream" \
-  || ok "$SCHEMA: no new top-level manifest field"
+  && err "$SCHEMA_LABEL: manifest JSON schema must NOT gain a new top-level field for this workstream" \
+  || ok "$SCHEMA_LABEL: no new top-level manifest field"
 
 # --- dist: Codex dist parity for every touched packaged file -----------------
 DIST="dist/codex/feature-flow"
-for rel in templates/design.md templates/verify.md docs/manifest-schema.md \
+for rel in templates/design.md templates/verify.md docs/manifest-schema.md docs/schema/*.md \
            commands/ff-design.md commands/ff-verify.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

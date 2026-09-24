@@ -15,7 +15,7 @@ Implements the planned work for **either track**. Branch on `manifest.track`:
 > or a separate brainstorm doc. All run state lives in the `.feature-flow/<slug>/` sandbox
 > and its `manifest.json`. Follow this command's steps literally, run only this one phase,
 > then STOP. In autopilot mode, ceremonial phase-end STOPs become continuations — see
-> **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -91,7 +91,7 @@ tiers — no tier branch in the locating logic.** Absent `artifacts.decision` (a
 manifest) → "no decision recorded"; proceed, no error.
 
 Then, when the KB is active (`toggles.kb === true` AND `paths.kb` non-null), also follow the
-**Decision recall** procedure in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Knowledge base
+**Decision recall** procedure in `${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` §Knowledge base
 (source 2 — tag-match prior decisions, apply the staleness flag; **stale** entries decorated
 `[STALE — <reason>]`, never dropped) — **do not restate its steps here.** KB inactive → skip
 this cross-run half only; the unconditional `artifacts.decision` read above still fires.
@@ -115,7 +115,7 @@ work` — it is the implement-side actuator of **Planning intelligence**: the pl
 critical path does not just get filed, it **constrains** the order tasks may execute in.
 
 Read the plan's `## Critical path` (derived by `/feature-flow:ff-plan` from its `## Dependency
-graph` — see **Planning intelligence** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; do not
+graph` — see **Planning intelligence** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/planning-intelligence.md`; do not
 restate its steps here). Before executing a task, check whether the approach you are about to take
 skips a task the critical path names, or executes critical-path tasks out of the stated order.
 
@@ -186,7 +186,7 @@ ensure the captured `bugfix.red` / `bugfix.green` evidence is recorded.
 the progress strip and proceed directly into the next phase by track — **feature:**
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-review.md`; **bugfix:**
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md` — see **Autopilot** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, **STOP** and hand
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, **STOP** and hand
 off by track (the two tracks end in opposite order — match the manifest):
 - **feature:** run `/feature-flow:ff-review` next, then `/feature-flow:ff-verify` (verify is terminal).
 - **bugfix:** run `/feature-flow:ff-verify` next (to confirm RED→GREEN), then

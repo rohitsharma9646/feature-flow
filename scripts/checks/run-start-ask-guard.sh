@@ -8,6 +8,8 @@ cd "$(dirname "$0")/../.." || exit 2
 fail=0
 err() { echo "FAIL: $1"; fail=1; }
 ok()  { echo "ok:   $1"; }
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 
 first_line() { grep -inE "$1" "$2" 2>/dev/null | head -1 | cut -d: -f1; }
 
@@ -42,12 +44,12 @@ check_window commands/ff-clarify.md  'then create one'
 check_window commands/ff-diagnose.md 'then create one'
 
 # (b) canonical run-start procedure resolves BEFORE the write
-grep -qi 'before the manifest is written' docs/manifest-schema.md \
+grep -qi 'before the manifest is written' "$SCHEMA" \
   && ok "manifest-schema.md: run-start is resolve-before-write" \
   || err "manifest-schema.md: run-start procedure must resolve the value BEFORE the manifest is written"
 
 # (c) creation rule ('Rules every command MUST follow') lists autopilot
-awk '/## Rules every command MUST follow/,/## Disk inference/' docs/manifest-schema.md | grep -q '`autopilot`' \
+awk '/## Rules every command MUST follow/,/## Disk inference/' "$SCHEMA" | grep -q '`autopilot`' \
   && ok "manifest-schema.md: creation rule lists autopilot" \
   || err "manifest-schema.md: creation rule #1 must list \`autopilot\`"
 
@@ -55,7 +57,7 @@ awk '/## Rules every command MUST follow/,/## Disk inference/' docs/manifest-sch
 grep -q 'never choose `manifest.autopilot` yourself' skills/feature-flow/SKILL.md \
   && ok "SKILL.md: doctrine line present" \
   || err "SKILL.md: unconditional block must contain 'never choose \`manifest.autopilot\` yourself'"
-grep -q 'Run-start mode ask' docs/manifest-schema.md \
+grep -q 'Run-start mode ask' "$SCHEMA" \
   && ok "manifest-schema.md: gate table has 'Run-start mode ask' row" \
   || err "manifest-schema.md: mandatory-gate table must have a 'Run-start mode ask' row"
 

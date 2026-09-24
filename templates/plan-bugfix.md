@@ -58,7 +58,7 @@ GREEN (post-fix), evidence recorded in `manifest.bugfix.red` / `manifest.bugfix.
 **Path:** Task 1 → Task 2 (→ Task 3, if present)
 
 > **Derived — never hand-authored.** The longest dependency chain through the graph above (per
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Planning intelligence → Critical-path
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/planning-intelligence.md` §Planning intelligence → Critical-path
 > derivation). A typical bugfix has no independent side task, so the whole RED→GREEN sequence is
 > the critical path — `/feature-flow:ff-implement` STOPs if the approach skips or reorders one of
 > these tasks. Re-derive if a further task changes the chain.

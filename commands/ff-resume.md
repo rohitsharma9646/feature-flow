@@ -24,7 +24,7 @@ argument-hint: "[slug, if more than one run exists]"
    named explicitly).
 3. **Read `manifest.json` and validate it against disk** — do not trust `status: "complete"`
    on its own: each complete phase's artifact must exist and pass minimal validity, per the
-   **Disk inference procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Resolve
+   **Disk inference procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/disk-inference.md`. Resolve
    each phase's artifact path via `manifest.artifacts.<name>` (the sole locating authority —
    so a doc promoted to `<paths.durable>/<date>-<slug>/` is checked at its real path, not the
    sandbox). The first phase that is not complete, or whose artifact is missing/invalid, is
@@ -39,7 +39,7 @@ argument-hint: "[slug, if more than one run exists]"
    exactly as a fresh run would. Then branch on mode: if `manifest.autopilot` is `true`,
    **continue the chain** from the resume point to the next mandatory pause — honoring
    every gate exactly as a live autopilot run would — see **Autopilot** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, run **only that
+   `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, run **only that
    one phase**: **STOP** at the end and tell the user the next command,
    ending the message with the one-line progress strip — see **Progress strip** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Do **not** chain forward through the

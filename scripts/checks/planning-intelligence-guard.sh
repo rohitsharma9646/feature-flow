@@ -34,7 +34,8 @@ ok()  { echo "ok:   $1"; }
 section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$1"; }
 lineno()  { grep -nE "$2" "$1" | head -1 | cut -d: -f1; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 
 # --- AC1/AC2/AC3/AC4: both templates ----------------------------------------
 for tpl in templates/plan.md templates/plan-bugfix.md; do
@@ -73,34 +74,34 @@ done
 
 # --- AC10: canonical schema section + subsections ----------------------------
 grep -q '^## Planning intelligence' "$SCHEMA" \
-  && ok "$SCHEMA: '## Planning intelligence' canonical section present" \
-  || err "$SCHEMA: must define the '## Planning intelligence' canonical section"
+  && ok "$SCHEMA_LABEL: '## Planning intelligence' canonical section present" \
+  || err "$SCHEMA_LABEL: must define the '## Planning intelligence' canonical section"
 pi="$(section "$SCHEMA" '^## Planning intelligence')"
 for h in 'Dependency graph notation' 'Critical-path derivation' 'Critical-path check' \
          'Risk register' 'Rollback plan'; do
   printf '%s\n' "$pi" | grep -qF "### $h" \
-    && ok "$SCHEMA §Planning intelligence: '### $h' present" \
-    || err "$SCHEMA §Planning intelligence: must keep '### $h'"
+    && ok "$SCHEMA_LABEL §Planning intelligence: '### $h' present" \
+    || err "$SCHEMA_LABEL §Planning intelligence: must keep '### $h'"
 done
 # AC6 (schema half): derivation is 'longest' chain over a 'lower-numbered' graph
 printf '%s\n' "$pi" | grep -qi 'longest' \
-  && ok "$SCHEMA §Planning intelligence: derivation names the longest chain" \
-  || err "$SCHEMA §Planning intelligence: derivation must name the longest chain"
+  && ok "$SCHEMA_LABEL §Planning intelligence: derivation names the longest chain" \
+  || err "$SCHEMA_LABEL §Planning intelligence: derivation must name the longest chain"
 printf '%s\n' "$pi" | grep -qi 'lower-numbered' \
-  && ok "$SCHEMA §Planning intelligence: states the lower-numbered dependency invariant" \
-  || err "$SCHEMA §Planning intelligence: must state the lower-numbered dependency invariant"
+  && ok "$SCHEMA_LABEL §Planning intelligence: states the lower-numbered dependency invariant" \
+  || err "$SCHEMA_LABEL §Planning intelligence: must state the lower-numbered dependency invariant"
 printf '%s\n' "$pi" | grep -qF 'Critical-path override by user' \
-  && ok "$SCHEMA §Planning intelligence: names the Critical-path override recording" \
-  || err "$SCHEMA §Planning intelligence: must name 'Critical-path override by user (<date>): <reason>'"
+  && ok "$SCHEMA_LABEL §Planning intelligence: names the Critical-path override recording" \
+  || err "$SCHEMA_LABEL §Planning intelligence: must name 'Critical-path override by user (<date>): <reason>'"
 
 # --- AC11: Autopilot mandatory-pauses row ------------------------------------
 ap="$(section "$SCHEMA" '^## Autopilot')"
 printf '%s\n' "$ap" | grep -qi 'Critical-path stop' \
-  && ok "$SCHEMA §Autopilot: has the Critical-path stop row" \
-  || err "$SCHEMA §Autopilot: mandatory-pauses table must have a Critical-path stop row"
+  && ok "$SCHEMA_LABEL §Autopilot: has the Critical-path stop row" \
+  || err "$SCHEMA_LABEL §Autopilot: mandatory-pauses table must have a Critical-path stop row"
 printf '%s\n' "$ap" | awk 'tolower($0) ~ /critical-path stop/' | grep -qi 'unconditional' \
-  && ok "$SCHEMA §Autopilot: Critical-path stop is unconditional" \
-  || err "$SCHEMA §Autopilot: the Critical-path stop row must state it is unconditional"
+  && ok "$SCHEMA_LABEL §Autopilot: Critical-path stop is unconditional" \
+  || err "$SCHEMA_LABEL §Autopilot: the Critical-path stop row must state it is unconditional"
 
 # --- AC5/AC6: ff-plan.md derive instruction + placement ----------------------
 grep -qi 'Derive planning intelligence' commands/ff-plan.md \
@@ -160,12 +161,12 @@ grep -qiE 'planningintelligence|dependencygraph|criticalpath|riskregister|rollba
   || ok "config/defaults.json: no planning-intelligence config key (always-on, as required)"
 schema_json="$(awk '/^## Schema/{s=1;next} /^## Field notes/{s=0} s' "$SCHEMA")"
 printf '%s\n' "$schema_json" | grep -qiE '"(dependencyGraph|criticalPath|riskRegister|rollbackPlan)"' \
-  && err "$SCHEMA: manifest JSON schema must NOT gain a new top-level planning-intelligence field" \
-  || ok "$SCHEMA: no new top-level manifest field for planning intelligence"
+  && err "$SCHEMA_LABEL: manifest JSON schema must NOT gain a new top-level planning-intelligence field" \
+  || ok "$SCHEMA_LABEL: no new top-level manifest field for planning intelligence"
 
 # --- AC12/AC14: Codex dist parity for every touched packaged file ------------
 DIST="dist/codex/feature-flow"
-for rel in templates/plan.md templates/plan-bugfix.md docs/manifest-schema.md \
+for rel in templates/plan.md templates/plan-bugfix.md docs/manifest-schema.md docs/schema/*.md \
            commands/ff-plan.md commands/ff-implement.md commands/ff-verify.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

@@ -8,7 +8,7 @@ argument-hint: "<run after the run is done (feature: after verify; bugfix: after
 Assembles `delivery.md` for a **finished** run by **consuming** its upstream artifacts — release
 notes, deployment/rollback/migration checklists, known issues, release validation. This phase is a
 **value-add**: it is invoked explicitly, it **never blocks `done`**, and it leaves `currentPhase`
-untouched. The canonical contract is `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Delivery —
+untouched. The canonical contract is `${CLAUDE_PLUGIN_ROOT}/docs/schema/delivery.md` §Delivery —
 follow it; do not restate it here.
 
 > **Precedence — read first.** You are executing the feature-flow workflow. Its phases REPLACE any

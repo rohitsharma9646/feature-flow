@@ -18,13 +18,13 @@ to specific ACs; the final task verifies all of them.
 >
 > **Assumption validation (full tier).** Every **unvalidated `validation-required: y`** assumption
 > carried from the signed spec/diagnosis maps to ≥1 task's `**Validates:** Assumption N` line, or is
-> listed here as an explicit named gap — cloning the `**Covers:**` rule (see `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
+> listed here as an explicit named gap — cloning the `**Covers:**` rule (see `${CLAUDE_PLUGIN_ROOT}/docs/schema/assumption-records.md`
 > §Assumption records → Actuation 2). A validated or **waived** assumption spawns no task; state
 > "no unvalidated `validation-required: y` assumptions → no validation task" when there are none.
 >
 > **Requirement-graph coverage (full tier, when the spec has a `## Requirement graph`).** Every spec
 > `AC_i depends-on AC_j` edge that can be represented is folded into `## Dependency graph` below as a
-> task-dependency edge (ordering tasks to satisfy it — see `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
+> task-dependency edge (ordering tasks to satisfy it — see `${CLAUDE_PLUGIN_ROOT}/docs/schema/discovery-fields.md`
 > §Discovery fields → Actuation 2). An edge whose two ACs are **covered by the same Task** (or that no
 > numbering satisfies) cannot be a task dependency and is listed here as an explicit named gap
 > naming the reason (e.g. `AC_i depends-on AC_j: covered by the same Task <n>`) — never silently
@@ -65,7 +65,7 @@ to specific ACs; the final task verifies all of them.
 **Path:** Task 1 → Task 2
 
 > **Derived — never hand-authored.** The longest dependency chain through the graph above (per
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Planning intelligence → Critical-path
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/planning-intelligence.md` §Planning intelligence → Critical-path
 > derivation). Every task named here is non-skippable, in this order: `/feature-flow:ff-implement`
 > STOPs if the approach skips or reorders one. No dependencies at all → "no gating chain — all
 > tasks independent"; fully linear plan → the whole task sequence. Re-derive if the graph changes.

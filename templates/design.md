@@ -30,7 +30,7 @@ categorical only (`low / med / high`, no numeric totals):
 > Core columns are scored every time. Add another axis (performance, maintainability,
 > scalability, security, cost) as an extra column **only when it actually differentiates** the
 > options — drop it if every option scores the same. Don't pad the matrix for uniformity; this is
-> the lean/adaptive shape. See `docs/manifest-schema.md` §Design trade-offs & devil's advocate.
+> the lean/adaptive shape. See `docs/schema/design-tradeoffs.md` §Design trade-offs & devil's advocate.
 
 ## Component map
 
@@ -50,7 +50,7 @@ categorical only (`low / med / high`, no numeric totals):
 
 > Stress-test the **chosen** option only (not the rejected ones — this is not a re-litigation of
 > the pick). **At least one failure scenario is required**, even for a design with a single obvious
-> option. See `docs/manifest-schema.md` §Design trade-offs & devil's advocate.
+> option. See `docs/schema/design-tradeoffs.md` §Design trade-offs & devil's advocate.
 
 ### Failure scenarios
 

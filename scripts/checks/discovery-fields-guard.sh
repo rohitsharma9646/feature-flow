@@ -44,7 +44,8 @@ section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$
 lineno()  { grep -nE "$2" "$1" | head -1 | cut -d: -f1; }
 flat()    { tr '\n' ' ' | tr -s '[:space:]' ' '; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 TPL_S="templates/spec.md"
 TPL_V="templates/verify.md"
 TPL_P="templates/plan.md"
@@ -147,18 +148,18 @@ flat < "$TPL_P" | grep -qiF 'covered by the same Task' \
 
 # --- AC10: schema canonical section + subsections + ladder class -------------
 grep -q '^## Discovery fields' "$SCHEMA" \
-  && ok "$SCHEMA: '## Discovery fields' canonical section present" \
-  || err "$SCHEMA: must define the '## Discovery fields' canonical section"
+  && ok "$SCHEMA_LABEL: '## Discovery fields' canonical section present" \
+  || err "$SCHEMA_LABEL: must define the '## Discovery fields' canonical section"
 df="$(section "$SCHEMA" '^## Discovery fields')"
 for h in 'Success metrics' 'Requirement graph' 'Actuation 1' 'Actuation 2' 'Tier / track scope' 'v1 non-goals'; do
   printf '%s' "$df" | grep -qF "### $h" \
-    && ok "$SCHEMA §Discovery fields: '### $h' present" \
-    || err "$SCHEMA §Discovery fields: must keep '### $h'"
+    && ok "$SCHEMA_LABEL §Discovery fields: '### $h' present" \
+    || err "$SCHEMA_LABEL §Discovery fields: must keep '### $h'"
 done
 ev="$(section "$SCHEMA" '^## Evidence$')"
 printf '%s' "$ev" | flat | grep -qiF 'success metric' \
-  && ok "$SCHEMA §Evidence: Confidence ladder names 'success metric' as a fourth contract-item class" \
-  || err "$SCHEMA §Evidence: Confidence ladder must name 'success metric' as a contract-item class"
+  && ok "$SCHEMA_LABEL §Evidence: Confidence ladder names 'success metric' as a fourth contract-item class" \
+  || err "$SCHEMA_LABEL §Evidence: Confidence ladder must name 'success metric' as a contract-item class"
 
 # --- AC9: no new config key / manifest field / §Autopilot row (negative) -----
 grep -qiE 'successmetric|requirementgraph|discoveryfield' config/defaults.json \
@@ -166,17 +167,17 @@ grep -qiE 'successmetric|requirementgraph|discoveryfield' config/defaults.json \
   || ok "config/defaults.json: no new config key (always-on, as required)"
 schema_json="$(awk '/^## Schema/{s=1;next} /^## Field notes/{s=0} s' "$SCHEMA")"
 printf '%s\n' "$schema_json" | grep -qiE '"(successMetrics|requirementGraph|discoveryFields)"' \
-  && err "$SCHEMA: manifest JSON schema must NOT gain a new top-level field for this workstream" \
-  || ok "$SCHEMA: no new top-level manifest field"
+  && err "$SCHEMA_LABEL: manifest JSON schema must NOT gain a new top-level field for this workstream" \
+  || ok "$SCHEMA_LABEL: no new top-level manifest field"
 ap="$(section "$SCHEMA" '^## Autopilot')"
 printf '%s' "$ap" | flat | grep -qiE 'success metric stop|requirement graph stop' \
-  && err "$SCHEMA §Autopilot: must NOT gain a new discovery-fields row (reuses Evidence gap stop / Outcome-gate gap)" \
-  || ok "$SCHEMA §Autopilot: no new discovery-fields row (as required)"
+  && err "$SCHEMA_LABEL §Autopilot: must NOT gain a new discovery-fields row (reuses Evidence gap stop / Outcome-gate gap)" \
+  || ok "$SCHEMA_LABEL §Autopilot: no new discovery-fields row (as required)"
 
 # --- dist: Codex dist parity for every touched packaged file -----------------
 DIST="dist/codex/feature-flow"
 for rel in templates/spec.md templates/verify.md templates/plan.md \
-           docs/manifest-schema.md commands/ff-clarify.md commands/ff-verify.md commands/ff-plan.md \
+           docs/manifest-schema.md docs/schema/*.md commands/ff-clarify.md commands/ff-verify.md commands/ff-plan.md \
            skills/feature-flow/SKILL.md README.md; do
   if cmp -s "$rel" "$DIST/$rel"; then
     ok "dist parity: $rel"

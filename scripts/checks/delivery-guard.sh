@@ -29,7 +29,8 @@ ok()  { echo "ok:   $1"; }
 section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$1"; }
 lineno()  { grep -nE "$2" "$1" | head -1 | cut -d: -f1; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 TPL="templates/delivery.md"
 CMD="commands/ff-deliver.md"
 
@@ -79,18 +80,18 @@ grep -qi 'irreversible: mitigation' "$CMD" \
   || err "$CMD: must exclude an 'irreversible: mitigation is <X>' task from the gap"
 
 # --- AC6: schema §Delivery + fields + enum unchanged + durable set --------------------------
-grep -q '^## Delivery' "$SCHEMA" && ok "$SCHEMA: '## Delivery' section present" || err "$SCHEMA: must define '## Delivery'"
+grep -q '^## Delivery' "$SCHEMA" && ok "$SCHEMA_LABEL: '## Delivery' section present" || err "$SCHEMA_LABEL: must define '## Delivery'"
 dv="$(section "$SCHEMA" '^## Delivery')"
-printf '%s\n' "$dv" | grep -qF 'phases.deliver'    && ok "$SCHEMA §Delivery: documents phases.deliver"    || err "$SCHEMA §Delivery: must document phases.deliver"
-printf '%s\n' "$dv" | grep -qF 'artifacts.delivery' && ok "$SCHEMA §Delivery: documents artifacts.delivery" || err "$SCHEMA §Delivery: must document artifacts.delivery"
-printf '%s\n' "$dv" | grep -qi 'absent'             && ok "$SCHEMA §Delivery: states the absent-field default" || err "$SCHEMA §Delivery: must state the absent-field default"
+printf '%s\n' "$dv" | grep -qF 'phases.deliver'    && ok "$SCHEMA_LABEL §Delivery: documents phases.deliver"    || err "$SCHEMA_LABEL §Delivery: must document phases.deliver"
+printf '%s\n' "$dv" | grep -qF 'artifacts.delivery' && ok "$SCHEMA_LABEL §Delivery: documents artifacts.delivery" || err "$SCHEMA_LABEL §Delivery: must document artifacts.delivery"
+printf '%s\n' "$dv" | grep -qi 'absent'             && ok "$SCHEMA_LABEL §Delivery: states the absent-field default" || err "$SCHEMA_LABEL §Delivery: must state the absent-field default"
 enum="$(grep -E '"currentPhase":' "$SCHEMA" | head -1)"
 printf '%s\n' "$enum" | grep -q 'deliver' \
-  && err "$SCHEMA: currentPhase enum must NOT contain 'deliver' (done is the immutable terminal)" \
-  || ok "$SCHEMA: currentPhase enum correctly omits 'deliver'"
+  && err "$SCHEMA_LABEL: currentPhase enum must NOT contain 'deliver' (done is the immutable terminal)" \
+  || ok "$SCHEMA_LABEL: currentPhase enum correctly omits 'deliver'"
 grep -qF '`verify`, `delivery`' "$SCHEMA" \
-  && ok "$SCHEMA: durable-eligible set includes 'delivery'" \
-  || err "$SCHEMA: durable-eligible artifact set must include 'delivery'"
+  && ok "$SCHEMA_LABEL: durable-eligible set includes 'delivery'" \
+  || err "$SCHEMA_LABEL: durable-eligible artifact set must include 'delivery'"
 
 # --- AC9: SKILL + README reference ff-deliver -----------------------------------------------
 grep -q 'ff-deliver' skills/feature-flow/SKILL.md && ok "SKILL.md references ff-deliver" || err "SKILL.md must reference ff-deliver"
@@ -103,7 +104,7 @@ grep -q 'ff-deliver' README.md                    && ok "README.md references ff
 
 # --- dist parity: every touched packaged file -----------------------------------------------
 DIST="dist/codex/feature-flow"
-for rel in commands/ff-deliver.md templates/delivery.md docs/manifest-schema.md \
+for rel in commands/ff-deliver.md templates/delivery.md docs/manifest-schema.md docs/schema/*.md \
            skills/feature-flow/SKILL.md README.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

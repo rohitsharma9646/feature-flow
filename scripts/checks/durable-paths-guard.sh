@@ -14,7 +14,8 @@ ok()  { echo "ok:   $1"; }
 
 first_line() { grep -inE "$1" "$2" 2>/dev/null | head -1 | cut -d: -f1; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 
 # --- (a) config key (AC4): paths.durable present AND defaults to null --------
 grep -qE '"durable"[[:space:]]*:[[:space:]]*null' config/defaults.json \
@@ -23,41 +24,41 @@ grep -qE '"durable"[[:space:]]*:[[:space:]]*null' config/defaults.json \
 
 # --- (b) canonical Durable artifact resolution rule (AC2, AC3, AC5) ----------
 grep -q 'Durable artifact resolution' "$SCHEMA" \
-  && ok "$SCHEMA: 'Durable artifact resolution' rule present" \
-  || err "$SCHEMA: must define a 'Durable artifact resolution' rule"
+  && ok "$SCHEMA_LABEL: 'Durable artifact resolution' rule present" \
+  || err "$SCHEMA_LABEL: must define a 'Durable artifact resolution' rule"
 # precedence: legacy paths.spec/plan -> paths.durable -> sandbox
 grep -q 'paths.durable' "$SCHEMA" \
-  && ok "$SCHEMA: rule names paths.durable" \
-  || err "$SCHEMA: resolution rule must name paths.durable"
+  && ok "$SCHEMA_LABEL: rule names paths.durable" \
+  || err "$SCHEMA_LABEL: resolution rule must name paths.durable"
 # the <date>-<slug>/<artifact> directory scheme
 grep -qE '\-<(slug|S)>/' "$SCHEMA" \
-  && ok "$SCHEMA: rule states the <date>-<slug>/<artifact> scheme" \
-  || err "$SCHEMA: resolution rule must state the <date>-<slug>/<artifact>.md scheme"
+  && ok "$SCHEMA_LABEL: rule states the <date>-<slug>/<artifact> scheme" \
+  || err "$SCHEMA_LABEL: resolution rule must state the <date>-<slug>/<artifact>.md scheme"
 
 # --- (c) authority wording graft (AC8 foot-gun removal) ----------------------
 grep -q 'display mirror' "$SCHEMA" \
-  && ok "$SCHEMA: phases.<phase>.artifact described as a display mirror" \
-  || err "$SCHEMA: phases.<phase>.artifact must be called a display mirror (not authoritative)"
+  && ok "$SCHEMA_LABEL: phases.<phase>.artifact described as a display mirror" \
+  || err "$SCHEMA_LABEL: phases.<phase>.artifact must be called a display mirror (not authoritative)"
 # the stale 'only spec and plan are relocatable' claim must be GONE.
 # (The full sentence wraps across two lines; match the on-line fragment.)
 if grep -qiE 'spec. and .plan. are relocatable' "$SCHEMA"; then
-  err "$SCHEMA: stale 'spec and plan are relocatable' claim must be removed"
+  err "$SCHEMA_LABEL: stale 'spec and plan are relocatable' claim must be removed"
 else
-  ok "$SCHEMA: stale 'only spec/plan relocatable' claim absent"
+  ok "$SCHEMA_LABEL: stale 'only spec/plan relocatable' claim absent"
 fi
 
 # --- (d) Disk-inference is pointer-aware + durable-fallback (AC8) ------------
 awk '/## Disk inference procedure/,/^## Re-run guard/' "$SCHEMA" | grep -q 'artifacts\.' \
-  && ok "$SCHEMA: Disk-inference references artifacts.<name>" \
-  || err "$SCHEMA: Disk-inference procedure must resolve via artifacts.<name>"
+  && ok "$SCHEMA_LABEL: Disk-inference references artifacts.<name>" \
+  || err "$SCHEMA_LABEL: Disk-inference procedure must resolve via artifacts.<name>"
 awk '/## Disk inference procedure/,/^## Re-run guard/' "$SCHEMA" | grep -q 'paths.durable' \
-  && ok "$SCHEMA: Disk-inference has the paths.durable manifest-lost fallback" \
-  || err "$SCHEMA: Disk-inference must describe the paths.durable manifest-lost fallback"
+  && ok "$SCHEMA_LABEL: Disk-inference has the paths.durable manifest-lost fallback" \
+  || err "$SCHEMA_LABEL: Disk-inference must describe the paths.durable manifest-lost fallback"
 
 # --- (e) the rule lives in the artifacts note (AC1, AC2) ---------------------
 awk '/maps logical names/,/## Run resolution/' "$SCHEMA" | grep -q 'Durable artifact resolution' \
-  && ok "$SCHEMA: artifacts note carries the resolution rule" \
-  || err "$SCHEMA: the artifacts note must carry the Durable artifact resolution rule"
+  && ok "$SCHEMA_LABEL: artifacts note carries the resolution rule" \
+  || err "$SCHEMA_LABEL: the artifacts note must carry the Durable artifact resolution rule"
 
 # --- (f) writing commands reference the rule + record artifacts.<name> -------
 check_writer() { # file artifact_field
@@ -120,7 +121,7 @@ grep -qiE 'promot|paths.durable' skills/feature-flow/SKILL.md \
 DIST="dist/codex/feature-flow"
 for rel in \
   config/defaults.json \
-  docs/manifest-schema.md \
+  docs/manifest-schema.md docs/schema/*.md \
   commands/ff.md \
   commands/ff-clarify.md \
   commands/ff-plan.md \

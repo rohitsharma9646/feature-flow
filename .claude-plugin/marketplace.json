@@ -5,7 +5,7 @@
     {
       "name": "feature-flow",
       "source": { "source": "url", "url": "https://github.com/rohitsharma9646/feature-flow.git", "ref": "dist" },
-      "version": "0.19.0",
+      "version": "0.21.0",
       "description": "Gated, resumable feature-development and test-first bugfix workflow with on-disk run state and real executed verification."
     }
   ]

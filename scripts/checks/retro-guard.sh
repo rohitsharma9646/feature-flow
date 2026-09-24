@@ -29,7 +29,8 @@ has() { grep -qF -- "$2" "$1" && ok "$1: $3" || err "$1: $3 (missing: $2)"; }
 # body of the first '## ' section whose heading matches, up to (excluding) the next '## '.
 section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$1"; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 TPL="templates/retro.md"
 CMD="commands/ff-retro.md"
 JSON="schemas/manifest-v1.schema.json"
@@ -39,7 +40,7 @@ JSON="schemas/manifest-v1.schema.json"
 
 # --- AC4/AC3/AC5/AC11: canonical §Retrospective --------------------------------------------
 sec="$(section "$SCHEMA" '^## Retrospective')"
-[ -n "$sec" ] && ok "$SCHEMA: '## Retrospective' section present" || err "$SCHEMA: '## Retrospective' section missing"
+[ -n "$sec" ] && ok "$SCHEMA_LABEL: '## Retrospective' section present" || err "$SCHEMA_LABEL: '## Retrospective' section missing"
 for needle in '### Materiality test' '### Candidate schema' '### Confirm gate' '### Signals' \
               'worked` · `failed` · `missing` · `ambiguous` · `bypassed' \
               'one-off` · `repo-specific` · `reusable' \
@@ -49,19 +50,19 @@ for needle in '### Materiality test' '### Candidate schema' '### Confirm gate' '
   printf '%s\n' "$sec" | grep -qiF -- "$needle" && ok "§Retrospective: $needle" || err "§Retrospective must state: $needle"
 done
 grep -qF '`verify`, `delivery`, `retro`' "$SCHEMA" \
-  && ok "$SCHEMA: durable-eligible set includes 'retro'" || err "$SCHEMA: durable-eligible set must include 'retro'"
+  && ok "$SCHEMA_LABEL: durable-eligible set includes 'retro'" || err "$SCHEMA_LABEL: durable-eligible set must include 'retro'"
 grep -qF '**`phases.retro`** and **`artifacts.retro`**' "$SCHEMA" \
-  && ok "$SCHEMA: field note for phases.retro/artifacts.retro" || err "$SCHEMA: field note for phases.retro/artifacts.retro missing"
+  && ok "$SCHEMA_LABEL: field note for phases.retro/artifacts.retro" || err "$SCHEMA_LABEL: field note for phases.retro/artifacts.retro missing"
 grep -qF '**Retro is never chained.**' "$SCHEMA" \
-  && ok "$SCHEMA: 'Retro is never chained'" || err "$SCHEMA: §Autopilot must say 'Retro is never chained'"
+  && ok "$SCHEMA_LABEL: 'Retro is never chained'" || err "$SCHEMA_LABEL: §Autopilot must say 'Retro is never chained'"
 row="$(grep -E '^\| Retro confirm-gate' "$SCHEMA")"
 if [ -n "$row" ]; then
-  ok "$SCHEMA: §Autopilot mandatory-pauses row for the retro confirm-gate"
+  ok "$SCHEMA_LABEL: §Autopilot mandatory-pauses row for the retro confirm-gate"
   printf '%s\n' "$row" | grep -qi 'unconditional' \
-    && err "$SCHEMA: retro confirm-gate row must NOT say 'unconditional' (passive confirm-gate shape)" \
-    || ok "$SCHEMA: retro confirm-gate row is not 'unconditional' (passive confirm-gate shape)"
+    && err "$SCHEMA_LABEL: retro confirm-gate row must NOT say 'unconditional' (passive confirm-gate shape)" \
+    || ok "$SCHEMA_LABEL: retro confirm-gate row is not 'unconditional' (passive confirm-gate shape)"
 else
-  err "$SCHEMA: §Autopilot mandatory-pauses table needs a 'Retro confirm-gate' row"
+  err "$SCHEMA_LABEL: §Autopilot mandatory-pauses table needs a 'Retro confirm-gate' row"
 fi
 
 # --- AC11: JSON schema — phases.retro everywhere phases are enumerated, never currentPhase ---
@@ -131,7 +132,7 @@ grep -q 'ff-retro' README.md                    && ok "README.md references ff-r
 
 # --- dist parity: every touched packaged file -----------------------------------------------
 DIST="dist/codex/feature-flow"
-for rel in commands/ff-retro.md templates/retro.md docs/manifest-schema.md commands/ff-verify.md \
+for rel in commands/ff-retro.md templates/retro.md docs/manifest-schema.md docs/schema/*.md commands/ff-verify.md \
            commands/ff-review.md skills/feature-flow/SKILL.md README.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"

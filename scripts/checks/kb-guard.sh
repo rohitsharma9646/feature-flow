@@ -22,7 +22,8 @@ fail=0
 err() { echo "FAIL: $1"; fail=1; }
 ok()  { echo "ok:   $1"; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 CFG="config/defaults.json"
 TPL="templates/kb-entry.md"
 
@@ -44,32 +45,32 @@ grep -q 'freshnessWindowDays' "$CFG" && grep -q 'maxRecallEntries' "$CFG" \
 
 # --- (b) canonical contract section (AC8 staleness, AC11 degrade, AC13) ------
 grep -q '^## Knowledge base' "$SCHEMA" \
-  && ok "$SCHEMA: '## Knowledge base' contract section present" \
-  || err "$SCHEMA: must define a '## Knowledge base' contract section"
+  && ok "$SCHEMA_LABEL: '## Knowledge base' contract section present" \
+  || err "$SCHEMA_LABEL: must define a '## Knowledge base' contract section"
 kb="$(section "$SCHEMA" '^## Knowledge base')"
 for term in freshnessWindowDays referencedFiles captureCommitSha maxRecallEntries paths.kb; do
   printf '%s\n' "$kb" | grep -q "$term" \
-    && ok "$SCHEMA §Knowledge base: names $term" \
-    || err "$SCHEMA §Knowledge base: contract must name $term"
+    && ok "$SCHEMA_LABEL §Knowledge base: names $term" \
+    || err "$SCHEMA_LABEL §Knowledge base: contract must name $term"
 done
 printf '%s\n' "$kb" | grep -qiE 'degrade' \
-  && ok "$SCHEMA §Knowledge base: documents the Codex degrade path (AC11)" \
-  || err "$SCHEMA §Knowledge base: must document the Codex degrade path"
+  && ok "$SCHEMA_LABEL §Knowledge base: documents the Codex degrade path (AC11)" \
+  || err "$SCHEMA_LABEL §Knowledge base: must document the Codex degrade path"
 printf '%s\n' "$kb" | grep -qiE 'dedup' && printf '%s\n' "$kb" | grep -qiE 'supersession' \
-  && ok "$SCHEMA §Knowledge base: states dedup + supersession non-goals (AC13)" \
-  || err "$SCHEMA §Knowledge base: must state dedup + supersession as v1 non-goals"
+  && ok "$SCHEMA_LABEL §Knowledge base: states dedup + supersession non-goals (AC13)" \
+  || err "$SCHEMA_LABEL §Knowledge base: must state dedup + supersession as v1 non-goals"
 # the autopilot mandatory-pause table must carry the KB capture confirm-gate row
 section "$SCHEMA" '^## Autopilot' | grep -qiE 'KB capture' \
-  && ok "$SCHEMA §Autopilot: has the KB capture confirm-gate row" \
-  || err "$SCHEMA §Autopilot: mandatory-pause table must have a KB capture confirm-gate row"
+  && ok "$SCHEMA_LABEL §Autopilot: has the KB capture confirm-gate row" \
+  || err "$SCHEMA_LABEL §Autopilot: mandatory-pause table must have a KB capture confirm-gate row"
 # terminal-convergence single-source (Q6): the done-transition rule lives in its own
 # section, and the capture rule references it rather than keeping its own 'By track' copy.
 grep -q '^## Terminal convergence' "$SCHEMA" \
-  && ok "$SCHEMA: '## Terminal convergence' section present (canonical done-transition rule)" \
-  || err "$SCHEMA: must define a '## Terminal convergence' section (the done-transition rule)"
+  && ok "$SCHEMA_LABEL: '## Terminal convergence' section present (canonical done-transition rule)" \
+  || err "$SCHEMA_LABEL: must define a '## Terminal convergence' section (the done-transition rule)"
 printf '%s\n' "$kb" | grep -qi 'Terminal convergence' \
-  && ok "$SCHEMA §Knowledge base: capture rule references Terminal convergence (single-source)" \
-  || err "$SCHEMA §Knowledge base: capture rule must reference '## Terminal convergence', not restate the done-transition"
+  && ok "$SCHEMA_LABEL §Knowledge base: capture rule references Terminal convergence (single-source)" \
+  || err "$SCHEMA_LABEL §Knowledge base: capture rule must reference '## Terminal convergence', not restate the done-transition"
 
 # --- (c) entry-template provenance (AC3) ------------------------------------
 for f in title captureDate captureCommitSha runSlug tags referencedFiles; do
@@ -179,7 +180,7 @@ done
 DIST="dist/codex/feature-flow"
 for rel in \
   config/defaults.json \
-  docs/manifest-schema.md \
+  docs/manifest-schema.md docs/schema/*.md \
   templates/kb-entry.md \
   commands/ff-verify.md \
   commands/ff-review.md \

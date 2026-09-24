@@ -9,7 +9,7 @@ Records **what feature-flow's own safeguards did** on a **finished** run — whi
 and waivers fired, whether each worked, and which single owner should hold the fix for anything that
 didn't. It is invoked explicitly, leaves `currentPhase` untouched, and writes **nothing** until the
 user has accepted, edited, or rejected every candidate. The canonical contract is
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Retrospective — follow it; do not restate it here.
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/retrospective.md` §Retrospective — follow it; do not restate it here.
 
 > **Precedence — read first.** You are executing the feature-flow workflow. Its phases REPLACE any
 > generic brainstorming / writing-plans / make-plan / docs-first planning: do **not** invoke those

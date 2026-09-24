@@ -70,7 +70,8 @@ parity templates/diagnosis.md
 # client-grade verify.md, gap/waiver stop, Gate B content check. Same scope
 # rule as above: structural pins only; behavioral quality is not grep-checkable.
 # ============================================================================
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 
 # section <file> <start-heading-ERE> : print the body of the first '## ' section whose
 # heading matches the regex, up to (excluding) the next '## ' heading. Scopes a grep to
@@ -80,29 +81,29 @@ section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$
 # --- (f) canonical §Evidence section (AC1) -----------------------------------
 EV="$(section "$SCHEMA" '^## Evidence$')"
 [ -n "$EV" ] \
-  && ok "$SCHEMA: '## Evidence' canonical section present" \
-  || err "$SCHEMA: must contain the canonical '## Evidence' section"
+  && ok "$SCHEMA_LABEL: '## Evidence' canonical section present" \
+  || err "$SCHEMA_LABEL: must contain the canonical '## Evidence' section"
 for h in 'Evidence-kind taxonomy' 'Evidence record shape' 'Evidence directory' \
          'Confidence ladder' 'Detection and N/A rule' 'Evidence waiver' \
          'Tier scaling' 'Adding an evidence kind' 'v1 non-goals'; do
   printf '%s' "$EV" | grep -qF "### $h" \
-    && ok "$SCHEMA §Evidence: '### $h' subsection present" \
-    || err "$SCHEMA §Evidence: must keep the '### $h' subsection"
+    && ok "$SCHEMA_LABEL §Evidence: '### $h' subsection present" \
+    || err "$SCHEMA_LABEL §Evidence: must keep the '### $h' subsection"
 done
 printf '%s' "$EV" | grep -qF '{kind, command, actual exit/HTTP status, excerpt, artifact paths}' \
-  && ok "$SCHEMA §Evidence: evidence record shape stated literally" \
-  || err "$SCHEMA §Evidence: must state the record shape {kind, command, actual exit/HTTP status, excerpt, artifact paths}"
+  && ok "$SCHEMA_LABEL §Evidence: evidence record shape stated literally" \
+  || err "$SCHEMA_LABEL §Evidence: must state the record shape {kind, command, actual exit/HTTP status, excerpt, artifact paths}"
 for k in executed-test build/static-analysis e2e/browser http/api db cli-output logs before/after; do
   printf '%s' "$EV" | grep -qF "$k" \
-    && ok "$SCHEMA §Evidence: taxonomy names '$k'" \
-    || err "$SCHEMA §Evidence: taxonomy must name the '$k' kind"
+    && ok "$SCHEMA_LABEL §Evidence: taxonomy names '$k'" \
+    || err "$SCHEMA_LABEL §Evidence: taxonomy must name the '$k' kind"
 done
 
 # --- (g) the four confidence tokens, schema AND template (AC6) ---------------
 for t in 'Verified (multi-source)' 'Verified (single-source)' 'Partially verified' 'Unverified'; do
   printf '%s' "$EV" | grep -qF "$t" \
-    && ok "$SCHEMA §Evidence: confidence token '$t' present" \
-    || err "$SCHEMA §Evidence: confidence ladder must name '$t'"
+    && ok "$SCHEMA_LABEL §Evidence: confidence token '$t' present" \
+    || err "$SCHEMA_LABEL §Evidence: confidence ladder must name '$t'"
   grep -qF "$t" templates/verify.md \
     && ok "templates/verify.md: confidence token '$t' present" \
     || err "templates/verify.md: must carry the confidence token '$t'"
@@ -133,19 +134,19 @@ grep -qi 'clear' agents/ff-test-runner.md \
 
 # --- (j) Autopilot mandatory-pause row (AC9) ----------------------------------
 section "$SCHEMA" '^## Autopilot$' | grep -qF 'Evidence gap stop' \
-  && ok "$SCHEMA §Autopilot: 'Evidence gap stop' pause row present" \
-  || err "$SCHEMA §Autopilot: mandatory-pauses table must carry the 'Evidence gap stop' row"
+  && ok "$SCHEMA_LABEL §Autopilot: 'Evidence gap stop' pause row present" \
+  || err "$SCHEMA_LABEL §Autopilot: mandatory-pauses table must carry the 'Evidence gap stop' row"
 
 # --- (k) ff-verify wiring: canonical reference + waiver line (AC7/AC8) --------
 grep -qE '§Evidence|\*\*Evidence\*\*' commands/ff-verify.md \
   && ok "commands/ff-verify.md: references the Evidence contract by name" \
-  || err "commands/ff-verify.md: must reference docs/manifest-schema.md §Evidence by name"
+  || err "commands/ff-verify.md: must reference docs/schema/evidence.md §Evidence by name"
 grep -qF 'Evidence gap accepted by user' commands/ff-verify.md \
   && ok "commands/ff-verify.md: waiver line format stated" \
   || err "commands/ff-verify.md: must state the exact waiver line 'Evidence gap accepted by user (<date>): <reason>'"
 grep -qF 'Evidence gap accepted by user' "$SCHEMA" \
-  && ok "$SCHEMA: waiver line format stated" \
-  || err "$SCHEMA: must state the exact waiver line format"
+  && ok "$SCHEMA_LABEL: waiver line format stated" \
+  || err "$SCHEMA_LABEL: must state the exact waiver line format"
 
 # --- (l) dist parity for this feature's newly-pinned files --------------------
 # (templates/verify.md covered in (e); docs/manifest-schema.md by kb-guard +

@@ -28,7 +28,8 @@ section() { awk -v re="$2" '$0 ~ "^## " && seen {exit} $0 ~ re {seen=1} seen' "$
 lineno()  { grep -nE "$2" "$1" | head -1 | cut -d: -f1; }
 flat()    { tr '\n' ' ' | tr -s '[:space:]' ' '; }  # collapse newlines — prose may reflow across lines
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 CMD="commands/ff-verify.md"
 TPL="templates/verify.md"
 RUNNER="agents/ff-test-runner.md"
@@ -37,16 +38,16 @@ RUNNER="agents/ff-test-runner.md"
 ap="$(section "$SCHEMA" '^## Autopilot$')"
 row="$(printf '%s\n' "$ap" | grep -iF 'Verify repair-and-re-verify cycle')"
 if [ -n "$row" ]; then
-  ok "$SCHEMA §Autopilot: 'Verify repair-and-re-verify cycle' mandatory-pause row present"
+  ok "$SCHEMA_LABEL §Autopilot: 'Verify repair-and-re-verify cycle' mandatory-pause row present"
   printf '%s\n' "$row" | grep -qi 'unconditional' \
-    && err "$SCHEMA §Autopilot: the repair-cycle row must NOT say 'unconditional' (capped-then-stop shape, not the do-not-contradict STOP)" \
-    || ok "$SCHEMA §Autopilot: repair-cycle row correctly avoids 'unconditional'"
+    && err "$SCHEMA_LABEL §Autopilot: the repair-cycle row must NOT say 'unconditional' (capped-then-stop shape, not the do-not-contradict STOP)" \
+    || ok "$SCHEMA_LABEL §Autopilot: repair-cycle row correctly avoids 'unconditional'"
 else
-  err "$SCHEMA §Autopilot: must add the 'Verify repair-and-re-verify cycle' mandatory-pause row"
+  err "$SCHEMA_LABEL §Autopilot: must add the 'Verify repair-and-re-verify cycle' mandatory-pause row"
 fi
 grep -qF '**Repair-and-re-verify cycle' "$SCHEMA" \
-  && ok "$SCHEMA: 'Repair-and-re-verify cycle' subsection present (mirrors Fix-and-re-review cycle)" \
-  || err "$SCHEMA: must add a 'Repair-and-re-verify cycle' subsection mirroring Fix-and-re-review cycle"
+  && ok "$SCHEMA_LABEL: 'Repair-and-re-verify cycle' subsection present (mirrors Fix-and-re-review cycle)" \
+  || err "$SCHEMA_LABEL: must add a 'Repair-and-re-verify cycle' subsection mirroring Fix-and-re-review cycle"
 
 # --- AC1/AC2/AC4/AC5: ff-verify.md branch placement --------------------------
 lsec=$(lineno "$CMD" '^## Refuse premature')
@@ -104,12 +105,12 @@ grep -qiE 'repaircycle' config/defaults.json \
   || ok "config/defaults.json: no new repair config key"
 schema_json="$(awk '/^## Schema/{s=1;next} /^## Field notes/{s=0} s' "$SCHEMA")"
 printf '%s\n' "$schema_json" | grep -qiE '"repaircycles"' \
-  && err "$SCHEMA: manifest JSON schema must NOT gain a 'repairCycles' field (artifact-resident cap, no manifest footprint)" \
-  || ok "$SCHEMA: no new top-level manifest field for repair cycles"
+  && err "$SCHEMA_LABEL: manifest JSON schema must NOT gain a 'repairCycles' field (artifact-resident cap, no manifest footprint)" \
+  || ok "$SCHEMA_LABEL: no new top-level manifest field for repair cycles"
 
 # --- dist: Codex dist parity for every touched packaged file -----------------
 DIST="dist/codex/feature-flow"
-for rel in "$CMD" "$TPL" "$RUNNER" "$SCHEMA" skills/feature-flow/SKILL.md README.md; do
+for rel in "$CMD" "$TPL" "$RUNNER" docs/manifest-schema.md docs/schema/*.md skills/feature-flow/SKILL.md README.md; do
   if diff -q "$rel" "$DIST/$rel" >/dev/null 2>&1; then
     ok "dist parity: $rel"
   else

@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.19.0 · MIT licensed
+> **Status:** v0.21.0 · MIT licensed
 
 ## Why use it
 
@@ -28,7 +28,8 @@ It runs **two tracks over one spine**:
 
 The full behavioral contract lives in
 [skills/feature-flow/SKILL.md](skills/feature-flow/SKILL.md); the on-disk state format in
-[docs/manifest-schema.md](docs/manifest-schema.md).
+[docs/manifest-schema.md](docs/manifest-schema.md) (the core; its topic index points at the
+per-topic files in [docs/schema/](docs/schema/)).
 
 ## Install
 
@@ -85,7 +86,7 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 | Phase | What happens | Artifact |
 |---|---|---|
 | **explore** | Read-only agents map the codebase | `explore.md` |
-| **clarify** | Challenges the premise, locks acceptance criteria, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
+| **clarify** | Challenges the premise (closed-choice questions via a picker), locks acceptance criteria plus the files it expects to touch and one **end-to-end check**, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
 | **design** | Architect agents fan out (minimal / clean / pragmatic); scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
 | **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
 | **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
@@ -94,6 +95,8 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 
 Every stop ends with a progress strip, e.g.
 `explore[done] → clarify[done] → design[NEXT] → plan → implement → review → verify`.
+In step-by-step mode a phase hand-off also suggests `/clear` before the next phase: the run's state
+is on disk, so the next phase starts with a clean context and loses nothing.
 
 A bug report takes the other track:
 
@@ -118,7 +121,7 @@ automatically, pausing only at the gates that genuinely need you:
 
 Auto-completed phases show `[auto]` in the strip. **Sign-offs are never automated** — every gate
 still applies. Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the
-run-start question. Full rules: `docs/manifest-schema.md` §Autopilot.
+run-start question. Full rules: `docs/schema/autopilot.md` §Autopilot.
 
 ## Enforcement
 
@@ -161,7 +164,7 @@ code inspection or reasoning alone.
 - The floor (executed tests/build/lint with real exit codes) is **tier-invariant**; the widened
   breadth applies to full-tier runs.
 
-Full contract: `docs/manifest-schema.md` §Evidence.
+Full contract: `docs/schema/evidence.md` §Evidence.
 
 ## Knowledge base (on by default)
 
@@ -181,7 +184,7 @@ at your repo root; override with `paths.kb`). To opt out per-project:
   file is gone or it's older than `kb.freshnessWindowDays`.
 - **Not in v1:** dedup and supersession of near-duplicate entries (deferred to a fast-follow).
 
-Full contract: `docs/manifest-schema.md` §Knowledge base.
+Full contract: `docs/schema/knowledge-base.md` §Knowledge base.
 
 ## Commands
 

@@ -45,7 +45,8 @@ lineno()  { grep -nE "$2" "$1" | head -1 | cut -d: -f1; }
 # that wrapped across a line break still matches — a guard over prose must survive a reflow.
 flat()    { tr '\n' ' ' | tr -s '[:space:]' ' '; }
 
-SCHEMA="docs/manifest-schema.md"
+. scripts/checks/lib/schema.sh
+schema_join  # SCHEMA = the joined contract (temp file); SCHEMA_LABEL names it in messages
 HEADER='| Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |'
 
 # --- AC1: spec template table ------------------------------------------------
@@ -98,50 +99,51 @@ flat < commands/ff-diagnose.md | grep -qiF 'skip this entirely' \
 # --- AC5: §Sign-off rendering rule 3 -----------------------------------------
 sor="$(section "$SCHEMA" '^## Sign-off rendering')"
 printf '%s' "$sor" | flat | grep -qiF 'Three rules' \
-  && ok "$SCHEMA §Sign-off rendering: is 'Three rules'" \
-  || err "$SCHEMA §Sign-off rendering: must be bumped to 'Three rules'"
+  && ok "$SCHEMA_LABEL §Sign-off rendering: is 'Three rules'" \
+  || err "$SCHEMA_LABEL §Sign-off rendering: must be bumped to 'Three rules'"
 printf '%s' "$sor" | flat | grep -qiF 'never folded into' \
-  && ok "$SCHEMA §Sign-off rendering: rule 3 echo is a distinct block, never folded into the AC checkboxes" \
-  || err "$SCHEMA §Sign-off rendering: rule 3 must state the echo is 'never folded into' the AC checkboxes"
+  && ok "$SCHEMA_LABEL §Sign-off rendering: rule 3 echo is a distinct block, never folded into the AC checkboxes" \
+  || err "$SCHEMA_LABEL §Sign-off rendering: rule 3 must state the echo is 'never folded into' the AC checkboxes"
 printf '%s' "$sor" | grep -qF '### Unvalidated assumptions' \
-  && ok "$SCHEMA §Sign-off rendering: carries a worked '### Unvalidated assumptions' example" \
-  || err "$SCHEMA §Sign-off rendering: must show a worked '### Unvalidated assumptions' block"
+  && ok "$SCHEMA_LABEL §Sign-off rendering: carries a worked '### Unvalidated assumptions' example" \
+  || err "$SCHEMA_LABEL §Sign-off rendering: must show a worked '### Unvalidated assumptions' block"
 
 # --- AC8: verbatim waiver line across surfaces + Autopilot row ---------------
 WAIVER='Assumption validation waived by user (<date>): <reason>'
 for f in "$SCHEMA" commands/ff-clarify.md commands/ff-diagnose.md; do
+  l="$f"; [ "$f" = "$SCHEMA" ] && l="$SCHEMA_LABEL"
   flat < "$f" | grep -qF "$WAIVER" \
-    && ok "$f: carries the verbatim waiver line" \
-    || err "$f: must carry the verbatim '$WAIVER' line"
+    && ok "$l: carries the verbatim waiver line" \
+    || err "$l: must carry the verbatim '$WAIVER' line"
 done
 ap="$(section "$SCHEMA" '^## Autopilot')"
 printf '%s' "$ap" | flat | grep -qiF 'Assumption validation stop' \
-  && ok "$SCHEMA §Autopilot: has the 'Assumption validation stop' row" \
-  || err "$SCHEMA §Autopilot: mandatory-pauses table must have an 'Assumption validation stop' row"
+  && ok "$SCHEMA_LABEL §Autopilot: has the 'Assumption validation stop' row" \
+  || err "$SCHEMA_LABEL §Autopilot: mandatory-pauses table must have an 'Assumption validation stop' row"
 
 # --- canonical §Assumption records section + subsections ---------------------
 grep -q '^## Assumption records' "$SCHEMA" \
-  && ok "$SCHEMA: '## Assumption records' canonical section present" \
-  || err "$SCHEMA: must define the '## Assumption records' canonical section"
+  && ok "$SCHEMA_LABEL: '## Assumption records' canonical section present" \
+  || err "$SCHEMA_LABEL: must define the '## Assumption records' canonical section"
 ar="$(section "$SCHEMA" '^## Assumption records')"
 for h in 'Row schema' 'Tier / track scope' 'Trigger' 'Actuation 1' 'Actuation 2' 'Waiver' 'v1 non-goals'; do
   printf '%s' "$ar" | grep -qF "### $h" \
-    && ok "$SCHEMA §Assumption records: '### $h' present" \
-    || err "$SCHEMA §Assumption records: must keep '### $h'"
+    && ok "$SCHEMA_LABEL §Assumption records: '### $h' present" \
+    || err "$SCHEMA_LABEL §Assumption records: must keep '### $h'"
 done
 # Reconciliation (2026-07-06): Actuation 1 must name the THIRD gate exit (acknowledge-open),
 # not the binary validate-or-waive rule — pins the fix for the AC6-vs-AC9/AC10 contradiction
 # so the gate cannot silently regress and strand Actuation 2's plan-task path.
 printf '%s' "$ar" | flat | grep -qiF 'acknowledge it stays open' \
-  && ok "$SCHEMA §Assumption records: Actuation 1 names the third gate exit (acknowledge-open)" \
-  || err "$SCHEMA §Assumption records: Actuation 1 must name the third gate exit (acknowledge-open), not a binary validate-or-waive gate"
+  && ok "$SCHEMA_LABEL §Assumption records: Actuation 1 names the third gate exit (acknowledge-open)" \
+  || err "$SCHEMA_LABEL §Assumption records: Actuation 1 must name the third gate exit (acknowledge-open), not a binary validate-or-waive gate"
 # Waiver disambiguation (2026-07-06, fix (a)): a waiver marks the row `n`, so validate+waive both
 # collapse to `n` and a surviving `validation-required: y` is unambiguously an acknowledged-open row.
 # Pins the fix for the waived-vs-acknowledged-open on-disk ambiguity (Actuation 2 could otherwise
 # strand an assumption — WS-4's own anti-pattern) so the gate cannot silently regress to a `y`-waiver.
 printf '%s' "$ar" | flat | grep -qiF 'waive both set `n`' \
-  && ok "$SCHEMA §Assumption records: Waiver marks the row \`n\` (waived vs acknowledged-open disambiguated on disk)" \
-  || err "$SCHEMA §Assumption records: Waiver must mark the row \`n\` (validate and waive both set \`n\`) so a surviving \`y\` is unambiguously acknowledged-open"
+  && ok "$SCHEMA_LABEL §Assumption records: Waiver marks the row \`n\` (waived vs acknowledged-open disambiguated on disk)" \
+  || err "$SCHEMA_LABEL §Assumption records: Waiver must mark the row \`n\` (validate and waive both set \`n\`) so a surviving \`y\` is unambiguously acknowledged-open"
 
 # --- AC9: templates/plan.md mapping rule + example ---------------------------
 flat < templates/plan.md | grep -qF '**Validates:** Assumption N' \
@@ -167,7 +169,7 @@ fi
 # --- dist parity: every edited packaged file ---------------------------------
 DIST="dist/codex/feature-flow"
 for rel in templates/spec.md templates/diagnosis.md templates/plan.md \
-           docs/manifest-schema.md commands/ff-clarify.md commands/ff-diagnose.md commands/ff-plan.md; do
+           docs/manifest-schema.md docs/schema/*.md commands/ff-clarify.md commands/ff-diagnose.md commands/ff-plan.md; do
   if cmp -s "$rel" "$DIST/$rel"; then
     ok "dist parity: $rel"
   else
