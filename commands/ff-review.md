@@ -102,6 +102,20 @@ Consolidate findings (de-duplicate across agents) into `review.md` from
 issue, and a concrete fix. If nothing meets the threshold, record the "no high-confidence
 issues" summary — do not invent findings to look thorough.
 
+## Stamp the revision (revision-bound runs)
+
+Only when `manifest.revisionBound` is `true` (absent → skip this section entirely; a pre-v0.22.0
+run records no revision), and only once the review is clear to complete — no Critical block remains,
+after any fix-and-re-review cycle, because that cycle changes code. Compute the working-tree
+fingerprint of the project directory exactly as **Revision fingerprint** in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/enforcement.md` specifies — on Claude Code run
+`bash "${CLAUDE_PLUGIN_ROOT}/hooks/lib/revision.sh" "<project dir>"`; where `hooks/` is not shipped,
+pipe that section's block unchanged. Never re-type or paraphrase it: a variant yields a different id
+and `done` is then denied. Record the printed id in `phases.review.revision` (written with the
+manifest update below) **and** in `review.md`'s `**Revision:**` line. Empty output or a non-zero exit
+(not a git repository, `git` missing) → record `null` and `not recorded — <reason>`. Stamping never
+blocks the phase; a re-run of this command overwrites the stamp.
+
 ## Update manifest + hand off (order differs by track)
 
 **Blocking findings block — both tracks.** If `review.md` contains ≥1 **Critical** finding,
@@ -132,7 +146,14 @@ below implements it.)
   `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, leave
   `currentPhase = "review"` and **STOP**, telling the user to run `/feature-flow:ff-verify` next.
 - **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
-  already passed (`phases.verify.status == "complete"`), first run **KB capture** (see
+  already passed (`phases.verify.status == "complete"`), first check **Revision agreement** in
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/terminal-convergence.md` (revision-bound runs): compare
+  `phases.verify.revision` to the review revision just stamped. Stale or missing → the
+  **Stale-phase re-run cycle** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md` re-runs verify
+  (autopilot), or **STOP** telling the user verify is stale — which paths changed — and to re-run
+  `/feature-flow:ff-verify` (step-by-step); never set `done` on a stale revision. Not checked → say
+  why in the completion report: `revision binding skipped — run predates v0.22.0` (no
+  `revisionBound`) or `revision binding skipped — <not a git repository | fingerprint not computable>`. Then run **KB capture** (see
   `## KB capture (when enabled)` below — a no-op unless the KB is active), then set
   `currentPhase = "done"`, **STOP** and report the run complete (both modes — run completion is
   always a full report). In the completion report, name `/feature-flow:ff-deliver` (delivery notes) and `/feature-flow:ff-retro` (retrospective on the workflow's safeguards) as **optional next steps** — neither is ever chained (§Autopilot). If

@@ -29,7 +29,7 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
    procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`;
    never choose the value yourself),
    then create one with `track: "bugfix"` (slug from the bug report) including the
-   resolved `autopilot`. If a manifest exists with
+   resolved `autopilot` and `revisionBound: true`. If a manifest exists with
    `track: "feature"`, this is the wrong track — tell the user and stop.
 3. **Re-run guard:** if `phases.diagnose.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `diagnosis.md` (a full-tier re-run also resets

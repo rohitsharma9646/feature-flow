@@ -20,6 +20,19 @@ see **Knowledge base** §Capture rule below), which is why the bugfix track neve
 zero-captures. This section is the canonical statement of the rule; §Capture rule and the two
 terminal commands (`ff-verify`, `ff-review`) **reference** it rather than restating it.
 
+**Revision agreement (revision-bound runs, v0.22.0).** On a run with `revisionBound: true`, the
+done-transition additionally requires that review and verify attested the **same, current** code:
+both `phases.review.revision` and `phases.verify.revision` equal the working-tree fingerprint
+(§Revision fingerprint, `docs/schema/enforcement.md`). The done-transition command has just stamped
+its own phase, so it compares the **other** phase's stamp to that value before any KB capture or
+`done` write. Equal → proceed. Different or missing → the other phase is **stale** (code changed
+after it ran — a verify repair after review, a review fix after verify, or a hand edit): run the
+**Stale-phase re-run cycle** in `docs/schema/autopilot.md` (autopilot; one re-run at most) or STOP
+naming the phase to re-run (step-by-step). Not a git repository, or the fingerprint could not be
+computed → the check is skipped and the completion report says `revision binding skipped —
+<reason>`. On Claude Code the `enforce-gate` hook re-checks the rule on the `done` write itself
+(**Enforcement (Claude Code)** in `docs/schema/enforcement.md`, Gate B).
+
 > **Delivery is post-terminal.** The optional `deliver` phase (§Delivery) runs *after* the
 > done-transition and does **not** change it: `ff-deliver` never sets `done` (the run is already
 > there) and never fires KB capture. `currentPhase` stays `done` throughout delivery.

@@ -25,7 +25,7 @@ acceptance criteria and a sign-off block.
 2. **Cold-start:** if no manifest exists, **resolve `autopilot` first** (run-start
    procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`;
    never choose the value yourself),
-   then create one (`track: "feature"`, including the resolved `autopilot`); if no
+   then create one (`track: "feature"`, including the resolved `autopilot` and `revisionBound: true`); if no
    `explore.md` exists, tell the user `/feature-flow:ff-explore` usually runs first — offer to
    proceed using `$ARGUMENTS` as the request, or stop so they can explore.
 3. Read `explore.md` (if present) for context.
