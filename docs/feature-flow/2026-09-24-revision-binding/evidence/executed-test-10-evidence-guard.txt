@@ -1,0 +1,59 @@
+=== scripts/checks/evidence-guard.sh ===
+ok:   templates/plan.md: task template has a **Covers:** field
+ok:   templates/plan.md: Outcome gate requires every AC mapped/flagged
+ok:   commands/ff-plan.md: AC-mapping instruction present, feature-scoped
+ok:   templates/verify.md: '## Regression risk' section present
+ok:   commands/ff-verify.md: regression-risk instruction present
+ok:   templates/diagnosis.md: '## Root cause candidates' section present
+ok:   templates/diagnosis.md: '## Confirmed root cause' section present
+ok:   commands/ff-diagnose.md: full-tier candidate instruction present
+ok:   commands/ff-diagnose.md: sign-off echo still lists 'root cause' (AC4)
+ok:   dist parity: templates/plan.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: templates/diagnosis.md
+ok:   docs/manifest-schema.md + docs/schema/: '## Evidence' canonical section present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Evidence-kind taxonomy' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Evidence record shape' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Evidence directory' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Confidence ladder' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Detection and N/A rule' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Evidence waiver' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Tier scaling' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### Adding an evidence kind' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: '### v1 non-goals' subsection present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: evidence record shape stated literally
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'executed-test'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'build/static-analysis'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'e2e/browser'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'http/api'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'db'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'cli-output'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'logs'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: taxonomy names 'before/after'
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: confidence token 'Verified (multi-source)' present
+ok:   templates/verify.md: confidence token 'Verified (multi-source)' present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: confidence token 'Verified (single-source)' present
+ok:   templates/verify.md: confidence token 'Verified (single-source)' present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: confidence token 'Partially verified' present
+ok:   templates/verify.md: confidence token 'Partially verified' present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: confidence token 'Unverified' present
+ok:   templates/verify.md: confidence token 'Unverified' present
+ok:   templates/verify.md: '## Evidence coverage matrix' section present
+ok:   templates/verify.md: '## Evidence artifacts index' section present
+ok:   templates/verify.md: '## Limitations & remaining risks' section present
+ok:   templates/verify.md: '## Contract mapping' section present
+ok:   templates/verify.md: lite-tier skip note present on the coverage matrix
+ok:   agents/ff-test-runner.md: detects 'composer.json'
+ok:   agents/ff-test-runner.md: detects 'phpunit.xml'
+ok:   agents/ff-test-runner.md: detects 'playwright.config'
+ok:   agents/ff-test-runner.md: detects 'bin/magento'
+ok:   agents/ff-test-runner.md: detects 'MFTF'
+ok:   agents/ff-test-runner.md: evidence-dir write scope stated
+ok:   agents/ff-test-runner.md: clears evidence/ before writing (re-run hygiene)
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: 'Evidence gap stop' pause row present
+ok:   commands/ff-verify.md: references the Evidence contract by name
+ok:   commands/ff-verify.md: waiver line format stated
+ok:   docs/manifest-schema.md + docs/schema/: waiver line format stated
+ok:   dist parity: agents/ff-test-runner.md
+GREEN: evidence guard passed
+EXIT_CODE=0

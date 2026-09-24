@@ -1,0 +1,11 @@
+=== scripts/checks/integrity-boundary-guard.sh ===
+ok:   current commands/hooks/templates/config do not invoke doctor or migration
+ok:   schemas/manifest-v1.schema.json parses
+ok:   schemas/golden-vector-v1.schema.json parses
+ok:   schemas/doctor-result-v1.schema.json parses
+ok:   schemas/migration-plan-v1.schema.json parses
+ok:   integrity/protocol/v1/diagnostics.json parses
+ok:   integrity/testdata/vectors/v1/index.json parses
+ok:   integrity/testdata/legacy/inventory-v1.json parses
+PASS: integrity boundary guard
+EXIT_CODE=0

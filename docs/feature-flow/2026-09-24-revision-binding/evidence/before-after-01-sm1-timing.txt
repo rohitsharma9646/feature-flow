@@ -1,0 +1,20 @@
+=== SM1: timing hooks/enforce-gate on a done payload, revisionBound:true vs absent ===
+Repo: 20000 tracked files (+5 modified, +5 untracked)
+
+--- WITH revisionBound:true (5 samples) ---
+sample 1: .109662826s
+sample 2: .105257667s
+sample 3: .099514682s
+sample 4: .102032853s
+sample 5: .104593236s
+--- WITHOUT revisionBound (5 samples) ---
+sample 1: .034480347s
+sample 2: .033971260s
+sample 3: .034177142s
+sample 4: .033704185s
+sample 5: .033269590s
+bound avg: 0.1042s
+unbound avg: 0.0339s
+delta (added cost of revision check): 0.0703s
+SM1 threshold: delta <= 1.0s -> PASS
+EXIT_CODE=0 (timing measurement, not a test command)

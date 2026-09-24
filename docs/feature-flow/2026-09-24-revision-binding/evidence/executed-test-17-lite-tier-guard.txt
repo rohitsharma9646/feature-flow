@@ -1,0 +1,18 @@
+=== scripts/checks/lite-tier-guard.sh ===
+ok:   ff.md judges feature tier
+ok:   ff.md defaults full on doubt
+ok:   ff.md writes resolved tier (not hardcoded full)
+ok:   ff-explore writes resolved tier
+ok:   ff-explore dispatches 1 explorer when lite
+ok:   ff-explore branches on tier == lite
+ok:   ff-clarify has a lite-tier mode
+ok:   ff-clarify lite skips premise+approach beats
+ok:   ff-clarify routes lite to implement
+ok:   ff-clarify has lite->full escalation
+ok:   ff-implement has a feature-lite cold-start branch
+ok:   ff-implement lite requires only spec
+ok:   ff-implement lite never routes to design/plan
+ok:   schema documents feature lite tier
+ok:   SKILL documents feature lite tier
+PASS: lite-tier guard
+EXIT_CODE=0

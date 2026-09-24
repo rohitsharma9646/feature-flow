@@ -1,0 +1,27 @@
+=== scripts/checks/revision-binding-guard.sh ===
+ok:   AC12: commands/ff.md writes revisionBound: true at creation
+ok:   AC12: commands/ff-explore.md writes revisionBound: true at creation
+ok:   AC12: commands/ff-clarify.md writes revisionBound: true at creation
+ok:   AC12: commands/ff-diagnose.md writes revisionBound: true at creation
+ok:   AC13: docs/manifest-schema.md Schema + field note for revisionBound
+ok:   AC13: docs/manifest-schema.md Schema + field note for phases.<review|verify>.revision
+ok:   AC13: docs/manifest-schema.md states the absent-field back-compat rule
+ok:   AC13: docs/schema/enforcement.md Gate B states the revision condition and both reasons
+ok:   AC13: docs/schema/enforcement.md separates the silent skip from the loud allow
+ok:   AC13: docs/schema/enforcement.md defines ### Revision fingerprint
+ok:   AC13: docs/schema/enforcement.md states the WP4 preservation constraint
+ok:   AC13: docs/schema/terminal-convergence.md defines Revision agreement and routes to the stale-phase cycle
+ok:   AC13: docs/schema/autopilot.md defines the Stale-phase re-run cycle with its durable one-cycle cap
+ok:   AC13: docs/schema/autopilot.md mandatory-pauses row is capped-then-stop (not 'unconditional')
+ok:   AC13: commands/ff-review.md stamps the revision (verbatim recipe) and checks Revision agreement
+ok:   AC13: commands/ff-verify.md stamps the revision (verbatim recipe) and checks Revision agreement
+ok:   AC13: commands/ff-review.md stamps before its manifest update
+ok:   AC13: commands/ff-verify.md stamps before its manifest update
+ok:   AC13: templates/review.md has a digit-free **Revision:** line and a ## Stale re-run skeleton
+ok:   AC13: templates/verify.md has a digit-free **Revision:** line and a ## Stale re-run skeleton
+ok:   AC13: newest CHANGELOG entry states the WP4 constraint
+ok:   FS2: docs/schema/enforcement.md §Revision fingerprint block is hooks/lib/revision.sh byte-for-byte
+ok:   FS2 self-test: a one-character drift is caught
+ok:   dflt: lib defaults (.feature-flow .feature-flow-kb) = config/defaults.json paths
+PASS: revision-binding guard
+EXIT_CODE=0

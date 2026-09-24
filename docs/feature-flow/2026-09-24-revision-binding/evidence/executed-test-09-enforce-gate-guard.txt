@@ -1,0 +1,82 @@
+=== scripts/checks/enforce-gate-guard.sh ===
+ok:   GateA: feature unsigned → implement
+ok:   GateA: feature signed → implement
+ok:   GateA: bugfix-lite diagnose incomplete → implement
+ok:   GateA: bugfix-lite diagnose complete → implement (no sign-off needed)
+ok:   GateA: bugfix-full unsigned → implement
+ok:   GateA: feature-lite unsigned → implement (feature/* arm covers lite)
+ok:   GateA: feature-lite signed → implement
+ok:   GateB/AC10: legacy stub verify.md (no Contract mapping) → denied
+ok:   GateB/AC10: filled report (Contract mapping + status token) → allowed
+ok:   GateB/AC10: Contract mapping without a captured status token → denied
+ok:   GateB/AC10: verbatim unfilled template → denied
+ok:   GateB: feature done, verify.md absent
+ok:   GateB: feature done, verify.md empty
+ok:   GateB: feature done, verify.md has no heading
+ok:   GateB: feature done but verify.status != complete
+ok:   GateB/AC5: honors renamed artifacts.verify pointer
+ok:   GateB: bugfix done + verify + review
+ok:   GateB: bugfix done, review.md absent
+ok:   non-manifest write → fast-exit allow
+ok:   unparseable proposed content → fail-open
+ok:   missing track → fail-open
+ok:   kill switch: toggles.enforce=false → allow
+ok:   jq absent → systemMessage warning (fail-open)
+ok:   dispatch seam: run-hook.cmd → enforce-gate denies
+ok:   Edit: currentPhase verify→done without verify.md → Gate B
+ok:   Edit: currentPhase verify→done with valid verify.md → allowed
+ok:   Edit: currentPhase plan→implement unsigned → Gate A
+ok:   MultiEdit: enter implement, sign-off untouched → Gate A
+ok:   MultiEdit: sign off + enter implement → allowed
+ok:   Edit: unrelated field change on a legal manifest → allowed
+ok:   Edit: replace_all=false rewrites only the first occurrence → allowed
+ok:   Edit: replace_all=true rewrites currentPhase too → Gate B
+ok:   Edit: old_string not found → fail-open
+ok:   Edit: manifest file missing on disk → fail-open
+ok:   Edit: non-manifest file → fast-exit allow
+ok:   Edit create (empty old_string, file missing) unsigned implement → Gate A
+ok:   Edit create (empty old_string, empty file) unsigned implement → Gate A
+ok:   Edit: empty old_string on a non-empty file → fail-open (tool rejects it)
+ok:   hooks.json PreToolUse matcher routes Write to enforce-gate
+ok:   hooks.json PreToolUse matcher routes Edit to enforce-gate
+ok:   hooks.json PreToolUse matcher routes MultiEdit to enforce-gate
+ok:   rev lib: fingerprint is repeatable
+ok:   rev lib: clean tree equals HEAD's tree
+ok:   rev lib/AC3: writes under paths.base, paths.durable, paths.kb don't change it
+ok:   rev lib/AC3: nested git repository doesn't change it
+ok:   rev lib/AC4: tracked edit changes it
+ok:   rev lib/AC4: tracked delete changes it
+ok:   rev lib/AC4: untracked non-ignored file changes it
+ok:   rev lib: the real .git/index is never modified
+ok:   rev lib/AC4: revert restores the original value
+ok:   rev lib/FS3: subdir project — its own bookkeeping paths are excluded
+ok:   rev lib/FS3: subdir project — edits elsewhere in the repo are still detected
+ok:   rev lib/FS4: durable form {"paths":{"durable":"/tmp/tmp.YSbmiNg52S/rev-repo/docs/ff"}} is excluded
+ok:   rev lib/FS4: durable form {"paths":{"durable":"docs/ff/"}} is excluded
+ok:   rev lib/FS4: durable form {"paths":{"durable":"./docs/ff"}} is excluded
+ok:   rev lib/FS4: durable null + kb unset → default kb still excluded
+ok:   rev lib/FS4: durable null → docs/ff counts as code
+ok:   rev lib/AC7: changed paths listed, capped at 10 with '+N more'
+ok:   rev lib/FS1: missing tree object → 'changed paths unavailable'
+ok:   rev lib: a non-hex revision is never passed to git
+ok:   rev lib: fingerprint outside a git repo returns non-zero
+ok:   GateB/AC6: both revisions equal the current tree → allowed
+ok:   GateB/AC5: review revision missing → denied
+ok:   GateB/AC5: reason names the missing review revision
+ok:   GateB/AC5: verify revision missing → denied
+ok:   GateB/AC5: reason names the missing verify revision
+ok:   GateB/AC5: review revision stale (code changed after review) → denied
+ok:   GateB/AC7: stale reason names the phase and the changed path
+ok:   GateB/AC5: verify revision stale → denied, naming verify
+ok:   GateB/AC6: after re-stamping both on the current tree → allowed
+ok:   GateB/FS1: stamped tree object missing → still denied
+ok:   GateB/FS1: reason says changed paths unavailable
+ok:   GateB/AC8: revisionBound absent in a git repo → 0.21.0 behaviour (allowed)
+ok:   GateB/AC8: revisionBound outside any git repo → 0.21.0 behaviour (allowed)
+ok:   GateB/AC8: toggles.enforce=false → no revision check
+ok:   GateB/AC9: git unavailable in a git repo → allowed with a systemMessage warning
+ok:   GateB/AC9: no deny when the revision cannot be computed
+ok:   GateB: .git walk-up terminates on a relative project path
+ok:   GateB/E2E: stale review through run-hook.cmd → denied
+PASS: enforce-gate guard
+EXIT_CODE=0

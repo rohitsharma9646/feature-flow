@@ -1,0 +1,4 @@
+=== bash scripts/package-codex-plugin.sh ===
+Codex package destination: /home/netzwelt/feature-flow/dist/codex/feature-flow
+Codex package ready.
+EXIT_CODE=0
