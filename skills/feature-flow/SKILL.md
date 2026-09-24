@@ -119,7 +119,8 @@ With `paths.durable` set, the durable decision docs (spec/design/plan/diagnosis)
 teammate reviewing the PR sees the reasoning; see **Durable artifact resolution** in
 `docs/manifest-schema.md`. The contract is split: `docs/manifest-schema.md` is the core every
 command reads (its **Topic index** lists the rest), and each other topic lives in
-`docs/schema/<topic>.md` — read the core plus only the topic files the current command names.
+`docs/schema/<topic>.md` — read the core plus only the topic files the current command names,
+by path or by `§Name`/`**Name**` (the Topic index maps each name to its file).
 Every command: **read the manifest → check the gate → do the phase
 → write the artifact → update the manifest.** Resume and status read this file; if it's
 missing, resume infers the phase from which artifacts exist on disk. On Claude Code the

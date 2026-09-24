@@ -9,7 +9,9 @@ makes phases composable, standalone-runnable, and resumable from disk.
 
 The core (this file) holds the rules every command uses. Each other topic lives in its own file
 under `docs/schema/`; a `§Name` reference in any rule resolves through this table. Read the core
-plus only the topic files the current command names.
+plus only the topic files the current command names — by path or by `§Name`/`**Name**`. Paths are
+relative to the plugin root (`${CLAUDE_PLUGIN_ROOT}`, the directory holding this `docs/`), never to
+the project you are working in.
 
 | Topic | File | What it covers |
 |---|---|---|

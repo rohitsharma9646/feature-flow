@@ -12,15 +12,28 @@ ok()  { echo "ok:   $1"; }
 . scripts/checks/lib/schema.sh
 
 # prefixes_match <want-lines> <got-lines>: same line count, and each got line starts with its want line.
+# (Plain read loop, not mapfile, so it runs on macOS's bash 3.2.)
 prefixes_match() {
-  local -a w g; local i
-  mapfile -t w <<<"$1"; mapfile -t g <<<"$2"
-  [ "${#w[@]}" -eq "${#g[@]}" ] || return 1
-  for i in "${!w[@]}"; do [ "${g[$i]#"${w[$i]}"}" != "${g[$i]}" ] || return 1; done
+  local w g
+  [ "$(printf '%s\n' "$1" | wc -l)" -eq "$(printf '%s\n' "$2" | wc -l)" ] || return 1
+  while IFS= read -r w <&3 && IFS= read -r g <&4; do
+    [ "${g#"$w"}" != "$g" ] || return 1
+  done 3<<EOF3 4<<EOF4
+$1
+EOF3
+$2
+EOF4
 }
 
 # --- L1: every topic file exists, carries the two-line header, and holds exactly its one section --
 HDR2='> Part of the manifest contract. Core rules and the topic index: `docs/manifest-schema.md`.'
+# topic_layout_ok <file> <name>: header on lines 1-2, a blank line 3, '## <name>' on line 4, and no
+# other '## ' heading — so no text sits outside the one section the joined contract carries.
+topic_layout_ok() {
+  [ "$(sed -n 1p "$1")" = "# $2 — feature-flow manifest contract" ] && [ "$(sed -n 2p "$1")" = "$HDR2" ] \
+    && [ -z "$(sed -n 3p "$1")" ] && prefixes_match "## $2" "$(sed -n 4p "$1")" \
+    && prefixes_match "## $2" "$(grep '^## ' "$1")"
+}
 want_core="## Topic index"; want_all=""
 while IFS='|' read -r name slug; do
   want_all="${want_all:+$want_all
@@ -29,15 +42,19 @@ while IFS='|' read -r name slug; do
 ## $name"; continue; fi
   f="$(schema_file "$slug")"
   if [ ! -f "$f" ]; then err "L1: $f missing (topic '$name')"; continue; fi
-  [ "$(sed -n 1p "$f")" = "# $name — feature-flow manifest contract" ] && [ "$(sed -n 2p "$f")" = "$HDR2" ] \
-    && ok "L1: $f has the topic header" \
-    || err "L1: $f must start with '# $name — feature-flow manifest contract' and the '> Part of the manifest contract…' line"
-  prefixes_match "## $name" "$(grep '^## ' "$f")" \
-    && ok "L1: $f holds exactly '## $name'" \
-    || err "L1: $f must hold exactly one '## ' heading, starting '## $name'"
+  topic_layout_ok "$f" "$name" \
+    && ok "L1: $f is the topic header, a blank line, then exactly '## $name'" \
+    || err "L1: $f must be '# $name — feature-flow manifest contract', the '> Part of the manifest contract…' line, a blank line, then '## $name' as its only '## ' heading"
 done <<EOF
 $SCHEMA_LAYOUT
 EOF
+# Self-test: a rule line between the header and the heading is outside every section, so the joined
+# contract (and every guard reading it) would never see it.
+FX="$(mktemp "${TMPDIR:-/tmp}/ff-layout.XXXXXX")"
+printf '# Evidence — feature-flow manifest contract\n%s\n\nA stray rule.\n## Evidence\nbody\n' "$HDR2" > "$FX"
+topic_layout_ok "$FX" Evidence && err "L1 self-test: text above the '## ' heading must be rejected" \
+  || ok "L1 self-test: text above the '## ' heading is rejected"
+rm -f "$FX"
 
 # --- L2: the core holds exactly the core topics; the joined contract has every topic once, in order --
 prefixes_match "$want_core" "$(grep '^## ' "$SCHEMA_CORE")" \
@@ -87,10 +104,16 @@ check_ref() {
 # the bold before it may be prose ("the **Covers:** map (…§Discovery fields").
 # (The grep -o runs outside the heredocs: its patterns hold backticks.)
 ref_problems() {
-  local text refs_a refs_b m name path
+  local text refs_a refs_b refs_c m name path
   text="$(sed 's/^[[:space:]]*>[[:space:]]\{0,1\}//' | tr '\n' ' ' | tr -s ' ')"
   refs_a="$(printf '%s' "$text" | grep -oE '\*\*[^*]+\*\*( [a-z-]+){0,2} (in|\() ?>? ?`?(\$\{CLAUDE_PLUGIN_ROOT\}/)?docs/[a-z/-]+\.md(`? ?\**§)?')"
   refs_b="$(printf '%s' "$text" | grep -oE 'docs/[a-z/-]+\.md`? ?\**§[^`*,.;:)(>—→]+')"
+  # Form C: §Name, `…/docs/<file>.md`  (e.g. "the **Evidence gap stop** row in §Autopilot, `…`")
+  refs_c="$(printf '%s' "$text" | grep -oE '§[A-Z][^`*,.;:)]*, ?`?(\$\{CLAUDE_PLUGIN_ROOT\}/)?docs/[a-z/-]+\.md')"
+  # Every schema path, named or not, must exist.
+  for path in $(printf '%s' "$text" | grep -oE 'docs/(manifest-schema|schema/[a-z-]+)\.md' | sort -u); do
+    [ -f "$path" ] || echo "$1: $path (no such file)"
+  done
   while IFS= read -r m; do
     [ -n "$m" ] || continue
     [ "${m%§}" = "$m" ] || continue
@@ -108,6 +131,14 @@ EOF
   done <<EOF
 $refs_b
 EOF
+  while IFS= read -r m; do
+    [ -n "$m" ] || continue
+    name="${m#§}"; name="${name%%,*}"
+    path="$(printf '%s' "$m" | grep -oE 'docs/[a-z/-]+\.md' | tail -1)"
+    check_ref "$1" "$path" "$name"
+  done <<EOF
+$refs_c
+EOF
 }
 
 # Self-tests: the three shapes most likely to slip past a line-based matcher.
@@ -120,6 +151,12 @@ F2="$(printf 'per the **Durable artifact resolution** rule in `${CLAUDE_PLUGIN_R
 F3="$(printf 'see **Autopilot** in\n> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.\n' | ref_problems F3)"
 [ -z "$F3" ] && ok "L4 self-test: a correct wrapped reference passes" \
   || err "L4 self-test: F3 (correct reference) must not be reported: $F3"
+F4="$(printf 'the **Evidence gap stop** row in §Autopilot, `${CLAUDE_PLUGIN_ROOT}/docs/schema/evidence.md`\n' | ref_problems F4)"
+[ -n "$F4" ] && ok "L4 self-test: a '§Name, path' reference to the wrong file is caught" \
+  || err "L4 self-test: F4 (§Autopilot, …/evidence.md) must be reported"
+F5="$(printf 'see `${CLAUDE_PLUGIN_ROOT}/docs/schema/no-such-topic.md` for the rules\n' | ref_problems F5)"
+[ -n "$F5" ] && ok "L4 self-test: an unnamed path to a missing schema file is caught" \
+  || err "L4 self-test: F5 (…/docs/schema/no-such-topic.md) must be reported"
 
 for f in commands/*.md templates/*.md agents/*.md skills/feature-flow/SKILL.md skills/feature-flow/references/*.md README.md; do
   probs="$(ref_problems "$f" < "$f")"
@@ -142,6 +179,15 @@ flat_skill="$(tr '\n' ' ' < skills/feature-flow/SKILL.md | tr -s ' ')"
 printf '%s' "$flat_skill" | grep -qF 'docs/schema/' && printf '%s' "$flat_skill" | grep -qF 'Topic index' \
   && ok "L4: SKILL.md states the core + named-topic-files reading rule" \
   || err "L4: SKILL.md 'The manifest is the shared state' must name docs/schema/ and the core's Topic index"
+# A topic named only by a bare §Name / **Name** counts as named — the rule must say so, or a literal
+# reading skips topic files a command depends on.
+printf '%s' "$flat_skill" | grep -qF 'by path or by `§Name`' \
+  && ok "L4: SKILL.md reading rule counts a bare §Name / **Name** mention as naming the topic" \
+  || err "L4: SKILL.md reading rule must say a command names a topic 'by path or by \`§Name\`/\`**Name**\`'"
+# The index's paths are relative to the plugin root, not the user's project (which may have its own docs/schema/).
+printf '%s\n' "$idx" | tr '\n' ' ' | grep -qF 'relative to the plugin root' \
+  && ok "L3: Topic index says its paths are relative to the plugin root" \
+  || err "L3: Topic index intro must say its paths are relative to the plugin root"
 
 # --- L5: the Codex dist carries the core and every topic file byte-identically -------------------
 DIST="dist/codex/feature-flow"
