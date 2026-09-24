@@ -383,4 +383,75 @@ else
   echo "RED:  discovery-gap — a precondition failed"
 fi
 
+# --- fixture: task-controller (v0.23.0) --------------------------------------
+# hooks/lib/task.sh is what gives each implementer exactly its own task: `task_section` must
+# find headings only OUTSIDE fenced code (plans now carry fenced code in their steps — design
+# FS1), and `task_diff` must package a tree-to-tree diff without touching the real index. These
+# are mechanical, so they are asserted here; whether the controller loop fires is the forward test.
+echo ""
+echo "fixture: task-controller"
+tc_start=$fail
+FXT="evals/fixtures/task-controller"
+LIB="hooks/lib/task.sh"
+if [ -f "$LIB" ]; then ok "$LIB exists"; else err "$LIB missing"; fi
+sec() { bash "$LIB" section "$FXT/plan.md" "$1" 2>/dev/null; }
+for c in 'task2|^### Task 2:' 'task3|^### Task 3:' 'constraints|^## Global Constraints' 'last|^## Dependency graph'; do
+  name=${c%%|*}; re=${c#*|}
+  if [ "$(sec "$re")" = "$(cat "$FXT/expected-$name.md")" ]; then
+    ok "task_section '$re' returns exactly the expected section (fences respected)"
+  else
+    err "task_section '$re' does not match $FXT/expected-$name.md"
+  fi
+done
+out=$(sec '^### Task 9:'); rc=$?
+[ "$rc" -ne 0 ] && [ -z "$out" ] \
+  && ok "a heading that exists only inside a fence is not found (exit $rc, no output)" \
+  || err "task_section must not find a heading that exists only inside a fence (exit $rc)"
+
+# task_diff over two working-tree fingerprints in a scratch repo
+TD=$(mktemp -d)
+( cd "$TD" && git init -q && git config user.email t@t && git config user.name t \
+  && printf 'one\n' > a.txt && git add a.txt && git commit -qm base ) >/dev/null 2>&1
+base=$(bash hooks/lib/revision.sh "$TD")
+printf 'two\n' >> "$TD/a.txt"; printf 'new\n' > "$TD/b.txt"
+head=$(bash hooks/lib/revision.sh "$TD")
+idx_before=$(cksum < "$TD/.git/index")
+d=$(bash "$LIB" diff "$TD" "$base" "$head" 2>/dev/null); rc=$?
+idx_after=$(cksum < "$TD/.git/index")
+[ "$rc" -eq 0 ] && printf '%s\n' "$d" | grep -q '^+two$' && printf '%s\n' "$d" | grep -q '^+++ b/b.txt$' \
+  && ok "task_diff shows the tracked edit and the new untracked file" \
+  || err "task_diff must show the tracked edit and the new untracked file (exit $rc)"
+printf '%s\n' "$d" | grep -qE '^ 2 files changed' \
+  && ok "task_diff starts with a --stat summary" \
+  || err "task_diff must start with a --stat summary"
+[ "$idx_before" = "$idx_after" ] \
+  && ok "the real index is byte-identical before and after task_diff" \
+  || err "task_diff changed the real index"
+d=$(bash "$LIB" diff "$TD" "not-a-tree" "$head" 2>/dev/null); rc=$?
+[ "$rc" -ne 0 ] && [ -z "$d" ] \
+  && ok "a non-hex tree id is refused (exit $rc, no output)" \
+  || err "task_diff must refuse a non-hex tree id"
+# revision.sh head: HEAD's tree minus bookkeeping — equals the fingerprint on a clean tree even when
+# bookkeeping (paths.durable) is committed; a whole-change diff from it shows code only.
+TH=$(mktemp -d)
+( cd "$TH" && git init -q && git config user.email t@t && git config user.name t && mkdir -p docs/ff src \
+  && printf '{"paths":{"durable":"docs/ff"}}\n' > .feature-flow.json && printf 'rec\n' > docs/ff/spec.md \
+  && printf 'code\n' > src/a && git add -A && git commit -qm base ) >/dev/null 2>&1
+hb=$(bash hooks/lib/revision.sh "$TH" head); fp=$(bash hooks/lib/revision.sh "$TH")
+[ -n "$hb" ] && [ "$hb" = "$fp" ] \
+  && ok "revision.sh head equals the fingerprint on a clean tree with committed bookkeeping" \
+  || err "revision.sh head must equal the fingerprint on a clean tree (head=$hb fp=$fp)"
+printf 'rec2\n' >> "$TH/docs/ff/spec.md"; printf 'more\n' >> "$TH/src/a"
+d=$(bash "$LIB" diff "$TH" "$hb" "$(bash hooks/lib/revision.sh "$TH")")
+printf '%s\n' "$d" | grep -q '^+more$' && ! printf '%s\n' "$d" | grep -q 'docs/ff' \
+  && ok "whole-change diff from the head base shows code, not bookkeeping" \
+  || err "whole-change diff from the head base must show src/a and nothing under docs/ff"
+rm -rf "$TH"
+
+if [ "$fail" -eq "$tc_start" ]; then
+  echo "PASS: task-controller (task_section fences, task_diff) — the controller loop firing is the forward test"
+else
+  echo "RED:  task-controller — a mechanical check failed"
+fi
+
 exit "$fail"
