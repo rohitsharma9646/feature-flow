@@ -123,5 +123,23 @@ for s in startup clear compact; do
     || err "hooks.json SessionStart matcher '$m' misses $s"
 done
 
+# S11 (v0.23.0): a run in implement with a task ledger → the re-anchor names the current task and
+# fix round, so a compaction mid-implement resumes at the task, not at Task 1.
+mkrun p6 ctl '{"slug":"ctl","track":"feature","tier":"full","currentPhase":"implement","updatedAt":"2026-09-24T10:00:00Z","phases":{"implement":{"status":"in_progress"}},"signOff":{"signed":true},"artifacts":{"ledger":".feature-flow/ctl/tasks/ledger.md"}}'
+mkdir -p "$TMP/p6/.feature-flow/ctl/tasks"
+printf '%s\n' '# Ledger — plan: docs/ff/plan.md' '' '## Task 1: First' '**Status:** complete (clean)' '' \
+  '## Task 2: Second' '**Status:** in-progress' '**Fix round 1/3:** resumed a1 (sonnet) — 0 ADDRESSED' \
+  '**Fix round 2/3:** resumed a1 (sonnet) — pending' '' '## Task 3: Third' > "$TMP/p6/.feature-flow/ctl/tasks/ledger.md"
+c="$(ctx compact "$TMP/p6")"
+has    "ledger: current task + fix round named" "$c" "task: Task 2 (round 2)"
+has    "ledger: pointer listed as-is"           "$c" "ledger=.feature-flow/ctl/tasks/ledger.md"
+printf '%s\n' '# Ledger — plan: docs/ff/plan.md' '## Task 1: First' '**Status:** complete (clean)' > "$TMP/p6/.feature-flow/ctl/tasks/ledger.md"
+c="$(ctx compact "$TMP/p6")"
+hasnot "ledger: every task complete → no task"   "$c" "task: Task"
+rm -f "$TMP/p6/.feature-flow/ctl/tasks/ledger.md"
+c="$(ctx compact "$TMP/p6")"
+hasnot "ledger: missing file → no task, no error" "$c" "task: Task"
+has    "ledger: missing file → run still listed"  "$c" "ctl — feature/full"
+
 if [ "$fail" -eq 0 ]; then echo "PASS: session-start guard"; else echo "RED: session-start guard failed"; fi
 exit "$fail"

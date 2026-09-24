@@ -1,0 +1,135 @@
+COMMAND: bash scripts/checks/implement-controller-guard.sh
+EXIT:0
+ok:   AC1: templates/plan.md has ## Global Constraints (34) before ## Tasks (45)
+ok:   AC1: templates/plan.md has '**No Placeholders.**'
+ok:   AC1: templates/plan.md has 'TBD'
+ok:   AC1: templates/plan.md has 'add appropriate error handling'
+ok:   AC1: templates/plan.md has 'similar to Task N'
+ok:   AC1: templates/plan.md has 'unfilled `<…>` template placeholder'
+ok:   AC1: templates/plan.md has 'complete test code in a fenced block'
+ok:   AC1: templates/plan.md has 'does not name the exact change'
+ok:   AC1: templates/plan.md has '**Self-check ran:**'
+ok:   AC1: templates/plan.md has '**Interfaces:**'
+ok:   AC1: templates/plan.md has '- Consumes:'
+ok:   AC1: templates/plan.md has '- Produces:'
+ok:   AC1: templates/plan.md has '**Run:**'
+ok:   AC1: templates/plan.md has '**Expected:**'
+ok:   AC1: templates/plan-bugfix.md has ## Global Constraints (17) before ## Tasks (27)
+ok:   AC1: templates/plan-bugfix.md has '**No Placeholders.**'
+ok:   AC1: templates/plan-bugfix.md has 'TBD'
+ok:   AC1: templates/plan-bugfix.md has 'add appropriate error handling'
+ok:   AC1: templates/plan-bugfix.md has 'similar to Task N'
+ok:   AC1: templates/plan-bugfix.md has 'unfilled `<…>` template placeholder'
+ok:   AC1: templates/plan-bugfix.md has 'complete test code in a fenced block'
+ok:   AC1: templates/plan-bugfix.md has 'does not name the exact change'
+ok:   AC1: templates/plan-bugfix.md has '**Self-check ran:**'
+ok:   AC1: templates/plan-bugfix.md has '**Interfaces:**'
+ok:   AC1: templates/plan-bugfix.md has '- Consumes:'
+ok:   AC1: templates/plan-bugfix.md has '- Produces:'
+ok:   AC1: templates/plan-bugfix.md has '**Run:**'
+ok:   AC1: templates/plan-bugfix.md has '**Expected:**'
+ok:   AC1/AC13: plan-bugfix.md keeps the Verify RED / Verify GREEN anchors
+ok:   AC2: commands/ff-plan.md has '**Write an executable plan (full tier, both tracks):**'
+ok:   AC2: commands/ff-plan.md has '**No Placeholders self-check (full tier):**'
+ok:   AC2: the self-check (119) runs before the Outcome gate (124)
+ok:   AC3: Critical-path check < Controller activation < Controller loop < inline Do the work
+ok:   AC3/AC4: activation has '**full tier**'
+ok:   AC3/AC4: activation has '## Global Constraints'
+ok:   AC3/AC4: activation has 'implement **inline**'
+ok:   AC3/AC4: activation has 'say which path you took and why'
+ok:   AC3/AC4: activation has '**Plan placeholder stop**'
+ok:   AC3/AC4: activation has 'in both modes'
+ok:   AC3/AC4: activation has '/feature-flow:ff-plan'
+ok:   AC3/AC4: activation has 'no task is dispatched'
+ok:   AC3: both Do the work sections are marked as the inline path
+ok:   AC5: docs/manifest-schema.md Schema + field note for artifacts.ledger
+ok:   AC5: ledger listed as ephemeral
+ok:   AC5: loop has '# Ledger — plan:'
+ok:   AC5: loop has 'before the first dispatch'
+ok:   AC5: loop has 'Rewrite the ledger after every step below, before the next dispatch'
+ok:   AC5: docs/schema/task-controller.md has '**Two writes per step.**'
+ok:   AC5: docs/schema/task-controller.md has '**Identity line.**'
+ok:   AC6: loop has '^### Task <N>:'
+ok:   AC6: loop has '(never the whole plan)'
+ok:   AC6: loop has '**`ff-implementer`** with `model` = `models.implementer`'
+ok:   AC7: loop has '`DONE`'
+ok:   AC7: loop has '`DONE_WITH_CONCERNS`'
+ok:   AC7: loop has '`NEEDS_CONTEXT`'
+ok:   AC7: loop has '`BLOCKED`'
+ok:   AC7: loop has 'at most twice per task'
+ok:   AC7: loop has '**Task blocked stop**'
+ok:   AC8: loop has 'diff.patch'
+ok:   AC8: loop has 'No step below runs `git add`'
+ok:   AC9: loop has '**paths only**'
+ok:   AC9: loop has 'never paste the diff into the prompt'
+ok:   AC9: loop has 'two verdicts — conformance'
+ok:   AC9: loop has 'do not spawn subagents'
+ok:   AC10: loop has '**never more than 3 rounds**'
+ok:   AC10: loop has '**Rounds 1 and 2** resume the same implementer'
+ok:   AC10: loop has '**Round 3** dispatches a fresh `ff-implementer` on `models.escalation`'
+ok:   AC10: loop has '`ADDRESSED` or `NOT ADDRESSED`'
+ok:   AC11: loop has '**Critical-after-cap stop**'
+ok:   AC11: loop has '**Ruling:** <decision> — <why> — <cost if wrong>'
+ok:   AC12: loop has 'TDD: exempt — <reason>'
+ok:   AC12: loop has 'TDD: off (config)'
+ok:   AC13: loop has 'manifest.bugfix.red'
+ok:   AC13: loop has 'manifest.bugfix.green'
+ok:   FS2: loop has '**keep the recorded Base**'
+ok:   FS4: loop has 'escalation unavailable — used <model>'
+ok:   AC7: docs/schema/task-controller.md has 'at most 15 lines'
+ok:   AC14: commands/ff-resume.md has '**Resuming implement with a task ledger**'
+ok:   AC14: commands/ff-status.md has '**task progress**'
+ok:   AC14: hooks/session-start names the current task
+ok:   AC15: the paste instruction is gone
+ok:   AC15: commands/ff-review.md has 'never pasted into the prompt'
+ok:   AC15: commands/ff-review.md has '<run dir>/review.diff'
+ok:   AC15: commands/ff-review.md has '**Rulings from implement.**'
+ok:   AC15: commands/ff-review.md has 'hooks/lib/revision.sh" "<project dir>" head'
+ok:   AC15: commands/ff-review.md has 'Never diff against the raw `HEAD^{tree}`'
+ok:   AC15: revision.sh defines revision_head_tree (the review base)
+ok:   AC16: ff-implementer has Write
+ok:   AC16: ff-implementer has Edit
+ok:   AC16: ff-implementer has Bash
+ok:   AC16: ff-implementer has no agent-dispatch tool
+ok:   AC16: agents/ff-implementer.md has 'Do **not** spawn subagents'
+ok:   AC16: agents/ff-implementer.md has '`git add`, `git commit`, `git stash`, `git reset`'
+ok:   AC16: agents/ff-implementer.md has 'except your own report file'
+ok:   AC16: agents/ff-implementer.md has 'at most 15 lines'
+ok:   AC17: defaults.json models.implementer=sonnet, models.escalation=opus
+ok:   AC17: docs/manifest-schema.md has 'models.{explorer,architect,reviewer,diagnostician,testRunner,implementer,escalation}'
+ok:   AC18: skills/feature-flow/references/codex-tools.md has '`ff-implementer`: the one editing role'
+ok:   AC18: skills/feature-flow/references/codex-tools.md has 'the same loop runs inline, with the same files, in the same order, preserving role boundaries'
+ok:   AC19: docs/schema/task-controller.md defines '## Task controller'
+ok:   AC19: docs/schema/task-controller.md defines '### Executable plans'
+ok:   AC19: docs/schema/task-controller.md defines '### Controller activation'
+ok:   AC19: docs/schema/task-controller.md defines '### Task packaging'
+ok:   AC19: docs/schema/task-controller.md defines '### Ledger'
+ok:   AC19: docs/schema/task-controller.md defines '### Status contract'
+ok:   AC19: docs/schema/task-controller.md defines '### Task review'
+ok:   AC19: docs/schema/task-controller.md defines '### Fix loop'
+ok:   AC19: docs/schema/task-controller.md defines '### Rulings'
+ok:   AC19: docs/schema/task-controller.md defines '### Bugfix under the controller'
+ok:   AC19: docs/schema/task-controller.md defines '### Inline fallback (Codex)'
+ok:   AC19: 'Plan placeholder stop' row present, not unconditional
+ok:   AC19: 'Task blocked stop' row present, not unconditional
+ok:   AC19: 'Critical-after-cap stop' row present, not unconditional
+ok:   AC19: 'Task blocked stop' is capped-then-stop
+ok:   AC19: 'Critical-after-cap stop' is capped-then-stop
+ok:   AC19: docs/schema/autopilot.md has '**Per-task fix loop (`ff-implement` controller, both modes).**'
+ok:   pkg: docs/schema/task-controller.md §Task packaging block is hooks/lib/task.sh byte-for-byte
+ok:   pkg self-test: a one-character drift is caught
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: commands/ff-review.md
+ok:   dist parity: commands/ff-resume.md
+ok:   dist parity: commands/ff-status.md
+ok:   dist parity: templates/plan.md
+ok:   dist parity: templates/plan-bugfix.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: agents/ff-implementer.md
+ok:   dist parity: skills/feature-flow/references/codex-tools.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: config/defaults.json
+PASS: implement-controller guard

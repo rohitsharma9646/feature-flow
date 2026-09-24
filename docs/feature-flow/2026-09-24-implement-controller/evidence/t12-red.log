@@ -1,0 +1,11 @@
+ok:   AC1/AC13: plan-bugfix.md keeps the Verify RED / Verify GREEN anchors
+FAIL: FS2: the Controller loop must contain '**keep the recorded Base**'
+FAIL: AC19: the 'Task blocked stop' row must not say unconditional (it is not a do-not-contradict STOP)
+FAIL: AC19: the 'Task blocked stop' row must be the capped shape ('| cross-turn | capped')
+FAIL: pkg: docs/schema/task-controller.md §Task packaging block differs from hooks/lib/task.sh — edit both together
+FAIL: dist parity: commands/ff-implement.md differs from or is missing in dist/codex/feature-flow/commands/ff-implement.md (re-run scripts/package-codex-plugin.sh)
+FAIL: dist parity: docs/schema/autopilot.md differs from or is missing in dist/codex/feature-flow/docs/schema/autopilot.md (re-run scripts/package-codex-plugin.sh)
+RED: implement-controller guard failed
+FAIL: AC16: agents/ff-implementer.md must contain 'Do **not** spawn subagents'
+FAIL: dist parity: agents/ff-implementer.md differs from or is missing in dist/codex/feature-flow/agents/ff-implementer.md (re-run scripts/package-codex-plugin.sh)
+RED: implement-controller guard failed

@@ -43,9 +43,23 @@ focuses:
 - **conventions** — CLAUDE.md / project-guideline adherence.
 
 Pass each the `reviewThreshold` from config; they report only issues scoring ≥ threshold.
-The reviewers have no shell and cannot run `git`, so hand each one the change under review:
-run `git diff HEAD` yourself (staged + unstaged) and pass its output, or — on a greenfield /
-non-git project — pass the list of files this run touched.
+The reviewers have no shell and cannot run `git`, so hand each one the change under review **as a
+file, by path — never pasted into the prompt**: write `<run dir>/review.diff` with `task_diff`
+from the bookkeeping-free HEAD tree to the current working-tree fingerprint — it includes new
+untracked files and leaves out Feature Flow's own bookkeeping (**Task packaging** in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md`). Both tree ids come from **Revision
+fingerprint** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/enforcement.md`: the base from
+`bash "${CLAUDE_PLUGIN_ROOT}/hooks/lib/revision.sh" "<project dir>" head`, the current tree without
+`head`. Never diff against the raw `HEAD^{tree}` — it still holds the committed bookkeeping, which
+would show up as deleted. If that fails, write `git diff HEAD` (staged +
+unstaged) to the same file; on a greenfield / non-git project, write the list of files this run
+touched instead.
+
+**Rulings from implement.** When `manifest.artifacts.ledger` resolves (the run was implemented by
+the task controller), give every reviewer the ledger's `**Ruling:**` lines as context: decisions the
+controller took on Important findings after a task's fix loop ran out — judge each on its merits
+(a ruling can still be a finding), but do not report the same issue again without saying it is a
+ruled one.
 
 **Over-engineering guard (every reviewer, including the spec-conformance one below).** Tell
 each reviewer: report only gaps that affect correctness or the stated requirements; style

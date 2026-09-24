@@ -1,0 +1,11 @@
+COMMAND: bash scripts/checks/claude-dist-guard.sh
+EXIT:0
+ok:   top-level entries are exactly the allowlist
+ok:   docs/ holds only manifest-schema.md + schema/ + grilling-playbook.md
+ok:   docs/schema/ holds exactly the 14 topic files
+ok:   .claude-plugin/ holds only plugin.json + marketplace.json
+ok:   no dev-only files in the package
+ok:   every ${CLAUDE_PLUGIN_ROOT} reference resolves inside the package
+ok:   packaged marketplace.json: feature-flow from "./" at the plugin.json version
+ok:   master marketplace.json: plugin source = url https …feature-flow.git @ ref dist, version synced
+PASS: claude-dist guard

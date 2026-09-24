@@ -1,0 +1,6 @@
+COMMAND: bash scripts/forward-test.sh --max-budget-usd 8 --timeout 2400 --output-dir .feature-flow/forward-test-runs/implement-controller-verify implement-controller
+  implement-controller/fired run 1/1: PASS ($1.3724820000000002)
+PASS implement-controller/fired  ($1.3725)
+  implement-controller/control run 1/1: FAIL — assertion failed (see assert-1.log) ($0.38096480000000005)
+FAIL implement-controller/control  ($0.381)  — assertion failed (see assert-1.log)
+forward-test: 1/2 PASS, 1 FAIL, 0 ERROR · total $1.7535 · /home/netzwelt/feature-flow/.feature-flow/forward-test-runs/implement-controller-verify

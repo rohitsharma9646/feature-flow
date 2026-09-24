@@ -31,7 +31,30 @@ to specific ACs; the final task verifies all of them.
 > dropped. No requirement
 > graph, or one with no edges → this rule does not apply.
 
+## Global Constraints
+
+- <binding requirement every task inherits: an exact value, format, name or signature>
+- <constraint copied verbatim from spec.md §Constraints or a binding decision in design.md>
+
+> Copied verbatim from the spec's `## Constraints` and the design's binding decisions — never
+> paraphrased. The controller copies this section unedited into every task brief, so it is the
+> implementer's and the task reviewer's shared rule set; a step that contradicts it is a plan
+> defect. Nothing beyond the spec's ACs → write "no additional constraints", never omit the
+> section. See `${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md` §Task controller → Executable plans.
+
 ## Tasks
+
+> **No Placeholders.** Every task must be executable by a fresh agent that has read only this
+> task, `## Global Constraints` and the spec/design paths. Forbidden anywhere below: `TBD` /
+> `TODO`; "add appropriate error handling" (or any hand-wave in place of a named behaviour);
+> "similar to Task N" without the code repeated; a step with no concrete action; an unfilled `<…>`
+> template placeholder; a test step without the complete test code in a fenced block; an
+> implementation step that does not name the exact change; a `Consumes:` / `Produces:` name
+> defined nowhere in this plan, the spec, the design or the codebase. `/feature-flow:ff-plan`
+> checks every task against this list and fixes every hit before completing;
+> `/feature-flow:ff-implement` re-checks before its first dispatch and stops on a hit.
+
+**Self-check ran:** <yes — no hits | yes — hits found and fixed>
 
 ### Task 1: <title>
 
@@ -40,9 +63,18 @@ to specific ACs; the final task verifies all of them.
 
 **Covers:** AC1, AC2   <!-- acceptance criteria from spec.md this task satisfies -->
 **Validates:** Assumption 1   <!-- full tier: unvalidated validation-required:y assumption(s) this task validates; omit if none -->
+**Interfaces:**
+- Consumes: `<exact name and signature this task uses from an earlier task or the codebase>` | none
+- Produces: `<exact name and signature a later task relies on>` | none
 
-- [ ] **Step 1:** <bite-sized action>
-- [ ] **Step 2: Verify** — <command + expected output>
+- [ ] **Step 1:** Write the failing test in `<test path>`:
+  ```<language>
+  <the complete test code>
+  ```
+  **Run:** `<test command>` **Expected:** fails — `<the failing assertion>`
+- [ ] **Step 2:** Implement in `<path>`: <the exact change — function, signature, behaviour>
+  (include the code in a fenced block when it is short or subtle).
+- [ ] **Step 3: Verify** — **Run:** `<command>` **Expected:** `<exit status and output>`
 
 ### Task 2: <title>
 

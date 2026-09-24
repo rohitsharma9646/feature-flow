@@ -1,0 +1,2 @@
+SM1 fired=488162 control=257102 ratio=1.899 FAIL (<= 0.60)
+SM1_EXIT=1

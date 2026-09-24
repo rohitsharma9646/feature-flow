@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Regression guard: forward-test cases (v0.18.0). Pins the STRUCTURAL acceptance criteria of the
 # forward-testing feature (.feature-flow/retro-forward-testing):
-#   AC12  every one of the 7 known-gap behaviors has a fired AND a control arm, and each arm has
+#   AC12  every behavior (the 7 known-gap ones, plus implement-controller since v0.23.0) has a fired AND a control arm, and each arm has
 #         all four parts: a non-empty sandbox/, prompt.txt, expected.md, an executable assert.sh.
 #   AC18  the runner lives at scripts/forward-test.sh, NOT under scripts/checks/ (CI never runs it),
 #         and evals/ is absent from the Codex dist (forward tests are repo-internal).
@@ -18,12 +18,12 @@ err() { echo "FAIL: $1"; fail=1; }
 ok()  { echo "ok:   $1"; }
 
 CASES="evals/forward"
-BEHAVIORS="decision-conflict planning-gap delivery-gap assumption-gap design-gap repair-gap discovery-gap"
+BEHAVIORS="decision-conflict planning-gap delivery-gap assumption-gap design-gap repair-gap discovery-gap implement-controller"
 
 [ -f "$CASES/README.md" ] && ok "$CASES/README.md present" || err "$CASES/README.md must document the case shape"
 [ -f "$CASES/lib.sh" ]    && ok "$CASES/lib.sh present"    || err "$CASES/lib.sh (shared assert helpers) must exist"
 
-# --- AC12: 7 behaviors x 2 arms x 4 parts ----------------------------------------------------
+# --- AC12: 8 behaviors x 2 arms x 4 parts ----------------------------------------------------
 for b in $BEHAVIORS; do
   for arm in fired control; do
     d="$CASES/$b/$arm"

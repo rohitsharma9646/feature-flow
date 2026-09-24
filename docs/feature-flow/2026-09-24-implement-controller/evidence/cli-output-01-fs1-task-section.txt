@@ -1,0 +1,62 @@
+=== direct: task_section evals/fixtures/task-controller/plan.md '^### Task 2:' ===
+EXIT:0
+--- stdout ---
+### Task 2: Edit a markdown template
+
+- [ ] **Step 1:** Backtick fence, indented inside the list item:
+  ```markdown
+  ### Task 3: fake heading in a backtick fence
+  ## Global Constraints
+  ```
+- [ ] **Step 2:** Tilde fence (a backtick line does not close it):
+  ~~~
+  ### Task 9: fake heading in a tilde fence
+  ```
+  # still inside the tilde fence
+  ~~~
+- [ ] **Step 3:** Four-backtick fence holding a three-backtick fence:
+````md
+```
+### Task 4: fake heading in a nested fence
+```
+## Dependency graph
+````
+- [ ] **Step 4: Verify** — **Run:** `true` **Expected:** exit 0
+--- stderr ---
+
+=== direct: task_section ... '^### Task 9:' (heading only inside a fence) ===
+EXIT:1
+--- stdout (expect empty) ---
+stdout byte count: 0
+
+=== piped (Codex path): bash -s -- section ... '^### Task 2:' < hooks/lib/task.sh ===
+EXIT:0
+--- stdout ---
+### Task 2: Edit a markdown template
+
+- [ ] **Step 1:** Backtick fence, indented inside the list item:
+  ```markdown
+  ### Task 3: fake heading in a backtick fence
+  ## Global Constraints
+  ```
+- [ ] **Step 2:** Tilde fence (a backtick line does not close it):
+  ~~~
+  ### Task 9: fake heading in a tilde fence
+  ```
+  # still inside the tilde fence
+  ~~~
+- [ ] **Step 3:** Four-backtick fence holding a three-backtick fence:
+````md
+```
+### Task 4: fake heading in a nested fence
+```
+## Dependency graph
+````
+- [ ] **Step 4: Verify** — **Run:** `true` **Expected:** exit 0
+
+=== diff direct vs piped (Task 2) ===
+IDENTICAL
+
+=== piped Task 9 (fence-only heading) ===
+EXIT:1
+stdout byte count: 0

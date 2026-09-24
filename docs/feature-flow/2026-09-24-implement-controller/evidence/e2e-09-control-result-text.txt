@@ -1,0 +1,17 @@
+I've built all three tools and `bash tests/test.sh` passes with exit 0 and 11 of 11 checks. I implemented directly rather than handing tasks to subagents, because this plan was written before that format existed. Each task's tests failed first, then passed once the script was added.
+
+- **`src/trim.sh`** (AC1): removes leading and trailing spaces and tabs.
+- **`src/words.sh`** (AC2): counts words.
+- **`src/cli.sh`** (AC3): runs `trim` or `words`. Any other first argument prints a line starting with `usage:` to stderr and exits 2.
+
+**Where I didn't follow the plan's text:**
+1. **Task 2's code didn't meet the spec.** The plan's `tr -s ' ' '\n'` only splits on spaces, so `"a<TAB>b"` gave `1`; I ran it to check. The spec (AC2) wants `2`, and the design had already listed this as failure scenario FS1. I split on spaces and tabs instead, and added the spec's own examples as tests: `"one two"`, `"a<TAB>b"` and `""`.
+2. **One of Task 3's tests couldn't fail.** `check src/cli.sh "trim" ""` passes even when `cli.sh` doesn't exist, because a missing script also prints nothing. I added a test that `words "a b c"` returns `3` through `cli.sh`.
+
+Both changes are written up under "Decisions made during execution" in `plan.md`. Neither conflicts with the recorded decision to use three separate scripts. Task order followed the critical path (Task 1 → Task 3), and no step's final test run failed, so the rollback plan wasn't needed.
+
+The implement phase is marked complete in the manifest. Nothing is committed.
+
+**Next:** run `/feature-flow:ff-review`, then `/feature-flow:ff-verify`.
+
+`text-tools` · feature/full · explore ✓ · clarify ✓ · design ✓ · plan ✓ · **implement ✓** · review ○ · verify ○

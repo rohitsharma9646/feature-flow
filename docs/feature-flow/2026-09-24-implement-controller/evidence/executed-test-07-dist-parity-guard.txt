@@ -1,0 +1,4 @@
+COMMAND: bash scripts/checks/dist-parity-guard.sh
+EXIT:0
+ok:   checked 62 packaged files (0 drifted, 0 orphaned)
+PASS: dist parity guard (62 files in sync)

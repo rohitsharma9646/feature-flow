@@ -1,0 +1,22 @@
+All three tasks are built and `bash tests/test.sh` passes 8 of 8 checks (exit 0). Tasks 1 and 3 passed review with no findings. Task 2 needed one fix round.
+
+| Task | File | Result |
+|---|---|---|
+| 1 | `src/trim.sh` | complete (clean). Test failed first, then passed after the code was written. No review findings. |
+| 2 | `src/words.sh` | complete (clean) after 1 fix round. |
+| 3 | `src/cli.sh` | complete (clean). Test failed first, then passed. No review findings. |
+
+**What went wrong in Task 2:** the plan's own code split words on spaces only (`tr -s ' '`), so `a<TAB>b` counted as 1 instead of the 2 that AC2 requires. The design had already predicted this (FS1), and the plan's checks used only spaces, so the tests didn't catch it. The review flagged it as Critical. The implementer then added a tab check to `tests/test.sh` (it failed as expected), changed the split to `tr -s ' \t'`, and the re-review confirmed the fix.
+
+**No rulings or drift:** no findings were left open to rule on, and nothing in the code changed between tasks.
+
+**Other notes:**
+- **Extra usage check:** `trim.sh` and `words.sh` also print a `usage:` line and exit 2 when called with no argument. That wasn't in the plan's code; the implementers added it to follow the constraint that usage errors do this. Both reviewers accepted it.
+- **Task 3 report:** the implementer wasn't allowed to write its report file, so I wrote `tasks/task-3/report.md` from the text it returned.
+- **Not flagged by review:** `bash src/words.sh ""` prints `0` correctly but exits 1, because `grep -c` exits 1 when there are no matches. The spec doesn't set an exit code, but a calling script that uses `set -e` would stop there. Worth raising in `/feature-flow:ff-review`.
+
+Nothing is committed. `src/*.sh` and the `tests/test.sh` changes are in the working tree. The ledger is at `.feature-flow/text-tools/tasks/ledger.md`, and the manifest now marks implement as complete.
+
+Next: run `/feature-flow:ff-review`, then `/feature-flow:ff-verify`.
+
+`text-tools · feature/full · explore ✓ · clarify ✓ · design ✓ · plan ✓ · implement ✓ · review ○ · verify ○`

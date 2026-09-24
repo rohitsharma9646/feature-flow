@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.22.0 · MIT licensed
+> **Status:** v0.23.0 · MIT licensed
 
 ## Why use it
 
@@ -88,8 +88,8 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 | **explore** | Read-only agents map the codebase | `explore.md` |
 | **clarify** | Challenges the premise (closed-choice questions via a picker), locks acceptance criteria plus the files it expects to touch and one **end-to-end check**, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
 | **design** | Architect agents fan out (minimal / clean / pragmatic); scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
-| **plan** | Decomposes the design into tasks with an Outcome gate | `plan.md` |
-| **implement** | Refuses to code until the spec is signed, then builds task by task | *(code)* |
+| **plan** | Decomposes the design into tasks with an Outcome gate; full-tier plans are **executable** — global constraints, per-task interfaces, complete test code, no placeholders | `plan.md` |
+| **implement** | Refuses to code until the spec is signed. On a full-tier plan it is a **task controller**: a fresh implementer subagent per task, a review of each task's diff, a capped fix loop that escalates to a stronger model, and a task ledger that resumes mid-phase | *(code)* + `tasks/ledger.md` |
 | **review** | Reviewer agents report issues, plus a spec-conformance reviewer that checks the diff against the spec/plan (missing criterion = Critical, out-of-scope change = Important); a Critical finding blocks the run | `review.md` |
 | **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion (plus full-tier design failure scenarios and spec success metrics) to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
 
@@ -203,7 +203,7 @@ Full contract: `docs/schema/knowledge-base.md` §Knowledge base.
 | `/feature-flow:ff-design` | [feature] Architect fan-out + lean trade-off matrix + devil's-advocate pass, record the chosen design → `design.md` |
 | `/feature-flow:ff-plan` | [shared] Decompose into a phased `plan.md` with an Outcome gate |
 | `/feature-flow:ff-diagnose` | [bugfix] Reproduce + root-cause, decide hotfix-vs-proper → `diagnosis.md` |
-| `/feature-flow:ff-implement` | [shared] Build from the plan (sign-off gated) / test-first bugfix (RED→GREEN) |
+| `/feature-flow:ff-implement` | [shared] Build from the plan (sign-off gated) — a subagent + review per task on full-tier plans — / test-first bugfix (RED→GREEN) |
 | `/feature-flow:ff-review` | [shared] Reviewer fan-out → `review.md`; Critical findings block |
 | `/feature-flow:ff-verify` | [shared] Really run tests/build/lint + evidence surfaces; confidence-graded report; one autopilot repair-and-re-verify cycle on a genuine failure; gaps block done |
 | `/feature-flow:ff-deliver` | [shared] Optional, post-`done`: assemble `delivery.md` (release notes / deploy / rollback / migration / known issues) from upstream artifacts; never blocks done |
@@ -226,7 +226,8 @@ Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 | `architectAgents` | `3` | Parallel architect agents in *design* |
 | `reviewerAgents` | `3` | Parallel reviewer agents in *review* (the spec-conformance reviewer is extra, not counted) |
 | `diagnosticianAgents` | `1` | Diagnostician agents in *diagnose* |
-| `models.*` | `"sonnet"` | Model for each agent role: `explorer`, `architect`, `reviewer`, `diagnostician`, `testRunner` |
+| `models.*` | `"sonnet"` | Model for each agent role: `explorer`, `architect`, `reviewer`, `diagnostician`, `testRunner`, `implementer` |
+| `models.escalation` | `"opus"` | Model for the third, escalated fix round of a task in *implement* |
 | `reviewThreshold` | `80` | Reviewers report only issues with confidence ≥ this (0–100) |
 | `toggles.tdd` | `true` | Test-first on the feature track (bugfix RED→GREEN is always on) |
 | `toggles.worktree` | `false` | Implement in an isolated git worktree |

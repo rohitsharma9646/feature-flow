@@ -1,0 +1,3 @@
+COMMAND: bash evals/forward/implement-controller/sm1-ratio.sh .feature-flow/forward-test-runs/implement-controller-verify/implement-controller/fired/run-1.json .feature-flow/forward-test-runs/implement-controller-verify/implement-controller/control/run-1.json
+SM1 fired=480489 control=329253 ratio=1.459 FAIL (<= 0.60)
+EXIT:1

@@ -1,0 +1,11 @@
+COMMAND: jq .models config/defaults.json
+{
+  "explorer": "sonnet",
+  "architect": "sonnet",
+  "reviewer": "sonnet",
+  "diagnostician": "sonnet",
+  "testRunner": "sonnet",
+  "implementer": "sonnet",
+  "escalation": "opus"
+}
+EXIT:0

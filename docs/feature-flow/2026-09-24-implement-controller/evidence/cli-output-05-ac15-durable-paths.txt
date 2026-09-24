@@ -1,0 +1,31 @@
+=== setup temp repo: /tmp/tmp.wWb3qtbBBD ===
+
+=== command -v jq (required by revision_excludes when .feature-flow.json present) ===
+/usr/bin/jq
+EXIT:0
+
+=== revision.sh head (clean tree) ===
+d8add148fedd4989d20321c47555f41628761c9d
+
+=== fingerprint (clean tree) ===
+d8add148fedd4989d20321c47555f41628761c9d
+
+MATCH: head == fingerprint on clean tree
+
+=== edit src + edit docs/ff (durable, should be excluded from fingerprint) ===
+
+=== fingerprint after edits ===
+bdacd9e36c4a902da718b9877448be026869ae8d
+
+=== task_diff head(before) -> fingerprint(after): should show src only, docs/ff excluded ===
+ src/main.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/main.txt b/src/main.txt
+index 8df37eb..fdc1e01 100644
+--- a/src/main.txt
++++ b/src/main.txt
+@@ -1 +1,2 @@
+ srccode
++srcedit
+EXIT:0

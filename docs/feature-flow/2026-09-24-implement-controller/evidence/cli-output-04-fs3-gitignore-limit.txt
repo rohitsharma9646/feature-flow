@@ -1,0 +1,27 @@
+=== setup temp git repo: /tmp/tmp.roGAQTVYXM ===
+
+=== fingerprint Base (clean) ===
+09bba00d20daa4c14dc77140ae9555918f919667
+
+=== create gitignored build output + a non-ignored new file ===
+
+=== fingerprint Head ===
+ed52b51e106964cd0a428dd3e6a948bc9d2cef88
+
+=== task_diff Base Head ===
+ newfile.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/newfile.txt b/newfile.txt
+new file mode 100644
+index 0000000..d49c4a8
+--- /dev/null
++++ b/newfile.txt
+@@ -0,0 +1 @@
++not-ignored
+EXIT:0
+
+=== check: is build/output.bin present in diff? (expected: ABSENT — documented known limit) ===
+ABSENT (as documented — gitignored files excluded from fingerprint/diff)
+=== check: is newfile.txt present in diff? (expected: PRESENT) ===
+PRESENT (as expected — non-ignored untracked file)

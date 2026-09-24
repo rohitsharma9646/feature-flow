@@ -1,0 +1,7 @@
+ M .feature-flow/text-tools/manifest.json
+ M .feature-flow/text-tools/plan.md
+ M tests/test.sh
+?? .feature-flow/text-tools/tasks/
+?? src/cli.sh
+?? src/trim.sh
+?? src/words.sh

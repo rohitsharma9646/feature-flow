@@ -1,0 +1,14 @@
+COMMAND: bash scripts/checks/integrity-wp2-guard.sh
+EXIT:0
+ok:   every inventoried legacy source has one registered profile or explicit rationale
+ok:   legacy inventory source identities are unique
+ok:   migration corpus contains X-LOSSLESS
+ok:   migration corpus contains X-IDEMPOTENT
+ok:   migration corpus contains X-AMBIGUOUS
+ok:   migration corpus contains X-POINTER
+ok:   migration corpus contains X-POINTER-DRIFT
+ok:   migration corpus contains X-LEGACY-DONE
+ok:   migration corpus contains X-PREVIEW-NOWRITE
+ok:   migration corpus contains X-POLICY-EQUIVALENCE
+ok:   WP2 remains directly invocable only
+PASS: WP2 integrity guard

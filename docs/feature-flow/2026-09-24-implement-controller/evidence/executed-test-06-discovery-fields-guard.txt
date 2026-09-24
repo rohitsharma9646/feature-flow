@@ -1,0 +1,61 @@
+COMMAND: bash scripts/checks/discovery-fields-guard.sh
+EXIT:0
+ok:   templates/spec.md: '## Success metrics' present
+ok:   templates/spec.md: '## Requirement graph' present
+ok:   templates/spec.md: 'Success metrics' carries the full-tier-only banner
+ok:   templates/spec.md: 'Requirement graph' carries the full-tier-only banner
+ok:   templates/spec.md: no Stakeholders section (as required)
+ok:   templates/spec.md: Success metrics states the binary-threshold-with-measurement discipline
+ok:   templates/spec.md: Success metrics cross-references (not diverges from) the binary-AC discipline
+ok:   templates/spec.md: Requirement graph carries the '| AC | Depends on |' header
+ok:   templates/spec.md: Requirement graph names its reuse of §Planning intelligence's notation
+ok:   commands/ff-clarify.md: names the Success metrics field
+ok:   commands/ff-clarify.md: names the Requirement graph field
+ok:   commands/ff-clarify.md: lite branch explicitly skips the two fields
+ok:   commands/ff-verify.md: maps each Success-metrics row into its own '### SM<n>'
+ok:   commands/ff-verify.md: states presence-not-tier gating for SM
+ok:   templates/verify.md: SM1 contract-mapping block present
+ok:   templates/verify.md: SM block carries \*\*Method:\*\*
+ok:   templates/verify.md: SM block carries \*\*Evidence:\*\*
+ok:   templates/verify.md: SM block carries \*\*Confidence:\*\*
+ok:   templates/verify.md: SM block carries \*\*Gap
+ok:   commands/ff-plan.md: carries the requirement-graph derivation bullet
+ok:   commands/ff-plan.md: requirement-graph bullet (91) sits between 'Map every AC' (75) and 'Derive planning intelligence' (104)
+ok:   templates/plan.md: Dependency graph header UNCHANGED (no new column — derive-don't-widen)
+ok:   templates/plan.md: Outcome gate carries the requirement-graph coverage/gap rule
+ok:   templates/plan.md: names the un-derivable same-task-covers-both-ACs gap format
+ok:   docs/manifest-schema.md + docs/schema/: '## Discovery fields' canonical section present
+ok:   docs/manifest-schema.md + docs/schema/ §Discovery fields: '### Success metrics' present
+ok:   docs/manifest-schema.md + docs/schema/ §Discovery fields: '### Requirement graph' present
+ok:   docs/manifest-schema.md + docs/schema/ §Discovery fields: '### Actuation 1' present
+ok:   docs/manifest-schema.md + docs/schema/ §Discovery fields: '### Actuation 2' present
+ok:   docs/manifest-schema.md + docs/schema/ §Discovery fields: '### Tier / track scope' present
+ok:   docs/manifest-schema.md + docs/schema/ §Discovery fields: '### v1 non-goals' present
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: Confidence ladder names 'success metric' as a fourth contract-item class
+ok:   config/defaults.json: no new config key (always-on, as required)
+ok:   docs/manifest-schema.md + docs/schema/: no new top-level manifest field
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: no new discovery-fields row (as required)
+ok:   dist parity: templates/spec.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: templates/plan.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: discovery-fields guard

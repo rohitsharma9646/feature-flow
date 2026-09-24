@@ -1,5 +1,79 @@
 # Changelog
 
+## [0.23.0] — 2026-09-24 — ff-implement as a per-task controller, with executable plans
+
+Implement was the last phase that did all its work inline: one agent wrote every task in one
+context (332–426 tool calls and ~5 compactions per session in the July review, F11), no task was
+checked until the final review, and a compaction mid-implement left nothing finer than "implement is
+in progress" to resume from. This release adopts Superpowers' subagent-driven development inside
+Feature Flow's gates (recommendations #1 and #2 of the 2026-09-24 comparison, and #4 in part).
+
+- **Task controller** (`docs/schema/task-controller.md`, new topic). On a **full-tier** run whose plan
+  has `## Global Constraints`, `ff-implement` works one task at a time: it writes a brief holding
+  only that task (plus the global constraints and the spec/design paths), dispatches a fresh
+  **`ff-implementer`** subagent (`models.implementer`), fingerprints the working tree before and after,
+  and has one `ff-code-reviewer` check that task's diff — handed over as a file, never pasted — for
+  conformance (the task's ACs, its interfaces, the constraints, no out-of-scope files) and quality.
+  Lite runs and plans written before 0.23.0 implement inline exactly as before, and say so.
+- **Fix loop per task:** up to three rounds — two resuming the same implementer, one fresh implementer
+  on **`models.escalation`** (default `opus`) — each ending in a scoped re-review
+  (`ADDRESSED` / `NOT ADDRESSED`). An open Critical after the third round stops the phase; open
+  Important findings become recorded **rulings** (`decision — why — cost if wrong`), listed at the end
+  and shown to `ff-review`'s reviewers.
+- **Status contract:** the implementer returns `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT` (answered
+  from the spec/design, at most twice) or `BLOCKED`, with a ≤ 15-line summary; detail goes to a report
+  file. With `toggles.tdd` on, every code task records its RED run before the implementation and its
+  GREEN run after — per-task test-first evidence on the feature track for the first time.
+- **Task ledger** (`<run dir>/tasks/ledger.md`, via the new `manifest.artifacts.ledger`): base/head
+  fingerprints, statuses, review verdicts, fix rounds, rulings and TDD lines per task, rewritten before
+  every dispatch. A new session, a compaction or `ff-resume` continues at the first incomplete task
+  and fix round; `ff-status` and the SessionStart re-anchor name the current task.
+- **Three new stops** (`docs/schema/autopilot.md`): Plan placeholder (pre-flight), Task blocked, and
+  Critical-after-cap — none of them "unconditional"; the caps live in the ledger, not the manifest.
+- **Executable plans:** `templates/plan.md` / `plan-bugfix.md` gain `## Global Constraints`,
+  per-task `**Interfaces:**` (`Consumes:` / `Produces:`), complete test code in every test step,
+  implementation steps that name the exact change, `**Run:**` / `**Expected:**` lines, and a
+  **No Placeholders** list that `ff-plan` self-checks before completing and `ff-implement` re-checks
+  before its first dispatch.
+- **`hooks/lib/task.sh`** (new): `task_section` extracts one plan section, fence-aware (a heading-shaped
+  line inside a code block never cuts a brief); `task_diff` packages a tree-to-tree diff without
+  touching the index. Reproduced byte-for-byte in §Task packaging for Codex.
+- **`ff-review`** now hands its reviewers the diff as a file, built from HEAD's tree to the current
+  fingerprint — so new untracked files are included, which `git diff HEAD` missed. Both sides leave
+  out Feature Flow's bookkeeping: `hooks/lib/revision.sh` gains `revision_head_tree` (CLI:
+  `revision.sh <dir> head`), HEAD's tree minus the same paths — the raw HEAD tree would show every
+  committed run record as deleted. The fingerprint and Gate B are unchanged; the verbatim block in
+  `enforcement.md` §Revision fingerprint is updated to match.
+- **Codex:** no subagents needed — the same loop runs inline with the same files and role boundaries
+  (`codex-tools.md`); only the fresh context per task is lost.
+- **Guards:** new `implement-controller-guard.sh` (132 checks, incl. the §Task packaging byte identity
+  with a one-character-drift self-test); a `task-controller` eval fixture (fence-aware extraction,
+  tree diffs, index untouched); `session-start-guard.sh` S11 (ledger re-anchor); a new forward test
+  `evals/forward/implement-controller` (fired: controller + a seeded review finding; control: a plan
+  without Global Constraints stays inline) with `sm1-ratio.sh` for the context measurement.
+
+**Measured while building it:** a completed subagent resumed by `SendMessage` keeps its context (the
+fix loop's resume rounds rely on this). Full code in every plan step made a task ~10× longer
+(23 → 242 lines); the adopted rule — complete test code and interfaces, implementation steps naming
+the exact change — is ~6× (130 lines) with briefs of ~140 lines. **Controller cost on a small plan
+(the forward test: 3 tasks, one-line scripts each):** the controller's own session used 1.5–1.9× the
+main-session input tokens of an inline session on the same plan (480k vs 329k, 488k vs 257k — mostly
+cache reads) and ~4× the money ($1.37–1.40 vs $0.35–0.38 per session, subagents included). The
+spec's success metric — controller context ≤ 60% of inline — was **not met** and was waived; the
+context saving is expected on large plans, where inline sessions accumulate hundreds of tool calls,
+but that is not measured yet.
+
+**Unchanged:** Gates A/B and revision binding (0.22.0) — a WP4 merge must still preserve both;
+the never-commit rule (no task commits; diffs come from fingerprints); lite tiers.
+
+**Known limits:** the implementer's "never touch the git index or history" rule is prose-enforced (its
+reviewer catches out-of-scope edits one step later); on small plans the controller costs more than
+inline — in context and in money (measured above), and there is no size threshold yet; the loop firing
+(a subagent per task, a fix round on a real finding) is proven by the forward test, not by CI, and the
+placeholder stop, `NEEDS_CONTEXT` / `BLOCKED`, fix rounds 2–3 with escalation, the Critical-after-cap
+stop, an escalated bugfix under the controller and the escalation fallback have not fired in a live
+session yet.
+
 ## [0.22.0] — 2026-09-24 — Review and verify bound to the same code revision
 
 Closes F01 (rated Critical) from `docs/feature-flow-architectural-review-2026-07-23.md`: a run

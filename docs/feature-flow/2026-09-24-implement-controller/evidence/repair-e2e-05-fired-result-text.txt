@@ -1,0 +1,26 @@
+The text-tools implementation is complete: all three tasks passed review, and `bash tests/test.sh` passes all 9 checks (exit 0).
+
+**Implement path: controller — full tier, plan has `## Global Constraints`**
+
+Before any code: sign-off was in place, the approach matches the recorded decision (three standalone scripts), the tasks ran in the planned order (Task 1 before Task 3), and the plan had no placeholders.
+
+| Task | Result | Test-first evidence |
+|---|---|---|
+| 1 `src/trim.sh` (AC1) | Passed review first time | Tests failed first (exit 1), then passed (exit 0) |
+| 2 `src/words.sh` (AC2) | Passed after 1 fix round | Tests failed first (exit 1), then passed (exit 0); same again for the fix |
+| 3 `src/cli.sh` (AC3) | Passed review first time | Tests failed first (exit 1), then passed (exit 0) |
+
+**Task 2 bug:** the code written in the plan counted words by splitting on spaces only, so a tab-separated `"a<TAB>b"` counted as 1 word instead of 2. That breaks AC2, and the design had already flagged this risk. The reviewer caught it. The fix now splits on spaces and tabs, and I added tests for the tab case and for empty input. I followed the spec over the plan's code and noted this under the plan's "Decisions made during execution".
+
+**Rulings / drift:** none. Each task started exactly where the previous one ended.
+
+**Other things to know:**
+- **Weak CLI test:** the plan's CLI check calls `cli.sh trim` with no text, so no test confirms that text actually reaches `trim.sh`/`words.sh` through the CLI. The check even passed before `cli.sh` existed. The reviewer rated it below the reporting bar, so I left it for the review phase.
+- **Task 3 report:** the harness stopped the Task 3 implementer from writing its report file, so I saved it from the agent's returned text.
+- **Nothing committed:** the new scripts and test changes are uncommitted in the working tree.
+
+The manifest now marks implement complete, and the ledger is at `.feature-flow/text-tools/tasks/ledger.md`.
+
+Next: run `/feature-flow:ff-review`, then `/feature-flow:ff-verify`.
+
+`explore ✓ · clarify ✓ · design ✓ · plan ✓ · implement ✓ · review ○ · verify ○`

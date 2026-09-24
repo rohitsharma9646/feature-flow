@@ -1,0 +1,54 @@
+COMMAND: bash scripts/checks/decision-record-guard.sh
+EXIT:0
+ok:   templates/decision.md: present
+ok:   templates/decision.md: section '## Decision' present
+ok:   templates/decision.md: section '## Context' present
+ok:   templates/decision.md: section '## Options considered' present
+ok:   templates/decision.md: section '## Trade-offs' present
+ok:   templates/decision.md: section '## Chosen \+ rationale' present
+ok:   templates/decision.md: section '## Outcome' present
+ok:   templates/decision.md: section '## Future considerations' present
+ok:   templates/decision.md: carries '**Related ACs:**'
+ok:   templates/decision.md: carries '**Related files:**'
+ok:   templates/decision.md: carries '| Option | Effort | Risk | Reversibility |'
+ok:   templates/decision.md: frontmatter field tags present
+ok:   templates/decision.md: frontmatter field referencedFiles present
+ok:   docs/manifest-schema.md + docs/schema/: durable-artifacts list present
+ok:   docs/manifest-schema.md + docs/schema/: durable list includes decision
+ok:   docs/manifest-schema.md + docs/schema/: disk-inference tuple includes decision
+ok:   docs/manifest-schema.md + docs/schema/: documents artifacts.decision
+ok:   docs/manifest-schema.md + docs/schema/: artifacts.decision absent-field default documented
+ok:   docs/manifest-schema.md + docs/schema/: '### Decision recall' canonical subsection present
+ok:   docs/manifest-schema.md + docs/schema/: names the Decision override by user (<date>) recording
+ok:   commands/ff-design.md: records artifacts.decision
+ok:   commands/ff-design.md: writes the decision from templates/decision.md
+ok:   commands/ff-design.md: do-not-contradict STOP instruction present (AC4/AC8)
+ok:   commands/ff-implement.md: do-not-contradict STOP instruction present (AC5/AC8)
+ok:   commands/ff-implement.md: has a '## Decision recall' section
+ok:   commands/ff-implement.md §Decision recall: resolves via artifacts.decision
+ok:   commands/ff-implement.md §Decision recall: cross-run half gates on toggles.kb
+ok:   commands/ff-implement.md §Decision recall: STOP is unconditional in both modes
+ok:   commands/ff-implement.md: '## Decision recall' (78) sits between Cold-start (52) and Do the work (242)
+ok:   commands/ff-clarify.md: lite branch sets artifacts.decision
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: has the Decision conflict stop row
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: Decision conflict stop is unconditional
+ok:   dist parity: templates/decision.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-clarify.md
+PASS: decision-record guard

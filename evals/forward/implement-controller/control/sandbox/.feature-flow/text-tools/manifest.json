@@ -1,0 +1,25 @@
+{
+  "slug": "text-tools",
+  "track": "feature",
+  "tier": "full",
+  "createdAt": "2026-09-24T09:00:00Z",
+  "updatedAt": "2026-09-24T11:00:00Z",
+  "closedAt": null,
+  "autopilot": false,
+  "revisionBound": true,
+  "currentPhase": "plan",
+  "phases": {
+    "explore": { "status": "complete", "artifact": null },
+    "clarify": { "status": "complete", "artifact": ".feature-flow/text-tools/spec.md" },
+    "design": { "status": "complete", "artifact": ".feature-flow/text-tools/design.md" },
+    "plan": { "status": "complete", "artifact": ".feature-flow/text-tools/plan.md" }
+  },
+  "signOff": { "required": true, "signed": true, "date": "2026-09-24" },
+  "lock": null,
+  "artifacts": {
+    "spec": ".feature-flow/text-tools/spec.md",
+    "design": ".feature-flow/text-tools/design.md",
+    "decision": ".feature-flow/text-tools/decision.md",
+    "plan": ".feature-flow/text-tools/plan.md"
+  }
+}

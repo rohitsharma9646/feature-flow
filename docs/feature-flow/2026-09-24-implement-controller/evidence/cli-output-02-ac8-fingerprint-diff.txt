@@ -1,0 +1,45 @@
+=== setup temp git repo: /tmp/tmp.mPj4d5Ux7X ===
+
+=== rev-list count before ===
+1
+=== index checksum before ===
+6308fdad553bcb568187cc08b9a761b2
+
+=== fingerprint A (clean tree) ===
+eeabd4f9a3af2a5248416366f75591b9bf1c5d97
+
+=== index checksum after fingerprint A ===
+6308fdad553bcb568187cc08b9a761b2
+INDEX UNCHANGED after fingerprint A
+
+=== edit tracked file + add untracked file ===
+
+=== fingerprint B ===
+d7d7c2bac3469cd8e5df89693b7beaf3a7fa6850
+
+=== task_diff A B ===
+ tracked.txt   | 1 +
+ untracked.txt | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/tracked.txt b/tracked.txt
+index ce01362..94954ab 100644
+--- a/tracked.txt
++++ b/tracked.txt
+@@ -1 +1,2 @@
+ hello
++world
+diff --git a/untracked.txt b/untracked.txt
+new file mode 100644
+index 0000000..3e75765
+--- /dev/null
++++ b/untracked.txt
+@@ -0,0 +1 @@
++new
+task_diff EXIT:0
+
+=== rev-list count after ===
+1
+=== index checksum after all operations ===
+6308fdad553bcb568187cc08b9a761b2
+REAL INDEX BYTE-IDENTICAL before/after fingerprint+diff ops
