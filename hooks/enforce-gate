@@ -6,7 +6,8 @@
 #
 # Gates (see docs/schema/enforcement.md §Enforcement):
 #   A. cannot enter `implement` without the track's sign-off precondition.
-#   B. cannot reach `done` without valid on-disk verify (+ review on bugfix) evidence.
+#   B. cannot reach `done` without valid on-disk verify (+ review on bugfix) evidence, and — on a
+#      revision-bound run (v0.22.0) — unless review and verify both stamped the current revision.
 #
 # Output (Claude Code PreToolUse): exit 0 always; speak via stdout JSON.
 set -u
@@ -154,6 +155,36 @@ if [ "$phase" = "done" ]; then
       deny "Gate B" "cannot mark done: review evidence missing or invalid (bugfix needs phases.review.status=complete + a non-empty review artifact with a heading)"
     fi
   fi
+
+  # Revision binding (v0.22.0, docs/schema/enforcement.md §Enforcement): on a revision-bound run,
+  # review and verify must each have stamped the CURRENT working-tree revision. Pre-0.22 runs
+  # (no revisionBound) and projects outside git skip silently; a git repo where the revision
+  # cannot be computed is allowed LOUDLY (AC9).
+  if [ "$(mq '.revisionBound // false')" = "true" ]; then
+    proj="${cwd:-$(dirname "$(dirname "$run_dir")")}"
+    d="$proj"; in_git=""
+    while [ -n "$d" ]; do
+      [ -e "$d/.git" ] && { in_git=1; break; }
+      next="$(dirname "$d")"
+      [ "$next" = "$d" ] && break                 # reached / (or "." for a relative path)
+      d="$next"
+    done
+    if [ -n "$in_git" ]; then
+      cur=""
+      lib="$(dirname "$0")/lib/revision.sh"
+      [ -f "$lib" ] && . "$lib" && cur="$(revision_fingerprint "$proj")"
+      if [ -z "$cur" ]; then
+        rev_warn="feature-flow Gate B: revision binding NOT checked — the working-tree revision could not be computed (git missing or failing); done allowed without it"
+      else
+        for ph in review verify; do
+          stamp="$(mq ".phases.$ph.revision // empty")"
+          [ -n "$stamp" ] || deny "Gate B" "cannot mark done: $ph revision not recorded on a revision-bound run (re-run /feature-flow:ff-$ph so it stamps phases.$ph.revision)"
+          [ "$stamp" = "$cur" ] || deny "Gate B" "cannot mark done: $ph revision is stale — the code changed after $ph ran (changed: $(revision_changed_paths "$proj" "$stamp" "$cur")); re-run /feature-flow:ff-$ph on the current tree"
+        done
+      fi
+    fi
+  fi
 fi
 
+[ -n "${rev_warn:-}" ] && jq -cn --arg m "$rev_warn" '{systemMessage:$m}'
 exit 0

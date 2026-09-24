@@ -203,5 +203,186 @@ for t in Write Edit MultiEdit; do
     || err "hooks.json PreToolUse matcher '$matcher' does not match $t"
 done
 
+# ---- Revision binding (v0.22.0): hooks/lib/revision.sh ------------------------------
+# Real temporary git repositories — the fingerprint is git state, so fixtures must be too.
+LIB="hooks/lib/revision.sh"
+gitc() { git -C "$1" -c user.name=ff -c user.email=ff@example.invalid "${@:2}"; }
+fp() { bash "$LIB" "$1"; }                  # CLI mode: prints the fingerprint of <project-dir>
+if ! command -v git >/dev/null 2>&1; then
+  err "revision fixtures need git on PATH"
+elif [ ! -f "$LIB" ]; then
+  err "revision lib missing: $LIB"
+else
+  G="$TMP/rev-repo"; mkdir -p "$G/src" "$G/pkg"
+  git -C "$G" init -q
+  for n in 01 02 03 04 05 06 07 08 09 10 11 12; do printf '%s\n' "$n" > "$G/src/f$n.txt"; done
+  printf 'root\n' > "$G/pkg/p.txt"
+  printf '.feature-flow/\n' > "$G/.gitignore"              # base ignored; kb deliberately NOT ignored
+  printf '{"paths":{"durable":"docs/ff"}}\n' > "$G/.feature-flow.json"
+  gitc "$G" add -A && gitc "$G" commit -qm base
+
+  base="$(fp "$G")"
+  { [ -n "$base" ] && [ "$base" = "$(fp "$G")" ]; } \
+    && ok "rev lib: fingerprint is repeatable" || err "rev lib: fingerprint not repeatable ('$base')"
+  [ "$base" = "$(git -C "$G" rev-parse 'HEAD^{tree}')" ] \
+    && ok "rev lib: clean tree equals HEAD's tree" || err "rev lib: clean tree != HEAD^{tree}"
+
+  # AC3 — bookkeeping writes (paths.base, paths.durable, paths.kb) are invisible.
+  mkdir -p "$G/.feature-flow/run" "$G/docs/ff/2026-run" "$G/.feature-flow-kb"
+  printf '{}\n' > "$G/.feature-flow/run/manifest.json"
+  printf '# spec\n' > "$G/docs/ff/2026-run/spec.md"
+  printf '# kb\n' > "$G/.feature-flow-kb/entry.md"
+  [ "$(fp "$G")" = "$base" ] \
+    && ok "rev lib/AC3: writes under paths.base, paths.durable, paths.kb don't change it" \
+    || err "rev lib/AC3: bookkeeping writes changed the fingerprint"
+  # AC3 — a nested repository (e.g. .claude/worktrees/x) is invisible.
+  N="$G/.claude/worktrees/x"; mkdir -p "$N"; git -C "$N" init -q; printf 'n\n' > "$N/n.txt"
+  gitc "$N" add -A && gitc "$N" commit -qm nested
+  [ "$(fp "$G")" = "$base" ] \
+    && ok "rev lib/AC3: nested git repository doesn't change it" \
+    || err "rev lib/AC3: nested repository changed the fingerprint"
+
+  # AC4 — real code changes are visible; reverting restores the value.
+  printf 'edited\n' >> "$G/src/f01.txt"; e1="$(fp "$G")"
+  [ -n "$e1" ] && [ "$e1" != "$base" ] && ok "rev lib/AC4: tracked edit changes it" || err "rev lib/AC4: tracked edit not detected"
+  git -C "$G" checkout -q -- src/f01.txt
+  rm "$G/src/f02.txt"; e2="$(fp "$G")"
+  [ -n "$e2" ] && [ "$e2" != "$base" ] && ok "rev lib/AC4: tracked delete changes it" || err "rev lib/AC4: tracked delete not detected"
+  git -C "$G" checkout -q -- src/f02.txt
+  printf 'new\n' > "$G/src/new.txt"; e3="$(fp "$G")"
+  [ -n "$e3" ] && [ "$e3" != "$base" ] && ok "rev lib/AC4: untracked non-ignored file changes it" || err "rev lib/AC4: untracked file not detected"
+  # The real index must be byte-identical across fingerprint runs on a dirty tree (sampled
+  # right around the calls — the fixture's own `git checkout`s legitimately rewrite it).
+  printf 'dirty\n' >> "$G/src/f04.txt"; idx0="$(cksum < "$G/.git/index")"
+  fp "$G" >/dev/null; fp "$G" >/dev/null
+  [ "$(cksum < "$G/.git/index")" = "$idx0" ] \
+    && ok "rev lib: the real .git/index is never modified" || err "rev lib: real index changed"
+  printf '04\n' > "$G/src/f04.txt"
+  rm "$G/src/new.txt"
+  [ "$(fp "$G")" = "$base" ] && ok "rev lib/AC4: revert restores the original value" || err "rev lib/AC4: revert did not restore"
+
+  # FS3 — project dir is a subdirectory of the git top level (monorepo package).
+  printf '{"paths":{"durable":"docs/ff"}}\n' > "$G/pkg/.feature-flow.json"
+  s0="$(fp "$G/pkg")"
+  mkdir -p "$G/pkg/.feature-flow/r" "$G/pkg/docs/ff/x"
+  printf '{}\n' > "$G/pkg/.feature-flow/r/manifest.json"; printf '# d\n' > "$G/pkg/docs/ff/x/d.md"
+  [ -n "$s0" ] && [ "$(fp "$G/pkg")" = "$s0" ] \
+    && ok "rev lib/FS3: subdir project — its own bookkeeping paths are excluded" \
+    || err "rev lib/FS3: subdir project bookkeeping changed the fingerprint"
+  printf 'x\n' >> "$G/src/f03.txt"
+  [ "$(fp "$G/pkg")" != "$s0" ] \
+    && ok "rev lib/FS3: subdir project — edits elsewhere in the repo are still detected" \
+    || err "rev lib/FS3: edit outside the subdir was missed"
+  git -C "$G" checkout -q -- src/f03.txt
+  rm -rf "$G/pkg/.feature-flow" "$G/pkg/docs" "$G/pkg/.feature-flow.json"
+
+  # FS4 — every paths.* form: absolute, trailing slash, null, unset.
+  for cfg in "{\"paths\":{\"durable\":\"$G/docs/ff\"}}" '{"paths":{"durable":"docs/ff/"}}' '{"paths":{"durable":"./docs/ff"}}'; do
+    printf '%s\n' "$cfg" > "$G/.feature-flow.json"; c0="$(fp "$G")"
+    printf '# more\n' > "$G/docs/ff/2026-run/more.md"
+    [ -n "$c0" ] && [ "$(fp "$G")" = "$c0" ] \
+      && ok "rev lib/FS4: durable form $cfg is excluded" || err "rev lib/FS4: durable form $cfg not excluded"
+    rm -f "$G/docs/ff/2026-run/more.md"
+  done
+  printf '{"paths":{"durable":null}}\n' > "$G/.feature-flow.json"; c0="$(fp "$G")"
+  printf '# kb2\n' > "$G/.feature-flow-kb/e2.md"
+  [ -n "$c0" ] && [ "$(fp "$G")" = "$c0" ] \
+    && ok "rev lib/FS4: durable null + kb unset → default kb still excluded" || err "rev lib/FS4: default kb not excluded"
+  printf 'x\n' > "$G/docs/ff/2026-run/code-now.md"
+  [ "$(fp "$G")" != "$c0" ] \
+    && ok "rev lib/FS4: durable null → docs/ff counts as code" || err "rev lib/FS4: durable null still excluded docs/ff"
+  rm -f "$G/docs/ff/2026-run/code-now.md" "$G/.feature-flow-kb/e2.md"
+  git -C "$G" checkout -q -- .feature-flow.json
+
+  # AC7 / FS1 — changed-path listing: capped, counted; unavailable objects; non-hex ids.
+  for n in 01 02 03 04 05 06 07 08 09 10 11 12; do printf 'z\n' >> "$G/src/f$n.txt"; done
+  after="$(fp "$G")"
+  out="$( . "$LIB"; revision_changed_paths "$G" "$base" "$after" )"
+  printf '%s' "$out" | grep -q 'src/f01.txt' && printf '%s' "$out" | grep -q '(+2 more)' \
+    && ok "rev lib/AC7: changed paths listed, capped at 10 with '+N more'" || err "rev lib/AC7: bad listing: $out"
+  out="$( . "$LIB"; revision_changed_paths "$G" 0123456789abcdef0123456789abcdef01234567 "$after" )"
+  [ "$out" = "changed paths unavailable" ] \
+    && ok "rev lib/FS1: missing tree object → 'changed paths unavailable'" || err "rev lib/FS1: got: $out"
+  out="$( . "$LIB"; revision_changed_paths "$G" '--output=/tmp/x' "$after" )"
+  [ "$out" = "changed paths unavailable" ] \
+    && ok "rev lib: a non-hex revision is never passed to git" || err "rev lib: non-hex id accepted: $out"
+  git -C "$G" checkout -q -- src
+  ( . "$LIB"; revision_fingerprint "$TMP/not-a-repo-$$" ) >/dev/null 2>&1 \
+    && err "rev lib: fingerprint outside a repo should fail" || ok "rev lib: fingerprint outside a git repo returns non-zero"
+
+  # ---- Gate B revision binding (hook) — AC5–AC9, FS1 --------------------------------
+  H="$TMP/rev-hook"; mkdir -p "$H/src"; git -C "$H" init -q
+  printf 'a\n' > "$H/src/a.txt"; printf '.feature-flow/\n' > "$H/.gitignore"
+  gitc "$H" add -A && gitc "$H" commit -qm base
+  VOK='# Verify\n\n## Contract mapping\n\n### AC1\n- **Evidence:** `make test` — exit 0\n'
+  # mkrb <slug>: run dir inside the git repo, with a verify.md that passes the 0.21.0 Gate B floor
+  mkrb() { local d="$H/.feature-flow/$1"; mkdir -p "$d"; printf "$VOK" > "$d/verify.md"; printf '%s' "$d"; }
+  # donem <review-rev> <verify-rev> [extra-json]: a revision-bound feature manifest proposing done
+  donem() { jq -cn --arg r "$1" --arg v "$2" --argjson x "${3:-{\}}" '
+    {track:"feature",tier:"full",revisionBound:true,currentPhase:"done",artifacts:{verify:"verify.md"},
+     phases:{review:{status:"complete"},verify:{status:"complete"}}}
+    | if $r == "" then . else .phases.review.revision = $r end
+    | if $v == "" then . else .phases.verify.revision = $v end | . * $x'; }
+  hrun() { payload "$1" "$2" "$H" | bash "$HOOK"; }
+  cur="$(fp "$H")"
+
+  rd="$(mkrb rb-ok)"
+  assert_allow "GateB/AC6: both revisions equal the current tree → allowed" "$(hrun "$rd/manifest.json" "$(donem "$cur" "$cur")")"
+  out="$(hrun "$rd/manifest.json" "$(donem "" "$cur")")"
+  assert_deny "GateB/AC5: review revision missing → denied" "$out"
+  printf '%s' "$out" | grep -q 'review revision not recorded' && ok "GateB/AC5: reason names the missing review revision" || err "GateB/AC5: reason: $out"
+  out="$(hrun "$rd/manifest.json" "$(donem "$cur" "")")"
+  assert_deny "GateB/AC5: verify revision missing → denied" "$out"
+  printf '%s' "$out" | grep -q 'verify revision not recorded' && ok "GateB/AC5: reason names the missing verify revision" || err "GateB/AC5: reason: $out"
+
+  printf 'repaired\n' >> "$H/src/a.txt"; cur2="$(fp "$H")"      # a verify repair after review
+  out="$(hrun "$rd/manifest.json" "$(donem "$cur" "$cur2")")"
+  assert_deny "GateB/AC5: review revision stale (code changed after review) → denied" "$out"
+  printf '%s' "$out" | grep -q 'review revision is stale' && printf '%s' "$out" | grep -q 'src/a.txt' \
+    && ok "GateB/AC7: stale reason names the phase and the changed path" || err "GateB/AC7: reason: $out"
+  out="$(hrun "$rd/manifest.json" "$(donem "$cur2" "$cur")")"
+  printf '%s' "$out" | grep -q 'verify revision is stale' \
+    && ok "GateB/AC5: verify revision stale → denied, naming verify" || err "GateB/AC5: verify-stale reason: $out"
+  assert_allow "GateB/AC6: after re-stamping both on the current tree → allowed" "$(hrun "$rd/manifest.json" "$(donem "$cur2" "$cur2")")"
+  out="$(hrun "$rd/manifest.json" "$(donem 0123456789abcdef0123456789abcdef01234567 "$cur2")")"
+  assert_deny "GateB/FS1: stamped tree object missing → still denied" "$out"
+  printf '%s' "$out" | grep -q 'changed paths unavailable' && ok "GateB/FS1: reason says changed paths unavailable" || err "GateB/FS1: reason: $out"
+
+  # AC8 — pre-0.22 run (no revisionBound), non-git project, kill switch: 0.21.0 behaviour.
+  assert_allow "GateB/AC8: revisionBound absent in a git repo → 0.21.0 behaviour (allowed)" \
+    "$(hrun "$rd/manifest.json" "$(donem "" "" '{"revisionBound":null}' | jq -c 'del(.revisionBound)')")"
+  rd="$(mkrun rb-nogit)"; printf "$VOK" > "$rd/verify.md"
+  assert_allow "GateB/AC8: revisionBound outside any git repo → 0.21.0 behaviour (allowed)" \
+    "$(run "$rd/manifest.json" "$(donem "" "")")"
+  rd="$(mkrb rb-kill)"; printf '{"toggles":{"enforce":false}}\n' > "$H/.feature-flow.json"
+  assert_allow "GateB/AC8: toggles.enforce=false → no revision check" "$(hrun "$rd/manifest.json" "$(donem "" "")")"
+  rm -f "$H/.feature-flow.json"
+
+  # AC9 — a .git exists but git is missing: allow, loudly.
+  gshim="$TMP/gshim"; mkdir -p "$gshim"
+  for b in cat dirname grep sed jq; do ln -sf "$(command -v "$b")" "$gshim/$b"; done
+  rd="$(mkrb rb-nogitbin)"
+  out="$(payload "$rd/manifest.json" "$(donem "" "")" "$H" | PATH="$gshim" "$(command -v bash)" "$HOOK")"
+  assert_warn "GateB/AC9: git unavailable in a git repo → allowed with a systemMessage warning" "$out"
+  printf '%s' "$out" | grep -q '"permissionDecision"' && err "GateB/AC9: must not deny when the revision cannot be computed" \
+    || ok "GateB/AC9: no deny when the revision cannot be computed"
+
+  # The .git walk-up must terminate even on a relative project path (no cwd, relative file_path).
+  # verify.md must exist under the relative run dir, or the 0.21.0 floor denies before the walk-up runs.
+  mkdir -p "$TMP/rel/.feature-flow/x"; printf "$VOK" > "$TMP/rel/.feature-flow/x/verify.md"
+  rel="$(jq -cn --arg c "$(donem "" "")" '{tool_name:"Write",tool_input:{file_path:"rel/.feature-flow/x/manifest.json",content:$c}}')"
+  if command -v timeout >/dev/null 2>&1; then
+    ( cd "$TMP" && printf '%s' "$rel" | timeout 10 bash "$OLDPWD/$HOOK" >/dev/null ); rc=$?
+    [ "$rc" -ne 124 ] && ok "GateB: .git walk-up terminates on a relative project path" \
+      || err "GateB: .git walk-up hung on a relative project path"
+  fi
+
+  # E2E shape through the production dispatch path (hooks.json → run-hook.cmd → enforce-gate).
+  rd="$(mkrb rb-seam)"
+  out="$(payload "$rd/manifest.json" "$(donem "$cur" "$cur2")" "$H" | bash hooks/run-hook.cmd enforce-gate)"
+  assert_deny "GateB/E2E: stale review through run-hook.cmd → denied" "$out"
+  git -C "$H" checkout -q -- src/a.txt
+fi
+
 if [ "$fail" -eq 0 ]; then echo "PASS: enforce-gate guard"; else echo "RED: enforce-gate guard failed"; fi
 exit "$fail"
