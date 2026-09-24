@@ -1,0 +1,16 @@
+I built `trim.sh`, `words.sh` and `cli.sh` under `src/`, and `bash tests/test.sh` now exits 0 with all 9 checks passing.
+
+`Implement path: inline — the plan predates executable plans (no ## Global Constraints)`
+
+**One change from the plan (Task 2):** The plan's `words.sh` split words on spaces only. That breaks AC2 in your signed-off spec, which says `"a<TAB>b"` → `2`; the design had flagged this risk (FS1). When I ran the plan's version against a new tab check, it printed `1`. I followed the spec instead and split on spaces and tabs (`tr -s '[:blank:]'`). I also added two checks to `tests/test.sh`: `a<TAB>b` → `2` and `""` → `0`. The change is recorded under "Decisions made during execution" in `plan.md`.
+
+**Per task** (each task's tests were added and failed before its script existed):
+- **Task 1, `src/trim.sh`:** strips leading and trailing spaces and tabs (AC1). Tests failed 3/3 before, passed after.
+- **Task 2, `src/words.sh`:** counts words separated by spaces or tabs (AC2). Tests failed 4/4 before, passed after.
+- **Task 3, `src/cli.sh`:** runs `trim` or `words`. Anything else prints `usage: cli.sh trim|words <text>` on stderr and exits 2 (AC3). The usage-error test failed before and passed after. A quick manual run also gave the expected output.
+
+The plan's Critical path (Task 1 → Task 3) was followed. No task hit a failed Verify step, so no rollback was needed. The implement phase is marked complete in the manifest. Nothing is committed.
+
+Next: run `/feature-flow:ff-review`, then `/feature-flow:ff-verify`.
+
+`text-tools · feature/full · explore ✓ · clarify ✓ · design ✓ · plan ✓ · implement ✓ · review ○ · verify ○`

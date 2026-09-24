@@ -1,0 +1,25 @@
+  ok:   implement complete
+  ok:   ledger via artifacts.ledger (/tmp/ff-forward-1cqch0/.feature-flow/text-tools/tasks/ledger.md)
+  ok:   ledger identity line
+  ok:   Task 1 complete
+  ok:   Task 1 base/head fingerprints
+  ok:   Task 1 RED→GREEN
+  ok:   task-1/diff.patch
+  ok:   task-1/review.md
+  ok:   task-1/brief.md holds only its own task
+  ok:   Task 2 complete
+  ok:   Task 2 base/head fingerprints
+  ok:   Task 2 RED→GREEN
+  ok:   task-2/diff.patch
+  ok:   task-2/review.md
+  ok:   task-2/brief.md holds only its own task
+  ok:   Task 3 complete
+  ok:   Task 3 base/head fingerprints
+  ok:   Task 3 RED→GREEN
+  ok:   task-3/diff.patch
+  ok:   task-3/review.md
+  ok:   task-3/brief.md holds only its own task
+  ok:   Task 2 had a fix round
+  ok:   tests/test.sh exits 0
+  ok:   words.sh counts a<TAB>b as 2
+  ok:   no commit made

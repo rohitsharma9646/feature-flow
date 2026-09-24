@@ -1,0 +1,53 @@
+COMMAND: bash scripts/checks/assumption-guard.sh
+EXIT:0
+ok:   templates/spec.md: Assumptions is the 5-column table
+ok:   templates/diagnosis.md: Assumptions is the identical 5-column table
+ok:   templates/diagnosis.md: Assumptions carries the full-tier-only banner
+ok:   templates/diagnosis.md: '## Assumptions' sits after '## Fix approach' and before '## Fix surface'
+ok:   commands/ff-clarify.md: Beat 4 writes each assumption as a table row
+ok:   commands/ff-clarify.md: names the Validation-required field
+ok:   commands/ff-diagnose.md: full-tier fix-approach step surfaces assumption rows
+ok:   commands/ff-diagnose.md: lite tier explicitly skips the assumptions table
+ok:   docs/manifest-schema.md + docs/schema/ §Sign-off rendering: is 'Three rules'
+ok:   docs/manifest-schema.md + docs/schema/ §Sign-off rendering: rule 3 echo is a distinct block, never folded into the AC checkboxes
+ok:   docs/manifest-schema.md + docs/schema/ §Sign-off rendering: carries a worked '### Unvalidated assumptions' example
+ok:   docs/manifest-schema.md + docs/schema/: carries the verbatim waiver line
+ok:   commands/ff-clarify.md: carries the verbatim waiver line
+ok:   commands/ff-diagnose.md: carries the verbatim waiver line
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: has the 'Assumption validation stop' row
+ok:   docs/manifest-schema.md + docs/schema/: '## Assumption records' canonical section present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### Row schema' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### Tier / track scope' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### Trigger' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### Actuation 1' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### Actuation 2' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### Waiver' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: '### v1 non-goals' present
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: Actuation 1 names the third gate exit (acknowledge-open)
+ok:   docs/manifest-schema.md + docs/schema/ §Assumption records: Waiver marks the row `n` (waived vs acknowledged-open disambiguated on disk)
+ok:   templates/plan.md: documents the '**Validates:** Assumption N' mapping rule
+ok:   templates/plan.md: carries a '**Validates:** Assumption <n>' task example
+ok:   commands/ff-plan.md: emits a '**Validates:** Assumption N' validation task
+ok:   commands/ff-plan.md: assumption-mapping bullet sits between AC-map (75) and Derive planning intelligence (104)
+ok:   dist parity: templates/spec.md
+ok:   dist parity: templates/diagnosis.md
+ok:   dist parity: templates/plan.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-diagnose.md
+ok:   dist parity: commands/ff-plan.md
+PASS: assumption-records guard

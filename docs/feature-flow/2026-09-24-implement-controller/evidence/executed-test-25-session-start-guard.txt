@@ -1,0 +1,46 @@
+COMMAND: bash scripts/checks/session-start-guard.sh
+EXIT:0
+ok:   no runs: pointer present
+ok:   no runs: no active-run block
+ok:   compact: pointer still present
+ok:   compact: active-run block
+ok:   compact: slug
+ok:   compact: track/tier
+ok:   compact: phase + status
+ok:   compact: autopilot
+ok:   compact: sign-off
+ok:   compact: resume command
+ok:   compact: bare artifact → run-dir path
+ok:   compact: slashed artifact → as-is
+ok:   compact: mid-run wording
+ok:   compact: re-read-from-disk directive
+ok:   startup: active-run block
+ok:   startup: conditional wording
+ok:   startup: no mid-run assertion
+ok:   clear: active-run block
+ok:   clear: conditional wording
+ok:   clear: no mid-run assertion
+ok:   terminal runs only: no active-run block
+ok:   corrupt sibling: valid run listed
+ok:   corrupt sibling: broken run skipped
+ok:   bugfix lite: signed-off n/a
+ok:   cap: oldest run dropped
+ok:   cap: overflow noted
+ok:   cap: newest run listed first
+ok:   paths.base: run found
+ok:   paths.base: path uses custom base
+ok:   unsigned feature: signed off: no
+ok:   control chars (compact): output is valid JSON with the run block
+ok:   control chars (startup): output is valid JSON with the run block
+ok:   jq absent: pointer present, valid JSON
+ok:   jq absent: no active-run block
+ok:   empty stdin: valid JSON pointer
+ok:   hooks.json SessionStart matcher covers startup
+ok:   hooks.json SessionStart matcher covers clear
+ok:   hooks.json SessionStart matcher covers compact
+ok:   ledger: current task + fix round named
+ok:   ledger: pointer listed as-is
+ok:   ledger: every task complete → no task
+ok:   ledger: missing file → no task, no error
+ok:   ledger: missing file → run still listed
+PASS: session-start guard

@@ -1,0 +1,2 @@
+COMMAND: command -v go
+EXIT:1

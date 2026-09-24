@@ -1,0 +1,63 @@
+COMMAND: bash scripts/checks/planning-intelligence-guard.sh
+EXIT:0
+ok:   templates/plan.md: four sections present, in order, between '## Tasks' and '## Status conventions'
+ok:   templates/plan.md: 'Dependency graph' carries a '> ' guidance blockquote
+ok:   templates/plan.md: 'Critical path' carries a '> ' guidance blockquote
+ok:   templates/plan.md: 'Risk register' carries a '> ' guidance blockquote
+ok:   templates/plan.md: 'Rollback plan' carries a '> ' guidance blockquote
+ok:   templates/plan.md: Risk register has the categorical table header
+ok:   templates/plan.md: Risk register states the no-numeric-score doctrine
+ok:   templates/plan.md: Dependency graph rows reference Task N IDs
+ok:   templates/plan-bugfix.md: four sections present, in order, between '## Tasks' and '## Status conventions'
+ok:   templates/plan-bugfix.md: 'Dependency graph' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: 'Critical path' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: 'Risk register' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: 'Rollback plan' carries a '> ' guidance blockquote
+ok:   templates/plan-bugfix.md: Risk register has the categorical table header
+ok:   templates/plan-bugfix.md: Risk register states the no-numeric-score doctrine
+ok:   templates/plan-bugfix.md: Dependency graph rows reference Task N IDs
+ok:   docs/manifest-schema.md + docs/schema/: '## Planning intelligence' canonical section present
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: '### Dependency graph notation' present
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: '### Critical-path derivation' present
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: '### Critical-path check' present
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: '### Risk register' present
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: '### Rollback plan' present
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: derivation names the longest chain
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: states the lower-numbered dependency invariant
+ok:   docs/manifest-schema.md + docs/schema/ §Planning intelligence: names the Critical-path override recording
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: has the Critical-path stop row
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: Critical-path stop is unconditional
+ok:   commands/ff-plan.md: has the derive-planning-intelligence instruction
+ok:   commands/ff-plan.md: states the critical path is derived, not hand-authored
+ok:   commands/ff-plan.md: derive instruction sits between AC-mapping (75) and Outcome-gate population (124)
+ok:   commands/ff-implement.md: has a '## Critical-path check' section
+ok:   commands/ff-implement.md §Critical-path check: resolves via artifacts.plan
+ok:   commands/ff-implement.md §Critical-path check: STOP is unconditional in both modes
+ok:   commands/ff-implement.md §Critical-path check: override recorded verbatim
+ok:   commands/ff-implement.md §Critical-path check: names the Rollback plan as recovery
+ok:   commands/ff-implement.md: '## Critical-path check' sits between Decision recall and Do the work — feature track
+ok:   commands/ff-verify.md: cross-references the plan's Risk register
+ok:   commands/ff-verify.md: resolves the plan via artifacts.plan
+ok:   config/defaults.json: no planning-intelligence config key (always-on, as required)
+ok:   docs/manifest-schema.md + docs/schema/: no new top-level manifest field for planning intelligence
+ok:   dist parity: templates/plan.md
+ok:   dist parity: templates/plan-bugfix.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-verify.md
+PASS: planning-intelligence guard

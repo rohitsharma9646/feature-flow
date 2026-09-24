@@ -1,0 +1,3 @@
+COMMAND: bash scripts/checks/integrity-conformance-guard.sh
+EXIT:1
+FAIL: Go toolchain is required for WP1 conformance

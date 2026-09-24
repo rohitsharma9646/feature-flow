@@ -1,0 +1,53 @@
+COMMAND: bash scripts/checks/design-tradeoff-guard.sh
+EXIT:0
+ok:   templates/design.md: Trade-off matrix carries the core 3-axis header
+ok:   templates/design.md: Trade-off matrix states the adaptive-axis rule
+ok:   templates/design.md: has the '## Devil's advocate' section
+ok:   templates/design.md: Devil's advocate carries '### Failure scenarios'
+ok:   templates/design.md: Devil's advocate carries '### Edge cases & operational risk'
+ok:   templates/design.md: Failure scenarios carries a labeled '- **FS1:**' example row
+ok:   templates/design.md: states >=1 failure scenario required even for a single obvious option
+ok:   commands/ff-design.md: carries the Devil's-advocate pass
+ok:   commands/ff-design.md: requires >=1 concrete failure scenario
+ok:   commands/ff-design.md: adversarial beat (94) sits between the do-not-contradict STOP (92) and '## Write the artifact' (118)
+ok:   commands/ff-design.md: states the derive-not-diverge rule for decision.md's Trade-offs
+ok:   commands/ff-design.md: failure scenarios named in decision.md by reference
+ok:   templates/decision.md: Trade-offs schema untouched (decision-record-guard.sh stays green)
+ok:   commands/ff-verify.md: resolves artifacts.design
+ok:   commands/ff-verify.md: maps each failure scenario into its own FS<n> contract item
+ok:   commands/ff-verify.md: FS mapping reuses the AC mapping discipline
+ok:   templates/verify.md: FS1 contract-mapping block present
+ok:   templates/verify.md: FS block carries \*\*Method:\*\*
+ok:   templates/verify.md: FS block carries \*\*Evidence:\*\*
+ok:   templates/verify.md: FS block carries \*\*Confidence:\*\*
+ok:   templates/verify.md: FS block carries \*\*Gap
+ok:   docs/manifest-schema.md + docs/schema/: '## Design trade-offs & devil's advocate' canonical section present
+ok:   docs/manifest-schema.md + docs/schema/ §Design trade-offs: '### Trade-off matrix' present
+ok:   docs/manifest-schema.md + docs/schema/ §Design trade-offs: '### Devil' present
+ok:   docs/manifest-schema.md + docs/schema/ §Design trade-offs: '### Actuation' present
+ok:   docs/manifest-schema.md + docs/schema/ §Design trade-offs: '### decision.md reconciliation' present
+ok:   docs/manifest-schema.md + docs/schema/ §Design trade-offs: '### v1 non-goals' present
+ok:   docs/manifest-schema.md + docs/schema/ §Design trade-offs: states no new §Autopilot row (reuses Evidence gap stop)
+ok:   docs/manifest-schema.md + docs/schema/ §Evidence: Confidence ladder names the design-time-failure-scenario class
+ok:   config/defaults.json: no new config key (always-on, as required)
+ok:   docs/manifest-schema.md + docs/schema/: no new top-level manifest field
+ok:   dist parity: templates/design.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-verify.md
+PASS: design-tradeoff guard

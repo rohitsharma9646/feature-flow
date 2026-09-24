@@ -1,0 +1,6 @@
+  implement-controller/fired run 1/1: PASS ($1.3955851999999997)
+PASS implement-controller/fired  ($1.3956)
+  implement-controller/control run 1/1: PASS ($0.346436)
+PASS implement-controller/control  ($0.3464)
+forward-test: 2/2 PASS, 0 FAIL, 0 ERROR · total $1.742 · /home/netzwelt/feature-flow/.feature-flow/forward-test-runs/implement-controller-repair
+FORWARD_EXIT=0

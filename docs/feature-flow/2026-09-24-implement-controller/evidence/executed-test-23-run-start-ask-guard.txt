@@ -1,0 +1,16 @@
+COMMAND: bash scripts/checks/run-start-ask-guard.sh
+EXIT:0
+ok:   commands/ff.md: resolve-autopilot@67 precedes write@79
+ok:   commands/ff-explore.md: resolve-autopilot@28 precedes write@31
+ok:   commands/ff-clarify.md: resolve-autopilot@25 precedes write@28
+ok:   commands/ff-diagnose.md: resolve-autopilot@28 precedes write@31
+ok:   ff.md: creation field list includes autopilot
+ok:   commands/ff-explore.md: creation write includes autopilot
+ok:   commands/ff-clarify.md: creation write includes autopilot
+ok:   commands/ff-diagnose.md: creation write includes autopilot
+ok:   manifest-schema.md: run-start is resolve-before-write
+ok:   manifest-schema.md: creation rule lists autopilot
+ok:   SKILL.md: doctrine line present
+ok:   manifest-schema.md: gate table has 'Run-start mode ask' row
+ok:   ff-status.md: prints the autopilot mode
+PASS: run-start ask guard

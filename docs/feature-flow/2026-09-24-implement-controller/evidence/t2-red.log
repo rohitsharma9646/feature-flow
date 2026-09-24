@@ -1,0 +1,12 @@
+fixture: task-controller
+  FAIL: hooks/lib/task.sh missing
+  FAIL: task_section '^### Task 2:' does not match evals/fixtures/task-controller/expected-task2.md
+  FAIL: task_section '^### Task 3:' does not match evals/fixtures/task-controller/expected-task3.md
+  FAIL: task_section '^## Global Constraints' does not match evals/fixtures/task-controller/expected-constraints.md
+  FAIL: task_section '^## Dependency graph' does not match evals/fixtures/task-controller/expected-last.md
+  ok:   a heading that exists only inside a fence is not found (exit 127, no output)
+  FAIL: task_diff must show the tracked edit and the new untracked file (exit 127)
+  FAIL: task_diff must start with a --stat summary
+  ok:   the real index is byte-identical before and after task_diff
+  ok:   a non-hex tree id is refused (exit 127, no output)
+RED:  task-controller — a mechanical check failed

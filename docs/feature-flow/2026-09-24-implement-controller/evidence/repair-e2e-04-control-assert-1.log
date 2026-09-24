@@ -1,0 +1,6 @@
+  ok:   implement complete
+  ok:   no artifacts.ledger
+  ok:   no tasks/ directory
+  ok:   tests/test.sh exits 0
+  ok:   final message states 'Implement path: inline'
+  ok:   no commit made

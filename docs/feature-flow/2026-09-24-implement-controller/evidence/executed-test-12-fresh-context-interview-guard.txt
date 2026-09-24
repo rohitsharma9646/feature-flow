@@ -1,0 +1,68 @@
+COMMAND: bash scripts/checks/fresh-context-interview-guard.sh
+EXIT:0
+ok:   FC1: §Progress strip carries the fresh-context hint
+ok:   FC1: hint names the on-disk state
+ok:   FC1: hint is step-by-step phase-end hand-offs only
+ok:   FC1: never in autopilot
+ok:   FC1: never at a sign-off / decision / blocking pause
+ok:   FC2: commands/ff.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-explore.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-clarify.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-design.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-plan.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-diagnose.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-implement.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-review.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-verify.md ends its hand-off via §Progress strip
+ok:   FC2: commands/ff-resume.md ends its hand-off via §Progress strip
+ok:   IV1: ff-clarify asks closed-choice questions via AskUserQuestion in both modes
+ok:   IV1: open-ended probes stay plain text
+ok:   TP1: templates/spec.md has '## Touchpoints'
+ok:   TP1: '## Touchpoints' applies to both tiers
+ok:   TP1: templates/spec.md has '## End-to-end check'
+ok:   TP1: '## End-to-end check' applies to both tiers
+ok:   TP1: End-to-end check sits between Acceptance criteria and Success metrics
+ok:   TP2: ff-clarify fill-list names Touchpoints
+ok:   TP2: ff-clarify fill-list names End-to-end check
+ok:   TP2: lite tier still fills the End-to-end check
+ok:   TP3: ff-verify maps the End-to-end check into '### E2E'
+ok:   TP3: E2E mapped exactly as an acceptance criterion
+ok:   TP3: E2E gated by a presence check on the section
+ok:   TP3: E2E block carries \*\*Method:\*\*
+ok:   TP3: E2E block carries \*\*Evidence:\*\*
+ok:   TP3: E2E block carries \*\*Confidence:\*\*
+ok:   TP3: E2E block carries \*\*Gap
+ok:   TP3b: ff-verify passes the End-to-end check row to ff-test-runner
+ok:   TP3b: ff-test-runner runs a provided end-to-end check
+ok:   TP3b: …on a lite dispatch too (carve-out from floor-only)
+ok:   TP3b: ff-test-runner maps the end-to-end check as a contract item
+ok:   TP3c: spec template allows an explicit none
+ok:   TP3c: ff-verify treats E2E: none as absent
+ok:   TP3d: retro signal list names E2E
+ok:   TP3d: repair-cycle trigger decides E2E/SM
+ok:   TP4: spec-conformance reviewer reads Touchpoints
+ok:   TP5: §Discovery fields has '### Touchpoints'
+ok:   TP5: §Discovery fields has '### End-to-end check'
+ok:   TP5: §Discovery fields has '### Actuation 3'
+ok:   TP5: Confidence ladder names the end-to-end check as a contract-item class
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: templates/spec.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-review.md
+PASS: fresh-context-interview guard

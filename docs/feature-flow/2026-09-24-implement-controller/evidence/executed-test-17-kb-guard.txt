@@ -1,0 +1,83 @@
+COMMAND: bash scripts/checks/kb-guard.sh
+EXIT:0
+ok:   config/defaults.json: toggles.kb present, default true
+ok:   config/defaults.json: paths.kb present, default ".feature-flow-kb"
+ok:   config/defaults.json: kb.freshnessWindowDays + kb.maxRecallEntries present
+ok:   docs/manifest-schema.md + docs/schema/: '## Knowledge base' contract section present
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: names freshnessWindowDays
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: names referencedFiles
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: names captureCommitSha
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: names maxRecallEntries
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: names paths.kb
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: documents the Codex degrade path (AC11)
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: states dedup + supersession non-goals (AC13)
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: has the KB capture confirm-gate row
+ok:   docs/manifest-schema.md + docs/schema/: '## Terminal convergence' section present (canonical done-transition rule)
+ok:   docs/manifest-schema.md + docs/schema/ §Knowledge base: capture rule references Terminal convergence (single-source)
+ok:   templates/kb-entry.md: provenance field title
+ok:   templates/kb-entry.md: provenance field captureDate
+ok:   templates/kb-entry.md: provenance field captureCommitSha
+ok:   templates/kb-entry.md: provenance field runSlug
+ok:   templates/kb-entry.md: provenance field tags
+ok:   templates/kb-entry.md: provenance field referencedFiles
+ok:   commands/ff-verify.md: has a '## KB capture' section
+ok:   commands/ff-verify.md §KB capture: gates on toggles.kb
+ok:   commands/ff-verify.md §KB capture: references the §Knowledge base contract
+ok:   commands/ff-verify.md §KB capture: reads run artifacts via artifacts.<name> pointers
+ok:   commands/ff-review.md: has a '## KB capture' section
+ok:   commands/ff-review.md §KB capture: gates on toggles.kb
+ok:   commands/ff-review.md §KB capture: references the §Knowledge base contract
+ok:   commands/ff-review.md §KB capture: reads run artifacts via artifacts.<name> pointers
+ok:   commands/ff-review.md §KB capture: has the feature-track guard
+ok:   commands/ff-verify.md §Update manifest: both done-transitions invoke KB capture (2)
+ok:   commands/ff-review.md §Update manifest: bugfix done-transition invokes KB capture (1)
+ok:   commands/ff-explore.md: has a '## KB recall' section
+ok:   commands/ff-explore.md §## KB recall: gates on toggles.kb
+ok:   commands/ff-explore.md §## KB recall: references the §Knowledge base contract
+ok:   commands/ff-explore.md §## KB recall: applies the staleness flag (flag-not-suppress)
+ok:   commands/ff-design.md: has a '## KB recall' section
+ok:   commands/ff-design.md §## KB recall: gates on toggles.kb
+ok:   commands/ff-design.md §## KB recall: references the §Knowledge base contract
+ok:   commands/ff-design.md §## KB recall: applies the staleness flag (flag-not-suppress)
+ok:   commands/ff-diagnose.md: has a '## KB recall' section
+ok:   commands/ff-diagnose.md §## KB recall: gates on toggles.kb
+ok:   commands/ff-diagnose.md §## KB recall: references the §Knowledge base contract
+ok:   commands/ff-diagnose.md §## KB recall: applies the staleness flag (flag-not-suppress)
+ok:   commands/ff-implement.md: has a '## Decision recall' section
+ok:   commands/ff-implement.md §## Decision recall: gates on toggles.kb
+ok:   commands/ff-implement.md §## Decision recall: references the §Knowledge base contract
+ok:   commands/ff-implement.md §## Decision recall: applies the staleness flag (flag-not-suppress)
+ok:   skills/feature-flow/SKILL.md: documents dedup + supersession as v1 non-goals
+ok:   README.md: documents dedup + supersession as v1 non-goals
+ok:   commands/ff-verify.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-review.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-explore.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-design.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-diagnose.md: KB section reads are pointer-form (no bare durable reader)
+ok:   commands/ff-implement.md: KB section reads are pointer-form (no bare durable reader)
+ok:   dist parity: config/defaults.json
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/task-controller.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: templates/kb-entry.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-review.md
+ok:   dist parity: commands/ff-explore.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-diagnose.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: kb guard
