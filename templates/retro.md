@@ -9,7 +9,7 @@
 > the fix for each failure belongs. Built only from on-disk signals in this run's artifacts (resolved
 > via `manifest.artifacts.<name>`) plus the user's notes; never a transcript. Every finding below was
 > **accepted by the user** at the confirm gate. Nothing here was applied — improvements are separate,
-> user-initiated work. See `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Retrospective.
+> user-initiated work. See `${CLAUDE_PLUGIN_ROOT}/docs/schema/retrospective.md` §Retrospective.
 
 ## Findings
 

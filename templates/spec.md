@@ -24,7 +24,7 @@ approach: <X>" and say why no alternatives applied.>
 
 Only assumptions that would change scope or acceptance criteria if wrong. Deep risk, pre-mortem, and
 quality concerns (security/UX/a11y/cost/perf) belong in design/review, not here. One row per
-assumption — see `docs/manifest-schema.md §Assumption records` for the contract.
+assumption — see `docs/schema/assumption-records.md §Assumption records` for the contract.
 
 | Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |
 |---|---|---|---|---|
@@ -40,6 +40,15 @@ assumption — see `docs/manifest-schema.md §Assumption records` for the contra
 ## Constraints
 
 - <Hard limits: compatibility, performance, security, scope, deadlines.>
+
+## Touchpoints
+
+The files, modules, and interfaces this change is expected to touch — from `explore.md`, named
+concretely (`path/to/file`, `Class.method`, CLI flag, endpoint), not "the export code". Not a
+design: *which* parts, not *how*. The spec-conformance reviewer reads this as the scope reference;
+a change outside it is a scope question, not automatically a defect.
+
+- `<path or interface>` — <why it is involved>
 
 ## Edge cases
 
@@ -57,6 +66,19 @@ explicit "manual — unverified" line in `verify.md`.
 - [ ] AC1: <observable, testable statement>
 - [ ] AC2: <observable, testable statement>
 
+## End-to-end check
+
+One check that proves the **whole** feature works as a user would use it — a command, request, or
+flow run end to end, with its observable result — not a restatement of one AC. Same binary
+discipline as the acceptance criteria. `ff-verify` maps it into an `### E2E` contract item.
+
+- [ ] E2E: <run `<command / flow>`> → <observable end result>
+
+<!-- No user-facing flow to exercise (a pure refactor, an internal library) → replace the row with
+     `E2E: none — <reason>`; ff-verify then maps no E2E block. Never leave the placeholder. -->
+
+
+
 ## Success metrics
 
 > **Full tier only.** A lite spec omits this section entirely — no placeholder, no warning.
@@ -70,7 +92,7 @@ SM's number is its row order (first row = SM1), stable once written.
 - [ ] SM1: <metric> ≤/≥ <threshold>, measured by `<method>`.
 
 <!-- No metrics → keep the header and note "none". Each becomes a `### SM<n>` ff-verify contract
-     item (docs/manifest-schema.md §Discovery fields → Actuation 1) — same Confidence ladder and
+     item (docs/schema/discovery-fields.md §Discovery fields → Actuation 1) — same Confidence ladder and
      Evidence-gap stop as an acceptance criterion. Presence-gated (absent/empty section → no SM
      blocks), never tier-gated: this template is shared by both tiers. -->
 
@@ -78,7 +100,7 @@ SM's number is its row order (first row = SM1), stable once written.
 
 > **Full tier only.** A lite spec omits this section entirely — no placeholder, no warning.
 
-Optional. AC-level dependencies, **reusing** `docs/manifest-schema.md` **§Planning intelligence**'s
+Optional. AC-level dependencies, **reusing** `docs/schema/planning-intelligence.md` **§Planning intelligence**'s
 dependency notation rather than defining a divergent grammar: one row per dependent AC, `Depends on`
 naming only a strictly **lower-numbered** `AC<n>` (or "— (root)") already defined under
 `## Acceptance criteria` above — never a phantom or higher-numbered AC (so a cycle is unexpressible).
@@ -89,7 +111,7 @@ naming only a strictly **lower-numbered** `AC<n>` (or "— (root)") already defi
 | AC2 | AC1 |
 
 <!-- No edges → omit this section (not an all-root table). Feeds ff-plan's task `## Dependency
-     graph` via the **Covers:** map (docs/manifest-schema.md §Discovery fields → Actuation 2); an
+     graph` via the **Covers:** map (docs/schema/discovery-fields.md §Discovery fields → Actuation 2); an
      edge that cannot be represented as a task dependency surfaces as an explicit Outcome-gate gap. -->
 
 ## Sign-off

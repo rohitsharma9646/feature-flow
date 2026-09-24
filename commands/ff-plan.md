@@ -16,7 +16,7 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -74,7 +74,7 @@ files-to-touch and a verification step:
   still-unvalidated `validation-required: y`** assumption carried forward, emit a **validation task**
   carrying a `**Validates:** Assumption N` line (or record it as an explicit named gap in the Outcome
   gate) — cloning the `**Covers:**` discipline, per **Assumption records → Actuation 2** in
-  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. A validation task logically precedes the tasks that
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/assumption-records.md`. A validation task logically precedes the tasks that
   depend on the assumption (lower-numbered invariant); on the full-tier **bugfix** fold it into the
   fixed RED→GREEN sequence rather than adding a `**Covers:**` line (bugfix has no ACs). A **waived** or
   already-validated assumption spawns no task; when none remain, state "no unvalidated
@@ -85,7 +85,7 @@ files-to-touch and a verification step:
   into the `## Dependency graph` written below — **order tasks to satisfy the edges as you decompose**
   (numbering is an authoring choice, **never** a backward renumber pass over already-written
   `**Covers:**`/`**Validates:**` tasks), per **Discovery fields → Actuation 2** in
-  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. An edge that cannot be represented as a
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/discovery-fields.md`. An edge that cannot be represented as a
   lower-numbered task dependency — the same task covers both `AC_i` and `AC_j`, or no numbering
   satisfies it — is recorded as an explicit named gap under the Outcome gate naming the reason (e.g.
   `AC_i depends-on AC_j: covered by the same Task <n>`), never silently dropped. Absent `## Requirement graph`, or a table
@@ -95,7 +95,7 @@ files-to-touch and a verification step:
 **Derive planning intelligence (both tracks — feature and bugfix-full):** after the tasks above
 are decomposed (and, feature track, AC-mapped — nothing to hang a graph on before the tasks
 exist), populate the plan's four planning-intelligence sections per the canonical **Planning
-intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — do not restate its
+intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/schema/planning-intelligence.md` — do not restate its
 steps here:
 - **Dependency graph** — one row per task naming its prerequisite `Task N` IDs (or "— (root)"),
   **only lower-numbered** tasks.
@@ -125,7 +125,7 @@ Set `phases.plan = { status: "complete", artifact: "<resolved plan path>" }`, bu
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the implement phase per
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md` — see **Autopilot** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; implement's own sign-off gate still
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`; implement's own sign-off gate still
 applies. If `false` or absent: do not implement now. Tell the user to run
 `/feature-flow:ff-implement` next, ending the message with the one-line progress strip —
 see **Progress strip** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your

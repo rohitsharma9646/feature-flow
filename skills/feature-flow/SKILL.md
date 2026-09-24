@@ -20,7 +20,8 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
 - **Feature** — adding new behavior. Phases:
   `explore → clarify → design → plan → implement → review → verify`.
   *clarify* challenges the premise (is this the right need?), weighs 2-3 problem-level solution
-  approaches, and locks testable acceptance criteria — plus, on non-trivial full-tier work, optional
+  approaches, and locks testable acceptance criteria, the change's **touchpoints**, and one
+  **end-to-end check** (both tiers; *verify* proves it as an `E2E` contract item) — plus, on non-trivial full-tier work, optional
   **success metrics** (each a binary threshold *verify* later proves or blocks done on) and a
   **requirement graph** of AC dependencies that feeds *plan*'s task graph — it owns the WHAT; *design* owns the HOW
   (architects fan out, score a lean trade-off matrix, and stress-test the pick with a
@@ -36,14 +37,14 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   validation) by **consuming** the run's upstream artifacts. It is **post-terminal and non-gated** —
   it never blocks `done`, is off for `tier: lite` unless requested, and autopilot never runs it; you
   invoke it by hand. A plan migration task missing its rollback line surfaces here as a non-blocking
-  `⚠ DELIVERY GAP`. See `docs/manifest-schema.md` §Delivery.
+  `⚠ DELIVERY GAP`. See `docs/schema/delivery.md` §Delivery.
 - **Retrospective (optional, both tracks, both tiers).** After a run is `done`,
   `/feature-flow:ff-retro` classifies what the **workflow's own safeguards** did on the run (gates,
   STOPs, repair/fix cycles, waivers → `worked | failed | missing | ambiguous | bypassed`) and routes
   each material lesson to one owner (repo instructions, a command/skill, a guard, a regression /
   forward test, …). It proposes candidates and **writes `retro.md` only after you accept / edit /
   reject each one**; it never applies a fix, and autopilot never runs it. See
-  `docs/manifest-schema.md` §Retrospective.
+  `docs/schema/retrospective.md` §Retrospective.
 
 ## Starting a run — you do NOT have to type a command
 
@@ -62,7 +63,7 @@ assistant) drive it — the user never has to know the command names:
 1. **Classify** feature vs bugfix (soft judgment). Ambiguous → ask once. Genuinely both →
    split (fix first, then feature), don't run a hybrid.
 2. **Read config** (`.feature-flow.json` → `config/defaults.json`), then **resolve
-   `autopilot` first** (run-start procedure in `docs/manifest-schema.md` §Autopilot —
+   `autopilot` first** (run-start procedure in `docs/schema/autopilot.md` §Autopilot —
    BEFORE the manifest write): config `toggles.autopilot` — `"ask"` (default) → ask the
    user once (autopilot vs step-by-step); `true`/`false` → use directly, no ask; never
    re-ask a run that already has the field, and never choose the value yourself.
@@ -76,9 +77,11 @@ assistant) drive it — the user never has to know the command names:
 
 After the first phase, the modes diverge. **Step-by-step** (`autopilot: false` or absent):
 continue **phase by phase** — each later phase is its own command the user (or you) invokes
-next, so every human gate is honored and a dropped session is recoverable. **Autopilot**
+next, so every human gate is honored and a dropped session is recoverable. Each step-by-step
+phase-end hand-off also suggests `/clear` before the next phase (the **Fresh-context hint** in §Progress
+strip) — the run's state is on disk, so a clean context costs nothing and sheds this phase's noise. **Autopilot**
 (`manifest.autopilot: true`): ceremonial phase-end STOPs become continuations — chain
-forward per **Autopilot** in `docs/manifest-schema.md`, pausing at every mandatory gate.
+forward per **Autopilot** in `docs/schema/autopilot.md`, pausing at every mandatory gate.
 
 **Unconditional in BOTH modes — these lines never bend:** never run past a spec or
 diagnosis sign-off gate on your own; never set `signOff.signed` yourself;
@@ -114,7 +117,11 @@ With `paths.durable` set, the durable decision docs (spec/design/plan/diagnosis)
 **promoted** — as each producing phase completes — to a committed
 `<paths.durable>/<createdAt-date>-<slug>/` directory instead of the gitignored sandbox, so a
 teammate reviewing the PR sees the reasoning; see **Durable artifact resolution** in
-`docs/manifest-schema.md`. Every command: **read the manifest → check the gate → do the phase
+`docs/manifest-schema.md`. The contract is split: `docs/manifest-schema.md` is the core every
+command reads (its **Topic index** lists the rest), and each other topic lives in
+`docs/schema/<topic>.md` — read the core plus only the topic files the current command names,
+by path or by `§Name`/`**Name**` (the Topic index maps each name to its file).
+Every command: **read the manifest → check the gate → do the phase
 → write the artifact → update the manifest.** Resume and status read this file; if it's
 missing, resume infers the phase from which artifacts exist on disk. On Claude Code the
 SessionStart hook lists active runs at startup, after `/clear`, and after compaction — when it
@@ -145,7 +152,7 @@ backstops the prose; honoring the gates below is still your job:
   fix — guessing a fix for an unconfirmed bug is forbidden.
 - **Verification gate:** `/feature-flow:ff-verify` refuses "done" on evidence gaps — every
   contract item must clear the mechanical confidence bar or the run ends with a gap report,
-  pending the user's explicit waiver. Contract: `docs/manifest-schema.md` §Evidence;
+  pending the user's explicit waiver. Contract: `docs/schema/evidence.md` §Evidence;
   doctrine: **Real verification, not reasoning** below. A bugfix without a RED→GREEN
   regression test is incomplete.
 - **Review gate:** a Critical finding in `review.md` blocks forward routing. Besides the focus
@@ -181,7 +188,7 @@ build, and lint and returned real output. The analysis agents (`ff-code-explorer
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.
 
 Verification is **evidence-based across the project's whole detected surface**
-(`docs/manifest-schema.md` §Evidence — the canonical contract): eight evidence kinds
+(`docs/schema/evidence.md` §Evidence — the canonical contract): eight evidence kinds
 (executed-test, build/static-analysis, e2e/browser via Playwright CLI, http/api, db,
 cli-output, logs, before/after) captured as literal records with real exit/HTTP status
 codes and files under `<run dir>/evidence/`; per-criterion confidence derived
@@ -206,7 +213,7 @@ analysis agents already lack `Bash` and search via these tools; keep it that way
 **On by default:** `toggles.kb: true` and `paths.kb: ".feature-flow-kb"` ship as
 defaults, so every project has an active KB from its first run. Opt out in `.feature-flow.json`
 with `toggles.kb: false` (or `paths.kb: null`) — either cleanly deactivates capture and recall.
-The canonical contract is `docs/manifest-schema.md` §Knowledge base — the commands reference it
+The canonical contract is `docs/schema/knowledge-base.md` §Knowledge base — the commands reference it
 by name.
 
 - **Capture** (confirm-gated, at the terminal phase — `ff-verify` feature / `ff-review` bugfix, with

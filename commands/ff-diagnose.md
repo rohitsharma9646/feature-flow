@@ -17,7 +17,7 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -26,7 +26,7 @@ is the bugfix track's replacement for the feature track's clarify+design phases 
    most-recently-updated run → ask if ambiguous; cold-start derives a new slug from the bug
    report), then read its `manifest.json`.
 2. **Cold-start:** if no manifest exists, **resolve `autopilot` first** (run-start
-   procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`;
+   procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`;
    never choose the value yourself),
    then create one with `track: "bugfix"` (slug from the bug report) including the
    resolved `autopilot`. If a manifest exists with
@@ -44,7 +44,7 @@ is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` non
 dispatch the diagnosticians with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` exactly — that is the canonical procedure
 (glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
 steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
 (the bug report)**, and surface matches to the **diagnostician agents** as context — **stale**
@@ -97,7 +97,7 @@ the answer is "proper fix only". If a hotfix is recommended, record what the pro
 **Assumptions (full tier only).** On the **full** tier, record every WHAT-changing assumption behind
 the chosen fix approach as a **row** in the diagnosis `## Assumptions` table — all five fields
 (`Statement`, `Confidence` `low|med|high`, `Basis / evidence`, `If-wrong impact`, `Validation-required`
-`y|n`) — per **Assumption records** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; set
+`y|n`) — per **Assumption records** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/assumption-records.md`; set
 `Validation-required: y` on any load-bearing, still-unproven assumption. On the **lite** tier, **skip
 this entirely** — a lite bug has no sign-off gate to echo into, so it carries no assumptions table.
 
@@ -136,7 +136,7 @@ After writing `diagnosis.md`, **STOP: end your turn by explicitly asking the use
 on the fix approach.** The sign-off ask presents the diagnosis's chosen fix approach and
 contract items (root cause, fix surface, regression-test plan) **verbatim, as a grouped
 checklist — never a blockquote wall** — see **Sign-off rendering** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is a hard turn-end **in both
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/sign-off-rendering.md`. This gate is a hard turn-end **in both
 modes**: autopilot never bypasses it and never sets `signOff.signed` itself.
 
 **Unvalidated-assumptions echo (the actuation).** Before presenting the ask, read the diagnosis's
@@ -151,7 +151,7 @@ it `n`), or explicitly **acknowledged by the user as staying open** (row stays `
 line `Assumption validation waived by user (<date>): <reason>` recorded in the diagnosis — **never
 assistant-authored, never dated by the assistant, and autopilot never records it** (mirrors the
 Evidence waiver); it does not change the recorded `Confidence`. See **Assumption records** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/assumption-records.md`.
 
 Do **not**
 plan, implement, or mark sign-off yourself. When the user
@@ -167,7 +167,7 @@ needs no sign-off — its confirmed diagnosis is itself the gate.
 
 - **lite:** if `manifest.autopilot` is `true`, emit the progress strip and proceed directly
   into the implement phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-implement.md` — see
-  **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent,
+  **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent,
   tell the user to run `/feature-flow:ff-implement` next.
 - **full:** **only once the diagnosis is signed off** (above): if the re-read
   `manifest.autopilot` is `true`, emit the progress strip and proceed directly into the

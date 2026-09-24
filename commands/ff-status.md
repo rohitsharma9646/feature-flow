@@ -29,7 +29,7 @@ allowed-tools: Read, Glob, Grep
    - the one-line progress strip — see **Progress strip** in
      `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
 5. **Missing or corrupt manifest:** do NOT just defer to resume. Apply the **Disk inference
-   procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` yourself (walk the track's
+   procedure** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/disk-inference.md` yourself (walk the track's
    phase order; artifact existence + minimal validity) and print the inferred status with
    every inferred line labeled **`[inferred from disk]`**. Then suggest
    `/feature-flow:ff-resume` to re-enter the first incomplete phase.

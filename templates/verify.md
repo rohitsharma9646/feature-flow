@@ -19,7 +19,7 @@
 ## Evidence coverage matrix
 
 > **Full tier only.** Lite runs replace this section's table with one line — "Lite tier:
-> floor evidence only (executed-test / build/static-analysis); see `docs/manifest-schema.md`
+> floor evidence only (executed-test / build/static-analysis); see `docs/schema/evidence.md`
 > §Evidence, Tier scaling." Contract mapping and Regression risk still apply in full.
 
 | Detected surface | Expected kind | Ran? | Result | Notes (gap / N/A reason) |
@@ -30,7 +30,7 @@
 ## Contract mapping
 
 Confidence per item — exactly one of `Verified (multi-source)` | `Verified (single-source)`
-| `Partially verified` | `Unverified`, derived per `docs/manifest-schema.md` §Evidence,
+| `Partially verified` | `Unverified`, derived per `docs/schema/evidence.md` §Evidence,
 Confidence ladder.
 
 **Feature track** — one block per acceptance criterion from `spec.md`:
@@ -59,6 +59,14 @@ design, a lite run, or a design naming none → no FS blocks, not an empty secti
 (resolved via `manifest.artifacts.spec`, the same pointer the AC blocks use — no new pointer; a
 **presence check on the section's rows, not a tier check** — absent section, or a section with no
 rows [lite tier, or a pre-WS-7 spec] → no SM blocks, not an empty section):
+
+### E2E: <end-to-end check verbatim>
+- **Method:** <evidence kinds used, or "manual — unverified">
+- **Evidence:**
+  - `<command>` — exit <n> | HTTP <nnn> — <excerpt>
+  - artifact: `evidence/<kind>-<n>-<desc>.<ext>` (if any)
+- **Confidence:** <one of the four levels>
+- **Gap (only if below Verified):** <what's missing, why, what evidence is required>
 
 ### SM1: <success metric verbatim>
 - **Method:** <evidence kinds used, or "manual — unverified">
@@ -116,7 +124,7 @@ used by checkout + wishlist → Medium">.
 ## Repair
 
 > **Autopilot + full tier only, exactly one cycle.** Present **only** when the one-cycle
-> repair-and-re-verify fired (`docs/manifest-schema.md` §Autopilot, **Repair-and-re-verify
+> repair-and-re-verify fired (`docs/schema/autopilot.md` §Autopilot, **Repair-and-re-verify
 > cycle**) — omitted on a clean pass, a pure evidence gap, a failed `FS<n>`, a lite-tier run,
 > or step-by-step mode. This section's mere presence **is** the one-cycle cap: a second failure
 > with it already present falls through to the standard gap-report stop, never a second attempt.

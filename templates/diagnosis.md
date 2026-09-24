@@ -65,7 +65,7 @@ recommendation is "proper fix only".)
 
 > **Full tier only.** A trivial (`lite`) bug has no sign-off gate (`n/a (lite)`), so it carries no
 > assumptions table — skip this section entirely. On the **full** tier, record every WHAT-changing
-> assumption behind the fix approach as a row — see `docs/manifest-schema.md §Assumption records`.
+> assumption behind the fix approach as a row — see `docs/schema/assumption-records.md §Assumption records`.
 
 | Statement | Confidence | Basis / evidence | If-wrong impact | Validation-required |
 |---|---|---|---|---|

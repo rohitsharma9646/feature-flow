@@ -14,7 +14,7 @@ Static review of the implemented change. Output: `review.md`.
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -67,8 +67,9 @@ gets a conformance check.
 
 **Its input:** the same diff (or touched-file list) the focus reviewers get, plus the run's
 **contract**, each resolved via its manifest pointer — never a bare filename:
-- **Feature track:** the spec (`manifest.artifacts.spec`: acceptance criteria + `## Out of
-  scope`) and, on full tier, the plan (`manifest.artifacts.plan`: its tasks).
+- **Feature track:** the spec (`manifest.artifacts.spec`: acceptance criteria, `## Non-goals`,
+  and `## Touchpoints` — the files / interfaces the change was expected to touch, its scope
+  reference) and, on full tier, the plan (`manifest.artifacts.plan`: its tasks).
 - **Bugfix track:** the diagnosis (`manifest.artifacts.diagnosis`: root cause + chosen fix
   approach) and, when the bug escalated, the plan (`manifest.artifacts.plan`).
 
@@ -78,7 +79,9 @@ No contract resolves (all pointers absent or missing on disk) → skip this disp
 **Its brief:** for each contract item, is it realized in the change? Report:
 - an acceptance criterion (or the diagnosis's chosen fix) that is not implemented or only
   partially implemented → **Critical** (the change does not do what the run promised);
-- a change outside the stated scope, or touching something the spec lists as out of scope →
+- a change outside the stated scope (a file far outside `## Touchpoints` is the usual signal — a
+  necessary neighbour of a touchpoint is not), or touching something the spec lists under
+  `## Non-goals` →
   **Important**;
 - a plan task with no corresponding change in the diff → **Important**.
 
@@ -120,13 +123,13 @@ do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
 
 Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, bump
 `updatedAt`, and hand off by track. (Which command marks the run `done` is the canonical
-**Terminal convergence** rule in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the routing
+**Terminal convergence** rule in `${CLAUDE_PLUGIN_ROOT}/docs/schema/terminal-convergence.md`; the routing
 below implements it.)
 
 - **Feature track:** review runs **before** verify. If `manifest.autopilot` is `true`,
   emit the progress strip and proceed directly into the verify phase per
   `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md` — see **Autopilot** in
-  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, leave
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, leave
   `currentPhase = "review"` and **STOP**, telling the user to run `/feature-flow:ff-verify` next.
 - **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
   already passed (`phases.verify.status == "complete"`), first run **KB capture** (see
@@ -157,7 +160,7 @@ Sequenced **after** `review.md` + the manifest update but **before** `currentPha
 feature track), do nothing.
 
 When active on the bugfix terminal, follow the **Knowledge base** capture rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` exactly — that is the canonical procedure (git SHA
 → provenance, distill 1–3 candidates, the cross-turn confirm gate, write accepted entries from
 `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md`, **no** `git add`/`commit`, reject-all writes
 nothing); **do not restate its steps here.** The only command-specific input: read this run's
