@@ -79,6 +79,13 @@ made normal progress.
 | `design-gap` | `ff-verify` | unproven `FS1` blocks `done` | reaches `done` |
 | `repair-gap` | `ff-verify` (autopilot) | one `## Repair` cycle recorded | no repair, reaches `done` |
 | `discovery-gap` | `ff-verify` | unproven `SM1` blocks `done` | reaches `done` |
+| `implement-controller` | `ff-implement` | task controller: ledger, a subagent + review per task, a fix round on the seeded Task 2 finding | inline implement, no ledger |
+
+**`implement-controller` is a measurement too.** Its fired arm is the v0.23.0 spec's E2E check, and
+SM1 compares the two arms' main-session input tokens:
+`bash evals/forward/implement-controller/sm1-ratio.sh <out>/implement-controller/fired/run-1.json <out>/implement-controller/control/run-1.json`
+(PASS at ≤ 0.60). Its sessions dispatch several subagents, so run it with a higher cap —
+`scripts/forward-test.sh --max-budget-usd 8 implement-controller`.
 
 Coverage limit (named, not silent): `discovery-gap` covers WS-7's `SM<n>` half only; the
 requirement-graph → Outcome-gate gap in `ff-plan` is not forward-tested.
