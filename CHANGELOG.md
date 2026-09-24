@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.21.0] — 2026-09-24 — Manifest contract split into a core + topic files
+
+From Claude Code's best-practices guide ("keep context lean"). Every phase re-reads the manifest
+contract, and with v0.20.0's fresh-context hand-offs it does so once per phase. The contract was
+one ~93 KB file; a phase used a fraction of it.
+
+- **`docs/manifest-schema.md` is now the core** — Schema, Field notes, Config resolution &
+  validation, Run resolution, Rules every command MUST follow, Manifest write safety, Re-run guard,
+  Progress strip — plus a new **Topic index**. The other 13 topics moved **verbatim** to
+  `docs/schema/<topic>.md` (evidence, enforcement, disk-inference, sign-off-rendering,
+  terminal-convergence, knowledge-base, planning-intelligence, assumption-records,
+  design-tradeoffs, discovery-fields, autopilot, delivery, retrospective). No rule text changed:
+  the core and topic files rejoin byte-identically to the old file.
+- **References point at the topic's file** (`see **Autopilot** in …/docs/schema/autopilot.md`);
+  SKILL.md states the reading rule — the core plus only the topic files the command names.
+  `§Name` cross-references inside the rules resolve through the Topic index.
+- **Guards:** the schema-reading guards read the joined contract (`scripts/checks/lib/schema.sh`),
+  so every assertion is unchanged. New `schema-layout-guard.sh` pins the layout, the core's
+  contents, the index, **reference integrity** (every `**Name** in …/docs/<file>.md` and
+  `…/docs/<file>.md §Name` must point at a file that defines Name — new protection against a
+  moved or renamed topic) and dist parity.
+- **Packaging:** the Claude, Codex and integrity packages ship `docs/schema/`.
+
+Schema bytes each command must read — the core plus every topic it names, by path or by
+`§Name`/`**Name**` (an upper bound; a topic file's own `§` cross-references may lead further).
+Every other command reads 43–76% less; **ff-verify** touches seven topics, so it saves only 24%, and
+**ff-clarify** 39%:
+
+| Command | Before (bytes) | After (bytes) | Topic files it names | Reduction |
+|---|---|---|---|---|
+| ff-abandon | 93,586 | 21,850 | — | 76% |
+| ff-clarify | 93,586 | 56,179 | assumption-records, autopilot, discovery-fields, planning-intelligence, sign-off-rendering | 39% |
+| ff-close | 93,586 | 21,850 | — | 76% |
+| ff-deliver | 93,586 | 36,670 | autopilot, delivery, terminal-convergence | 60% |
+| ff-design | 93,586 | 48,066 | autopilot, design-tradeoffs, knowledge-base | 48% |
+| ff-diagnose | 93,586 | 53,129 | assumption-records, autopilot, knowledge-base, sign-off-rendering | 43% |
+| ff-explore | 93,586 | 42,611 | autopilot, knowledge-base | 54% |
+| ff-implement | 93,586 | 48,503 | autopilot, knowledge-base, planning-intelligence | 48% |
+| ff-list | 93,586 | 21,850 | — | 76% |
+| ff-plan | 93,586 | 53,084 | assumption-records, autopilot, discovery-fields, planning-intelligence | 43% |
+| ff-resume | 93,586 | 33,889 | autopilot, disk-inference | 63% |
+| ff-retro | 93,586 | 38,248 | autopilot, retrospective | 59% |
+| ff-review | 93,586 | 44,337 | autopilot, knowledge-base, terminal-convergence | 52% |
+| ff-status | 93,586 | 24,203 | disk-inference | 74% |
+| ff-verify | 93,586 | 70,648 | autopilot, design-tradeoffs, discovery-fields, evidence, knowledge-base, planning-intelligence, terminal-convergence | 24% |
+| ff | 93,586 | 31,536 | autopilot | 66% |
+
 ## [0.20.0] — 2026-09-23 — Fresh-context hand-offs, clarify interview, touchpoints + end-to-end check
 
 Two more changes from Claude Code's best-practices guide: "a clean session with a better prompt
