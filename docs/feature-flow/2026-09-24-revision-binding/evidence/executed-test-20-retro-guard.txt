@@ -1,0 +1,85 @@
+=== scripts/checks/retro-guard.sh ===
+ok:   docs/manifest-schema.md + docs/schema/: '## Retrospective' section present
+ok:   §Retrospective: ### Materiality test
+ok:   §Retrospective: ### Candidate schema
+ok:   §Retrospective: ### Confirm gate
+ok:   §Retrospective: ### Signals
+ok:   §Retrospective: worked` · `failed` · `missing` · `ambiguous` · `bypassed
+ok:   §Retrospective: one-off` · `repo-specific` · `reusable
+ok:   §Retrospective: regression/forward test
+ok:   §Retrospective: Fired input / Expected outcome / Control input
+ok:   §Retrospective: nothing is written until the user accepts, edits, or rejects
+ok:   §Retrospective: NOT extended with `retro`
+ok:   §Retrospective: _No material events._
+ok:   §Retrospective: no numeric scores
+ok:   docs/manifest-schema.md + docs/schema/: durable-eligible set includes 'retro'
+ok:   docs/manifest-schema.md + docs/schema/: field note for phases.retro/artifacts.retro
+ok:   docs/manifest-schema.md + docs/schema/: 'Retro is never chained'
+ok:   docs/manifest-schema.md + docs/schema/: §Autopilot mandatory-pauses row for the retro confirm-gate
+ok:   docs/manifest-schema.md + docs/schema/: retro confirm-gate row is not 'unconditional' (passive confirm-gate shape)
+ok:   schemas/manifest-v1.schema.json: phases.retro + all four track enums; currentPhase enum omits retro
+ok:   commands/ff-retro.md: references §Retrospective by name
+ok:   commands/ff-retro.md: done gate
+ok:   commands/ff-retro.md: done gate writes nothing (AC1)
+ok:   commands/ff-retro.md: no tier gate (lite allowed)
+ok:   commands/ff-retro.md: re-run guard (AC9)
+ok:   commands/ff-retro.md: resolves artifacts.spec by pointer
+ok:   commands/ff-retro.md: resolves artifacts.diagnosis by pointer
+ok:   commands/ff-retro.md: resolves artifacts.design by pointer
+ok:   commands/ff-retro.md: resolves artifacts.decision by pointer
+ok:   commands/ff-retro.md: resolves artifacts.plan by pointer
+ok:   commands/ff-retro.md: resolves artifacts.review by pointer
+ok:   commands/ff-retro.md: resolves artifacts.verify by pointer
+ok:   commands/ff-retro.md: resolves artifacts.delivery by pointer
+ok:   commands/ff-retro.md: confirm gate (AC5)
+ok:   commands/ff-retro.md: gate never self-answered
+ok:   commands/ff-retro.md: never autopilot-chained (AC8)
+ok:   commands/ff-retro.md: durable write (AC6)
+ok:   commands/ff-retro.md: records artifacts.retro
+ok:   commands/ff-retro.md: records phases.retro
+ok:   commands/ff-retro.md: currentPhase stays done
+ok:   commands/ff-retro.md: writes nothing else (AC6)
+ok:   commands/ff-retro.md: forward-test case shape (AC10)
+ok:   templates/retro.md: field 'Event'
+ok:   templates/retro.md: field 'Expected'
+ok:   templates/retro.md: field 'Observed evidence'
+ok:   templates/retro.md: field 'Impact'
+ok:   templates/retro.md: field 'Safeguard'
+ok:   templates/retro.md: field 'Safeguard result'
+ok:   templates/retro.md: field 'Generalizability'
+ok:   templates/retro.md: field 'Recommended owner'
+ok:   templates/retro.md: field 'Proposed validation'
+ok:   templates/retro.md: safeguard-result enum
+ok:   templates/retro.md: generalizability enum
+ok:   templates/retro.md: owner enum includes regression/forward test
+ok:   templates/retro.md: zero-candidate sentinel (AC7)
+ok:   templates/retro.md: all-rejected sentinel (never 'no material events')
+ok:   commands/ff-retro.md: all-rejected sentinel in the command
+ok:   templates/retro.md: rejected count section
+ok:   templates/retro.md: forward-test case shape (AC10)
+ok:   commands/ff-verify.md: completion names ff-deliver + ff-retro as optional next steps
+ok:   commands/ff-review.md: completion names ff-deliver + ff-retro as optional next steps
+ok:   SKILL.md references ff-retro
+ok:   README.md references ff-retro
+ok:   dist parity: commands/ff-retro.md
+ok:   dist parity: templates/retro.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-review.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: retro guard
+EXIT_CODE=0

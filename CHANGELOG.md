@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.22.0] — 2026-09-24 — Review and verify bound to the same code revision
+
+Closes F01 (rated Critical) from `docs/feature-flow-architectural-review-2026-07-23.md`: a run
+could reach `done` on code that was never both reviewed **and** verified. On the feature track
+review runs before verify, and verify's autopilot repair — or any edit in between — changed code
+after review had passed; on the bugfix track review's fix cycle could change code after verify.
+Recording `git HEAD` would not have helped: Feature Flow never commits during a run, so HEAD does
+not move while the working tree does.
+
+- **Working-tree fingerprint** — `hooks/lib/revision.sh`: a git tree id over the whole git top
+  level (tracked files as they are, plus untracked non-ignored files), minus `paths.base`,
+  `paths.durable`, `paths.kb` and nested repositories. Built in a throwaway index: the real index,
+  working tree and history are never touched; nothing is staged or committed. Same tree → same id;
+  any code change → new id; revert → old id. `docs/schema/enforcement.md` §Revision fingerprint
+  carries the file verbatim so Codex (which ships no `hooks/`) runs byte-identical text.
+- **Manifest:** `revisionBound: true` at creation (`ff`, and the cold-start paths of `ff-explore` /
+  `ff-clarify` / `ff-diagnose`); `phases.review.revision` / `phases.verify.revision` stamped when the
+  phase completes, after any fix or repair cycle. Absent `revisionBound` = a pre-0.22.0 run: nothing
+  is stamped or checked. No migration.
+- **Revision agreement** (`docs/schema/terminal-convergence.md`): the done-transition compares the
+  other phase's stamp to its own. Stale → the new **Stale-phase re-run cycle**
+  (`docs/schema/autopilot.md`): autopilot re-runs the stale phase once — review with its focus and
+  spec-conformance reviewers, verify with a full `ff-test-runner` dispatch — capped by a durable
+  `## Stale re-run` section in that phase's artifact, exactly like `## Resolution` / `## Repair`;
+  step-by-step stops and names the phase and the changed files.
+- **Gate B** (`hooks/enforce-gate`, Claude Code): on a revision-bound `done` write the hook
+  recomputes the fingerprint and denies unless both stamps equal it — `<phase> revision not
+  recorded` or `<phase> revision is stale`, with up to 10 changed paths (`(+N more)`, or `changed
+  paths unavailable` if the stamped tree object was pruned — still a deny). Skipped silently for
+  pre-0.22.0 runs and outside git; allowed **loudly** (a `systemMessage`) when a `.git` exists but
+  the fingerprint cannot be computed. Stamped ids are validated as hex before reaching git.
+- **WP4 constraint:** the unmerged `feature/p0-integrity-wp4` branch replaces `hooks/enforce-gate`
+  with an observe-only launcher for the Go kernel. Any WP4 merge must preserve Gates A/B including
+  revision binding, or supersede them with the kernel's enforce mode — never regress to observe-only.
+- **Guards:** `enforce-gate-guard.sh` gains 37 cases against real temporary git repositories (the
+  fingerprint's inclusions and exclusions, a subdirectory project, every `paths.*` form, the real
+  index left byte-identical, every Gate B allow/deny/warn path, one case through `run-hook.cmd`);
+  new `revision-binding-guard.sh` pins the wiring, the byte identity of the documented recipe (with
+  a one-character-drift self-test) and the lib's defaults against `config/defaults.json`.
+
+**Measured** (synthetic repo, 22,000 tracked files, 5 modified + 5 untracked): the fingerprint takes
+0.06–0.08 s steady state and 0.17–0.25 s when every file's stat info is stale; a `done` write through
+the hook takes 0.02–0.03 s without the check and 0.10–0.51 s with it. Running this repo's full guard
+and eval suite leaves no untracked files, so verify's own commands do not move the fingerprint here.
+
+**Known limits:** a manifest rewritten through `Bash` is still outside the hook (prose-gated, as
+before); Codex follows the rule as prose only; build or test output that is not gitignored counts as
+code, so it makes review look stale once (the deny reason lists the paths — ignore them in
+`.gitignore`). The Stale-phase re-run cycle firing once and then stopping is a behavioural claim not
+covered by CI — it needs a fresh-session self-run, like the other autopilot cycles.
+
 ## [0.21.0] — 2026-09-24 — Manifest contract split into a core + topic files
 
 From Claude Code's best-practices guide ("keep context lean"). Every phase re-reads the manifest

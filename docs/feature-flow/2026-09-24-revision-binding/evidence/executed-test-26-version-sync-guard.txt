@@ -1,0 +1,8 @@
+=== scripts/checks/version-sync-guard.sh ===
+ok:   .claude-plugin/plugin.json: canonical version 0.22.0
+ok:   .codex-plugin/plugin.json: version 0.22.0 matches canonical
+ok:   .claude-plugin/marketplace.json: version 0.22.0 matches canonical
+ok:   README.md: Status badge reads v0.22.0
+ok:   CHANGELOG.md: newest entry is [0.22.0]
+PASS: version-sync guard (0.22.0)
+EXIT_CODE=0

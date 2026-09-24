@@ -85,7 +85,8 @@ or broad blast radius. Announce the call (*"small change — starting a lite fea
    - **bugfix:** `track: "bugfix"`, `currentPhase: "diagnose"`, `signOff: { required:
      false, signed: false }` (tier is decided during diagnose).
    - Both: `createdAt`, `autopilot` (the value resolved in step 2 — the manifest is
-     written **with** it), empty `phases`. Confirm the file exists before continuing — if
+     written **with** it), `revisionBound: true` (review and verify bind to one code revision —
+     see the `revisionBound` field note in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`), empty `phases`. Confirm the file exists before continuing — if
      you have not written a manifest to disk, you have not started a run.
 
 ## Step 3 — Start the first phase, by track

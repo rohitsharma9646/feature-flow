@@ -1,0 +1,14 @@
+=== E2E step 2: re-stamp review on current tree, pipe done-write through hooks/run-hook.cmd enforce-gate ===
+Payload:
+{
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/tmp/rb-e2e.UpMfur/.feature-flow/e2e-slug/manifest.json",
+    "content": "{\"track\":\"feature\",\"tier\":\"full\",\"revisionBound\":true,\"currentPhase\":\"done\",\"artifacts\":{\"verify\":\"verify.md\"},\"phases\":{\"review\":{\"status\":\"complete\",\"revision\":\"2f9037a418ae3a8e86ac406590681b7e04d8a401\"},\"verify\":{\"status\":\"complete\",\"revision\":\"2f9037a418ae3a8e86ac406590681b7e04d8a401\"}}}"
+  },
+  "cwd": "/tmp/rb-e2e.UpMfur"
+}
+
+Hook output (empty = allow, no deny):
+[]
+EXIT_CODE=0

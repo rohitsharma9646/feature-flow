@@ -1,0 +1,5 @@
+=== AC8 static check: 'revision binding skipped — run predates v0.22.0' in commands/ff-review.md and commands/ff-verify.md ===
+commands/ff-verify.md:205:`revision binding skipped — run predates v0.22.0` (no `revisionBound`) or `revision binding skipped
+commands/ff-review.md:155:  why in the completion report: `revision binding skipped — run predates v0.22.0` (no
+commands/ff-review.md:156:  `revisionBound`) or `revision binding skipped — <not a git repository | fingerprint not computable>`. Then run **KB capture** (see
+EXIT_CODE=0

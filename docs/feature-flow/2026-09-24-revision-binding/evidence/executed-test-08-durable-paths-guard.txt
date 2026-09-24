@@ -1,0 +1,61 @@
+=== scripts/checks/durable-paths-guard.sh ===
+ok:   config/defaults.json: paths.durable present, default null
+ok:   docs/manifest-schema.md + docs/schema/: 'Durable artifact resolution' rule present
+ok:   docs/manifest-schema.md + docs/schema/: rule names paths.durable
+ok:   docs/manifest-schema.md + docs/schema/: rule states the <date>-<slug>/<artifact> scheme
+ok:   docs/manifest-schema.md + docs/schema/: phases.<phase>.artifact described as a display mirror
+ok:   docs/manifest-schema.md + docs/schema/: stale 'only spec/plan relocatable' claim absent
+ok:   docs/manifest-schema.md + docs/schema/: Disk-inference references artifacts.<name>
+ok:   docs/manifest-schema.md + docs/schema/: Disk-inference has the paths.durable manifest-lost fallback
+ok:   docs/manifest-schema.md + docs/schema/: artifacts note carries the resolution rule
+ok:   commands/ff-clarify.md: references the Durable artifact resolution rule
+ok:   commands/ff-clarify.md: records the resolved path in artifacts.spec
+ok:   commands/ff-plan.md: references the Durable artifact resolution rule
+ok:   commands/ff-plan.md: records the resolved path in artifacts.plan
+ok:   commands/ff-design.md: references the Durable artifact resolution rule
+ok:   commands/ff-design.md: records the resolved path in artifacts.design
+ok:   commands/ff-design.md: references the Durable artifact resolution rule
+ok:   commands/ff-design.md: records the resolved path in artifacts.decision
+ok:   commands/ff-diagnose.md: references the Durable artifact resolution rule
+ok:   commands/ff-diagnose.md: records the resolved path in artifacts.diagnosis
+ok:   commands/ff-verify.md: references the Durable artifact resolution rule
+ok:   commands/ff-verify.md: records the resolved path in artifacts.verify
+ok:   commands/ff-deliver.md: references the Durable artifact resolution rule
+ok:   commands/ff-deliver.md: records the resolved path in artifacts.delivery
+ok:   commands/ff-retro.md: references the Durable artifact resolution rule
+ok:   commands/ff-retro.md: records the resolved path in artifacts.retro
+ok:   commands/ff-implement.md: resolves the plan via artifacts.plan
+ok:   commands/ff-implement.md: Cold-start reads artifacts.plan (rel@5) before the sandbox fallback (rel@7)
+ok:   commands/ff-implement.md: bugfix work resolves the diagnosis via artifacts.diagnosis
+ok:   commands/ff-status.md: resolves artifact existence via artifacts.<name>
+ok:   README.md: has a paths.durable config row
+ok:   SKILL.md: notes durable promotion
+ok:   dist parity: config/defaults.json
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: commands/ff.md
+ok:   dist parity: commands/ff-clarify.md
+ok:   dist parity: commands/ff-plan.md
+ok:   dist parity: commands/ff-design.md
+ok:   dist parity: commands/ff-diagnose.md
+ok:   dist parity: commands/ff-implement.md
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: commands/ff-status.md
+ok:   dist parity: commands/ff-resume.md
+ok:   dist parity: README.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   read-site completeness (AC13): no bare-name durable-artifact reader/gate in any command body
+PASS: durable-paths guard
+EXIT_CODE=0

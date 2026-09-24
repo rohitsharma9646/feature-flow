@@ -30,7 +30,7 @@ no upstream artifact is required (cold-start safe).
    `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`; never choose the value yourself),
    and write a manifest with `track: "feature"`, the **resolved** `tier` (lite/full per
    `ff.md` Step 1; in doubt full — never hardcode `"full"`), the resolved
-   `autopilot`, empty `phases`, `signOff.required: true`.
+   `autopilot`, `revisionBound: true`, empty `phases`, `signOff.required: true`.
    If a manifest already exists (e.g. `/feature-flow:ff` created it), use it.
 3. **Re-run guard:** if `phases.explore.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `explore.md` — see **Re-run guard** in

@@ -1,0 +1,105 @@
+=== scripts/checks/schema-layout-guard.sh ===
+ok:   L1: docs/schema/evidence.md is the topic header, a blank line, then exactly '## Evidence'
+ok:   L1: docs/schema/enforcement.md is the topic header, a blank line, then exactly '## Enforcement (Claude Code)'
+ok:   L1: docs/schema/disk-inference.md is the topic header, a blank line, then exactly '## Disk inference procedure'
+ok:   L1: docs/schema/sign-off-rendering.md is the topic header, a blank line, then exactly '## Sign-off rendering'
+ok:   L1: docs/schema/terminal-convergence.md is the topic header, a blank line, then exactly '## Terminal convergence'
+ok:   L1: docs/schema/knowledge-base.md is the topic header, a blank line, then exactly '## Knowledge base'
+ok:   L1: docs/schema/planning-intelligence.md is the topic header, a blank line, then exactly '## Planning intelligence'
+ok:   L1: docs/schema/assumption-records.md is the topic header, a blank line, then exactly '## Assumption records'
+ok:   L1: docs/schema/design-tradeoffs.md is the topic header, a blank line, then exactly '## Design trade-offs & devil's advocate'
+ok:   L1: docs/schema/discovery-fields.md is the topic header, a blank line, then exactly '## Discovery fields'
+ok:   L1: docs/schema/autopilot.md is the topic header, a blank line, then exactly '## Autopilot'
+ok:   L1: docs/schema/delivery.md is the topic header, a blank line, then exactly '## Delivery'
+ok:   L1: docs/schema/retrospective.md is the topic header, a blank line, then exactly '## Retrospective'
+ok:   L1 self-test: text above the '## ' heading is rejected
+ok:   L2: docs/manifest-schema.md holds exactly the Topic index + the core topics, in order
+ok:   L2: joined contract holds every layout topic exactly once, in contract order
+ok:   L3: Topic index lists docs/schema/evidence.md
+ok:   L3: Topic index lists docs/schema/enforcement.md
+ok:   L3: Topic index lists docs/schema/disk-inference.md
+ok:   L3: Topic index lists docs/schema/sign-off-rendering.md
+ok:   L3: Topic index lists docs/schema/terminal-convergence.md
+ok:   L3: Topic index lists docs/schema/knowledge-base.md
+ok:   L3: Topic index lists docs/schema/planning-intelligence.md
+ok:   L3: Topic index lists docs/schema/assumption-records.md
+ok:   L3: Topic index lists docs/schema/design-tradeoffs.md
+ok:   L3: Topic index lists docs/schema/discovery-fields.md
+ok:   L3: Topic index lists docs/schema/autopilot.md
+ok:   L3: Topic index lists docs/schema/delivery.md
+ok:   L3: Topic index lists docs/schema/retrospective.md
+ok:   L3: indexed path docs/schema/assumption-records.md exists
+ok:   L3: indexed path docs/schema/autopilot.md exists
+ok:   L3: indexed path docs/schema/delivery.md exists
+ok:   L3: indexed path docs/schema/design-tradeoffs.md exists
+ok:   L3: indexed path docs/schema/discovery-fields.md exists
+ok:   L3: indexed path docs/schema/disk-inference.md exists
+ok:   L3: indexed path docs/schema/enforcement.md exists
+ok:   L3: indexed path docs/schema/evidence.md exists
+ok:   L3: indexed path docs/schema/knowledge-base.md exists
+ok:   L3: indexed path docs/schema/planning-intelligence.md exists
+ok:   L3: indexed path docs/schema/retrospective.md exists
+ok:   L3: indexed path docs/schema/sign-off-rendering.md exists
+ok:   L3: indexed path docs/schema/terminal-convergence.md exists
+ok:   L4 self-test: blockquote-wrapped reference to a moved topic is caught
+ok:   L4 self-test: a mention is not a definition
+ok:   L4 self-test: a correct wrapped reference passes
+ok:   L4 self-test: a '§Name, path' reference to the wrong file is caught
+ok:   L4 self-test: an unnamed path to a missing schema file is caught
+ok:   L4: commands/ff-abandon.md schema references resolve
+ok:   L4: commands/ff-clarify.md schema references resolve
+ok:   L4: commands/ff-close.md schema references resolve
+ok:   L4: commands/ff-deliver.md schema references resolve
+ok:   L4: commands/ff-design.md schema references resolve
+ok:   L4: commands/ff-diagnose.md schema references resolve
+ok:   L4: commands/ff-explore.md schema references resolve
+ok:   L4: commands/ff-implement.md schema references resolve
+ok:   L4: commands/ff-list.md schema references resolve
+ok:   L4: commands/ff.md schema references resolve
+ok:   L4: commands/ff-plan.md schema references resolve
+ok:   L4: commands/ff-resume.md schema references resolve
+ok:   L4: commands/ff-retro.md schema references resolve
+ok:   L4: commands/ff-review.md schema references resolve
+ok:   L4: commands/ff-status.md schema references resolve
+ok:   L4: commands/ff-verify.md schema references resolve
+ok:   L4: templates/decision.md schema references resolve
+ok:   L4: templates/delivery.md schema references resolve
+ok:   L4: templates/design.md schema references resolve
+ok:   L4: templates/diagnosis.md schema references resolve
+ok:   L4: templates/explore.md schema references resolve
+ok:   L4: templates/kb-entry.md schema references resolve
+ok:   L4: templates/plan-bugfix.md schema references resolve
+ok:   L4: templates/plan.md schema references resolve
+ok:   L4: templates/retro.md schema references resolve
+ok:   L4: templates/review.md schema references resolve
+ok:   L4: templates/spec.md schema references resolve
+ok:   L4: templates/verify.md schema references resolve
+ok:   L4: agents/ff-code-architect.md schema references resolve
+ok:   L4: agents/ff-code-explorer.md schema references resolve
+ok:   L4: agents/ff-code-reviewer.md schema references resolve
+ok:   L4: agents/ff-diagnostician.md schema references resolve
+ok:   L4: agents/ff-test-runner.md schema references resolve
+ok:   L4: skills/feature-flow/SKILL.md schema references resolve
+ok:   L4: skills/feature-flow/references/codex-tools.md schema references resolve
+ok:   L4: README.md schema references resolve
+ok:   L4: ff-explore's generic (schema: …) reference stays on the core
+ok:   L4: ff.md's generic 'per the contract' reference stays on the core
+ok:   L4: SKILL.md states the core + named-topic-files reading rule
+ok:   L4: SKILL.md reading rule counts a bare §Name / **Name** mention as naming the topic
+ok:   L3: Topic index says its paths are relative to the plugin root
+ok:   L5: dist parity: docs/manifest-schema.md
+ok:   L5: dist parity: docs/schema/assumption-records.md
+ok:   L5: dist parity: docs/schema/autopilot.md
+ok:   L5: dist parity: docs/schema/delivery.md
+ok:   L5: dist parity: docs/schema/design-tradeoffs.md
+ok:   L5: dist parity: docs/schema/discovery-fields.md
+ok:   L5: dist parity: docs/schema/disk-inference.md
+ok:   L5: dist parity: docs/schema/enforcement.md
+ok:   L5: dist parity: docs/schema/evidence.md
+ok:   L5: dist parity: docs/schema/knowledge-base.md
+ok:   L5: dist parity: docs/schema/planning-intelligence.md
+ok:   L5: dist parity: docs/schema/retrospective.md
+ok:   L5: dist parity: docs/schema/sign-off-rendering.md
+ok:   L5: dist parity: docs/schema/terminal-convergence.md
+PASS: schema-layout guard
+EXIT_CODE=0

@@ -3,6 +3,7 @@
 **Track:** feature | bugfix
 **Tier:** full | lite
 **Date:** <date>
+**Revision:** <working-tree fingerprint this verification covered, or "not recorded — <reason>">
 **Verified by:** `ff-test-runner` (executed) — evidence below is real command output.
 
 ## Commands run
@@ -145,3 +146,15 @@ or better clears through to done; any still below it falls through to the gap-re
 
 > Every un-touched contract item's captured evidence is preserved unchanged — an explicit
 > exception to the start-of-verify evidence-clear rule; only the items named above were re-run.
+
+## Stale re-run
+
+> **Revision-bound runs, autopilot only, exactly one cycle.** Present **only** when the
+> done-transition found this phase's revision stale and re-ran it once
+> (`docs/schema/autopilot.md` §Autopilot, **Stale-phase re-run cycle**). Its mere presence **is**
+> the one-cycle cap: a second stale finding with it already present STOPs, never a second re-run.
+
+**Stale revision:** <the revision this phase had stamped>
+**Current revision:** <the fingerprint at the done-transition>
+**Changed paths:** <paths that differ, as listed by the revision check>
+**Outcome:** <agreement restored — done-transition continued | still stale / blocking — stopped>

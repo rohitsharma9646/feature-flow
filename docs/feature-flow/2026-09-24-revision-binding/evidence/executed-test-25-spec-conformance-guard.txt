@@ -1,0 +1,24 @@
+=== scripts/checks/spec-conformance-guard.sh ===
+ok:   commands/ff-review.md: has a '## Spec conformance' section
+ok:   SC1: dispatches a dedicated ff-code-reviewer for spec conformance
+ok:   SC1: not counted against reviewerAgents
+ok:   SC2: resolves the contract via manifest.artifacts\.spec
+ok:   SC2: resolves the contract via manifest.artifacts\.plan
+ok:   SC2: resolves the contract via manifest.artifacts\.diagnosis
+ok:   SC2: passes the same diff the focus reviewers get
+ok:   SC3: unimplemented / partial criterion → Critical
+ok:   SC3: out-of-scope change → Important
+ok:   SC3: unrealized plan task → Important
+ok:   SC4: commands/ff-review.md carries the over-engineering guard
+ok:   SC4: agents/ff-code-reviewer.md carries the over-engineering guard
+ok:   SC4: agents/ff-code-reviewer.md says style / speculative hardening is never Critical
+ok:   SC5: templates/review.md has '## Spec conformance' before '## Critical'
+ok:   SC6: skills/feature-flow/SKILL.md mentions spec conformance
+ok:   SC6: README.md mentions spec conformance
+ok:   dist parity: commands/ff-review.md
+ok:   dist parity: agents/ff-code-reviewer.md
+ok:   dist parity: templates/review.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: spec-conformance guard
+EXIT_CODE=0

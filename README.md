@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.21.0 · MIT licensed
+> **Status:** v0.22.0 · MIT licensed
 
 ## Why use it
 
@@ -134,6 +134,13 @@ illegal state write and otherwise stays out of the way. It gates `Write`, `Edit`
 of a manifest alike (an Edit is judged on the manifest it would produce); a manifest rewritten
 through a shell command is outside its reach. Disable with `toggles.enforce: false`. On
 Codex (no hook mechanism) these gates are enforced by prose instruction, not code.
+
+Since v0.22.0 a run is also **revision-bound**: review and verify each record a fingerprint of the
+working tree they checked, and `done` requires both to match the code as it is at that moment. A
+verify repair after review, a review fix after verify, or a hand edit in between makes the earlier
+phase stale — the hook names it and the files that changed, and autopilot re-runs it once. The
+fingerprint is built in a throwaway git index (nothing is staged or committed) and ignores Feature
+Flow's own files; runs started before v0.22.0 and non-git projects are unaffected.
 
 A second hook re-anchors context: at session start, after `/clear`, and after an automatic
 compaction, it lists this project's active runs (slug, phase, sign-off, resume command, artifact

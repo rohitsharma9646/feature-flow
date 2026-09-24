@@ -1,0 +1,4 @@
+=== scripts/checks/dist-parity-guard.sh ===
+ok:   checked 60 packaged files (0 drifted, 0 orphaned)
+PASS: dist parity guard (60 files in sync)
+EXIT_CODE=0

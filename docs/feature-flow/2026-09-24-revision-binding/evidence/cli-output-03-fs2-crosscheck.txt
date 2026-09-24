@@ -1,0 +1,6 @@
+=== FS2 cross-check: shipped hooks/lib/revision.sh vs docs/schema/enforcement.md fenced block (Codex path) ===
+repo: /tmp/rb-fs2.f09WS3
+shipped file fingerprint  : 2bcdee5505270603f09be0987c4df15ede8a289e
+codex (fenced block) fp   : 2bcdee5505270603f09be0987c4df15ede8a289e
+RESULT: MATCH (exit 0)
+EXIT_CODE=0

@@ -1,0 +1,41 @@
+=== scripts/checks/repair-loop-guard.sh ===
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: 'Verify repair-and-re-verify cycle' mandatory-pause row present
+ok:   docs/manifest-schema.md + docs/schema/ §Autopilot: repair-cycle row correctly avoids 'unconditional'
+ok:   docs/manifest-schema.md + docs/schema/: 'Repair-and-re-verify cycle' subsection present (mirrors Fix-and-re-review cycle)
+ok:   commands/ff-verify.md: repair branch (132) sits inside 'Refuse premature done' (126), before the fall-through STOP (152)
+ok:   commands/ff-verify.md: repair branch names the full-tier-only precondition
+ok:   commands/ff-verify.md: re-verify is scoped to only the named re-touched ACs
+ok:   commands/ff-verify.md: names the 'scoped repair re-verify' the runner keys off
+ok:   commands/ff-verify.md: states the evidence-preservation exception
+ok:   agents/ff-test-runner.md: carries the scoped-repair carve-out (do not clear evidence/)
+ok:   templates/verify.md: '## Repair' section present
+ok:   templates/verify.md: '## Repair' carries \*\*Triggering item:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Captured failure:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Diagnosis:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Fix applied:\*\*
+ok:   templates/verify.md: '## Repair' carries \*\*Re-touched items
+ok:   templates/verify.md: '## Repair' carries \*\*Re-verify outcome:\*\*
+ok:   templates/verify.md: '## Repair' Re-touched line names the bugfix track too (not AC-only)
+ok:   config/defaults.json: no new repair config key
+ok:   docs/manifest-schema.md + docs/schema/: no new top-level manifest field for repair cycles
+ok:   dist parity: commands/ff-verify.md
+ok:   dist parity: templates/verify.md
+ok:   dist parity: agents/ff-test-runner.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: repair-loop guard
+EXIT_CODE=0

@@ -1,0 +1,46 @@
+=== scripts/checks/delivery-guard.sh ===
+ok:   templates/delivery.md: six sections present, in order
+ok:   templates/delivery.md: 'Release notes' carries a '> ' source blockquote
+ok:   templates/delivery.md: 'Rollback checklist' carries a '> ' source blockquote
+ok:   templates/delivery.md: 'Known issues' carries a '> ' source blockquote
+ok:   templates/delivery.md: 'Release validation steps' carries a '> ' source blockquote
+ok:   commands/ff-deliver.md: resolves via artifacts.spec
+ok:   commands/ff-deliver.md: resolves via artifacts.plan
+ok:   commands/ff-deliver.md: resolves via artifacts.verify
+ok:   commands/ff-deliver.md: writes phases.deliver
+ok:   commands/ff-deliver.md: records artifacts.delivery
+ok:   commands/ff-deliver.md: leaves currentPhase = "done"
+ok:   commands/ff-deliver.md: manual / non-gated (autopilot never chains it)
+ok:   commands/ff-deliver.md: gates off tier: lite unless requested
+ok:   commands/ff-deliver.md: states it never blocks done
+ok:   commands/ff-deliver.md: carries the DELIVERY GAP detection
+ok:   commands/ff-deliver.md: excludes an irreversible-with-mitigation task from the gap
+ok:   docs/manifest-schema.md + docs/schema/: '## Delivery' section present
+ok:   docs/manifest-schema.md + docs/schema/ §Delivery: documents phases.deliver
+ok:   docs/manifest-schema.md + docs/schema/ §Delivery: documents artifacts.delivery
+ok:   docs/manifest-schema.md + docs/schema/ §Delivery: states the absent-field default
+ok:   docs/manifest-schema.md + docs/schema/: currentPhase enum correctly omits 'deliver'
+ok:   docs/manifest-schema.md + docs/schema/: durable-eligible set includes 'delivery'
+ok:   SKILL.md references ff-deliver
+ok:   README.md references ff-deliver
+ok:   delivery-gap eval fixture present
+ok:   dist parity: commands/ff-deliver.md
+ok:   dist parity: templates/delivery.md
+ok:   dist parity: docs/manifest-schema.md
+ok:   dist parity: docs/schema/assumption-records.md
+ok:   dist parity: docs/schema/autopilot.md
+ok:   dist parity: docs/schema/delivery.md
+ok:   dist parity: docs/schema/design-tradeoffs.md
+ok:   dist parity: docs/schema/discovery-fields.md
+ok:   dist parity: docs/schema/disk-inference.md
+ok:   dist parity: docs/schema/enforcement.md
+ok:   dist parity: docs/schema/evidence.md
+ok:   dist parity: docs/schema/knowledge-base.md
+ok:   dist parity: docs/schema/planning-intelligence.md
+ok:   dist parity: docs/schema/retrospective.md
+ok:   dist parity: docs/schema/sign-off-rendering.md
+ok:   dist parity: docs/schema/terminal-convergence.md
+ok:   dist parity: skills/feature-flow/SKILL.md
+ok:   dist parity: README.md
+PASS: delivery guard
+EXIT_CODE=0
