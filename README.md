@@ -28,7 +28,8 @@ It runs **two tracks over one spine**:
 
 The full behavioral contract lives in
 [skills/feature-flow/SKILL.md](skills/feature-flow/SKILL.md); the on-disk state format in
-[docs/manifest-schema.md](docs/manifest-schema.md).
+[docs/manifest-schema.md](docs/manifest-schema.md) (the core; its topic index points at the
+per-topic files in [docs/schema/](docs/schema/)).
 
 ## Install
 
@@ -120,7 +121,7 @@ automatically, pausing only at the gates that genuinely need you:
 
 Auto-completed phases show `[auto]` in the strip. **Sign-offs are never automated** — every gate
 still applies. Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the
-run-start question. Full rules: `docs/manifest-schema.md` §Autopilot.
+run-start question. Full rules: `docs/schema/autopilot.md` §Autopilot.
 
 ## Enforcement
 
@@ -163,7 +164,7 @@ code inspection or reasoning alone.
 - The floor (executed tests/build/lint with real exit codes) is **tier-invariant**; the widened
   breadth applies to full-tier runs.
 
-Full contract: `docs/manifest-schema.md` §Evidence.
+Full contract: `docs/schema/evidence.md` §Evidence.
 
 ## Knowledge base (on by default)
 
@@ -183,7 +184,7 @@ at your repo root; override with `paths.kb`). To opt out per-project:
   file is gone or it's older than `kb.freshnessWindowDays`.
 - **Not in v1:** dedup and supersession of near-duplicate entries (deferred to a fast-follow).
 
-Full contract: `docs/manifest-schema.md` §Knowledge base.
+Full contract: `docs/schema/knowledge-base.md` §Knowledge base.
 
 ## Commands
 

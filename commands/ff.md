@@ -11,7 +11,7 @@ run, and starts only the first phase**, then STOPS and hands you to the next pha
 own command you invoke, so every human gate is honored and a dropped session is
 recoverable. In **autopilot mode** (`manifest.autopilot: true`), ceremonial phase-end
 STOPs become continuations — see **Autopilot** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; human gates pause in both modes.
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`; human gates pause in both modes.
 
 > **Precedence — read before doing anything.** You are executing the feature-flow
 > workflow. Its phases REPLACE any generic brainstorming / writing-plans / make-plan /
@@ -21,7 +21,7 @@ STOPs become continuations — see **Autopilot** in
 > steps below literally and in order, creating files with the Write tool. Run only the
 > current phase, then STOP. In autopilot mode, ceremonial phase-end STOPs become
 > continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Step 1 — Classify the track (feature vs bugfix)
 
@@ -75,7 +75,7 @@ or broad blast radius. Announce the call (*"small change — starting a lite fea
    is `"ask"`, the boolean may come ONLY from the user's in-conversation answer — if you
    have no answer, you MUST ask before writing the manifest. Writing a manifest with a
    self-chosen `autopilot` is a defect. See **Autopilot** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+   `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 3. **Create the run:** derive a short kebab `slug` from `$ARGUMENTS`. **Use the Write tool
    now** to create `<base>/<slug>/manifest.json` per the contract
    (`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`):
@@ -101,7 +101,7 @@ manifest). Do not restate or improvise the procedure here. Then **STOP (step-by-
 continue (autopilot):** if `manifest.autopilot` is `true`, emit the progress strip and
 proceed directly into the clarify phase per
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-clarify.md` — see **Autopilot** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, **STOP and hand off:**
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, **STOP and hand off:**
 
    > Explore complete — findings in `<run dir>/explore.md`. The next phase (**clarify**)
    > will ask a few clarifying questions and produce a spec for your **sign-off**. Run
@@ -116,7 +116,7 @@ The bugfix track's first phase is **diagnose**, which is a *gated* analysis phas
 STOP to ask for repro detail, and may require sign-off). It lives in its own command. The
 manifest is set up; if `manifest.autopilot` is `true`, emit the progress strip and proceed
 directly into the diagnose phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-diagnose.md` — see
-**Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (diagnose's own gates
+**Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md` (diagnose's own gates
 still apply). If `false` or absent, **STOP and hand off:**
 
 > This is a **bug fix** — run set up (`<run dir>/manifest.json`, `track: bugfix`). The next

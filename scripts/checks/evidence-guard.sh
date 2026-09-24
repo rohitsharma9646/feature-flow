@@ -140,7 +140,7 @@ section "$SCHEMA" '^## Autopilot$' | grep -qF 'Evidence gap stop' \
 # --- (k) ff-verify wiring: canonical reference + waiver line (AC7/AC8) --------
 grep -qE '§Evidence|\*\*Evidence\*\*' commands/ff-verify.md \
   && ok "commands/ff-verify.md: references the Evidence contract by name" \
-  || err "commands/ff-verify.md: must reference docs/manifest-schema.md §Evidence by name"
+  || err "commands/ff-verify.md: must reference docs/schema/evidence.md §Evidence by name"
 grep -qF 'Evidence gap accepted by user' commands/ff-verify.md \
   && ok "commands/ff-verify.md: waiver line format stated" \
   || err "commands/ff-verify.md: must state the exact waiver line 'Evidence gap accepted by user (<date>): <reason>'"

@@ -15,7 +15,7 @@ no upstream artifact is required (cold-start safe).
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract (follow exactly)
 
@@ -27,7 +27,7 @@ no upstream artifact is required (cold-start safe).
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If `$ARGUMENTS` starts a new run,
    derive a short kebab `slug` from it, create the run dir, **resolve `autopilot` first**
    (run-start procedure — see **Autopilot** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; never choose the value yourself),
+   `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`; never choose the value yourself),
    and write a manifest with `track: "feature"`, the **resolved** `tier` (lite/full per
    `ff.md` Step 1; in doubt full — never hardcode `"full"`), the resolved
    `autopilot`, empty `phases`, `signOff.required: true`.
@@ -45,7 +45,7 @@ active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flo
 with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` exactly — that is the canonical procedure
 (glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
 steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
 (the feature request)**, and surface matches to the **explorer agents** as context — **stale**
@@ -83,7 +83,7 @@ the structure in `${CLAUDE_PLUGIN_ROOT}/templates/explore.md`. Set
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the clarify phase per
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-clarify.md` — see **Autopilot** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: explore is the only
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent: explore is the only
 phase you run here. Tell the user: *"Explore complete — findings in `explore.md`. Run
 `/feature-flow:ff-clarify` next."* End the message with the one-line progress strip (e.g.
 `explore[done] → clarify[NEXT] → design → plan → implement → review → verify`) — see

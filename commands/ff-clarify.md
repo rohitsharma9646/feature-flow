@@ -15,7 +15,7 @@ acceptance criteria and a sign-off block.
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -23,7 +23,7 @@ acceptance criteria and a sign-off block.
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` (named slug → else the single /
    most-recently-updated run → ask if ambiguous), then read its `manifest.json`.
 2. **Cold-start:** if no manifest exists, **resolve `autopilot` first** (run-start
-   procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`;
+   procedure — see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`;
    never choose the value yourself),
    then create one (`track: "feature"`, including the resolved `autopilot`); if no
    `explore.md` exists, tell the user `/feature-flow:ff-explore` usually runs first — offer to
@@ -80,7 +80,7 @@ one-way — full never becomes lite.
    Write **each surviving assumption as a table row** in the spec's `## Assumptions (WHAT-changing)`
    section — all five fields (`Statement`, `Confidence` `low|med|high`, `Basis / evidence`,
    `If-wrong impact`, `Validation-required` `y|n`), never a free-text bullet — per **Assumption
-   records** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. Set `Validation-required: y` on any
+   records** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/assumption-records.md`. Set `Validation-required: y` on any
    assumption that is load-bearing and still unproven; if the user validates it during this
    interrogation, mark it `n`. Row order is stable once written (position = Assumption N).
 
@@ -132,7 +132,7 @@ The spec must end with `User signed off: no`. Write `spec.md` with the Write too
 **STOP: end your turn by explicitly asking the user to sign off.** The sign-off ask
 presents the spec's `## Acceptance criteria` **verbatim, as a grouped checklist — never a
 blockquote wall** — see **Sign-off rendering** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. This gate is
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/sign-off-rendering.md`. This gate is
 a hard turn-end **in both modes**: autopilot never bypasses it and never sets
 `signOff.signed` itself.
 
@@ -149,7 +149,7 @@ validate or waive only.
 When there are
 none (or none are `y`), the block states `_None unvalidated._` — a **clean** sign-off ask, never a
 false-fired block. The trigger/scope/waiver live in **Assumption records**
-(`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`); this echo is its Evidence-gap-stop-shaped sign-off
+(`${CLAUDE_PLUGIN_ROOT}/docs/schema/assumption-records.md`); this echo is its Evidence-gap-stop-shaped sign-off
 half — **not** a do-not-contradict STOP. The waiver is the verbatim, **user-authored** line
 `Assumption validation waived by user (<date>): <reason>` recorded in the spec — **never
 assistant-authored, never dated by the assistant, and autopilot never records it** (mirrors the
@@ -178,7 +178,7 @@ Once sign-off is recorded, set
   run `/feature-flow:ff-implement` next.
 - **Full tier:** route to `/feature-flow:ff-design`. Autopilot → emit the progress strip and
   proceed directly into the design phase per `${CLAUDE_PLUGIN_ROOT}/commands/ff-design.md` —
-  see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; step-by-step →
+  see **Autopilot** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`; step-by-step →
   **STOP** and tell the user to run `/feature-flow:ff-design` next.
 
 End the message with the one-line progress strip — the **lite** strip omits design + plan

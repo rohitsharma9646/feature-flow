@@ -15,7 +15,7 @@ the chosen approach and rejected alternatives.
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -48,7 +48,7 @@ active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flo
 with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` exactly — that is the canonical procedure
 (glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
 steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
 and the spec's `## Problem`** (read the spec via `manifest.artifacts.spec` — pointer form, never a
@@ -84,7 +84,7 @@ the phase and the chain in the same turn once the user answers.
 > **Do-not-contradict STOP.** Before finalizing the pick, check the chosen architecture against
 > any **prior** settled decision surfaced by the KB recall above (source 2 only — this run has
 > not written its own decision record yet, so there is nothing intra-run to compare). Follow the
-> **Decision recall** procedure in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Knowledge base
+> **Decision recall** procedure in `${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` §Knowledge base
 > (do not restate its steps here). If the pick **diverges** from a prior settled decision, **STOP
 > — unconditional in both modes**, no autopilot auto-resolve retry: surface the conflict and ask
 > the user to either realign the architecture or reply with an explicit override, recorded
@@ -97,7 +97,7 @@ Before writing any artifact, stress-test the just-confirmed pick as if trying to
 the framework's only adversarial pass against the *selected design* (`ff-clarify`'s red-team pass
 targets the *spec*) — do not skip it because the pick already survived the do-not-contradict check
 above. Follow the canonical **Design trade-offs & devil's advocate** contract in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — do not restate its rules here.
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/design-tradeoffs.md` — do not restate its rules here.
 
 1. **Trade-off matrix.** Score **every** fanned-out option (not just the winner) on the three core
    axes — **complexity**, **risk / operational impact**, **test effort** — every run. Add another
@@ -145,7 +145,7 @@ distills at run close.
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the plan phase per
 `${CLAUDE_PLUGIN_ROOT}/commands/ff-plan.md` — see **Autopilot** in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: do not plan or
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent: do not plan or
 implement now. Tell the user to run `/feature-flow:ff-plan` next, ending the message with
 the one-line progress strip — see **Progress strip** in
 `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — then end your turn.

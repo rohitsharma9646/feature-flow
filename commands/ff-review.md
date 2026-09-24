@@ -14,7 +14,7 @@ Static review of the implemented change. Output: `review.md`.
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -123,13 +123,13 @@ do NOT mark the phase complete: leave `phases.review.status = "in_progress"` and
 
 Otherwise set `phases.review = { status: "complete", artifact: "review.md" }`, bump
 `updatedAt`, and hand off by track. (Which command marks the run `done` is the canonical
-**Terminal convergence** rule in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the routing
+**Terminal convergence** rule in `${CLAUDE_PLUGIN_ROOT}/docs/schema/terminal-convergence.md`; the routing
 below implements it.)
 
 - **Feature track:** review runs **before** verify. If `manifest.autopilot` is `true`,
   emit the progress strip and proceed directly into the verify phase per
   `${CLAUDE_PLUGIN_ROOT}/commands/ff-verify.md` — see **Autopilot** in
-  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent, leave
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent, leave
   `currentPhase = "review"` and **STOP**, telling the user to run `/feature-flow:ff-verify` next.
 - **Bugfix track:** review is the **terminal** phase (it runs after verify). If verify has
   already passed (`phases.verify.status == "complete"`), first run **KB capture** (see
@@ -160,7 +160,7 @@ Sequenced **after** `review.md` + the manifest update but **before** `currentPha
 feature track), do nothing.
 
 When active on the bugfix terminal, follow the **Knowledge base** capture rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` exactly — that is the canonical procedure (git SHA
 → provenance, distill 1–3 candidates, the cross-turn confirm gate, write accepted entries from
 `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md`, **no** `git add`/`commit`, reject-all writes
 nothing); **do not restate its steps here.** The only command-specific input: read this run's

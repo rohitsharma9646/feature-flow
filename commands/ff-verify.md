@@ -15,7 +15,7 @@ declare "done" on reasoning alone.
 > and its `manifest.json`. Follow this command's steps literally, create files with the
 > Write tool, run only this one phase, then STOP. In autopilot mode, ceremonial phase-end
 > STOPs become continuations — see **Autopilot** in
-> `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`.
 
 ## Manifest contract
 
@@ -53,7 +53,7 @@ when the spec has an `## End-to-end check` row (not `E2E: none`), pass it verbat
 as the end-to-end check to run — on every tier, lite included. It detects and
 **actually runs** the project's test / build / lint commands **and the project's detected
 evidence surfaces** — e2e/browser (Playwright CLI), http/api, db, cli-output, logs,
-before/after — per the evidence-kind taxonomy in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`
+before/after — per the evidence-kind taxonomy in `${CLAUDE_PLUGIN_ROOT}/docs/schema/evidence.md`
 §Evidence (follow that canonical contract; do not restate it here). It returns evidence
 records with real status codes and files under `<run dir>/evidence/`. It never edits code.
 
@@ -116,7 +116,7 @@ Build the contract mapping in `verify.md` from `${CLAUDE_PLUGIN_ROOT}/templates/
   touched — shared / central code raises it, isolated new code lowers it — **cross-referencing
   the plan's `## Risk register`** when a full-tier plan exists: read it via
   `manifest.artifacts.plan` (the sole locating authority), per the canonical **Planning
-  intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` — cite any register
+  intelligence** contract in `${CLAUDE_PLUGIN_ROOT}/docs/schema/planning-intelligence.md` — cite any register
   entry whose surface the just-verified change touched and whether it materialized (do not
   re-derive a risk the register already named), then assess whatever the register did **not**
   anticipate. No plan, or a plan with no register (lite tier) → derive risk cold from the touched
@@ -134,7 +134,7 @@ A contract item is done-eligible only at `Verified (single-source)` or `Verified
   **captured non-success** status on an acceptance criterion, bugfix item, or the `### E2E` check —
   a check that ran and failed, never a pure gap and never a design-time `### FS<n>`), the one-cycle cap, and the
   fall-through conditions are the canonical **Repair-and-re-verify cycle** contract in
-  `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` §Autopilot — do not restate them here.
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md` §Autopilot — do not restate them here.
   Operationally: when it applies and `verify.md` has **no** prior `## Repair` section, emit a short
   repair plan (what failed → smallest diagnosis → proposed fix → the contract items it re-touches,
   drawn conservatively), apply the fix inline (no re-entry to `/feature-flow:ff-implement`), append
@@ -157,14 +157,14 @@ A contract item is done-eligible only at `Verified (single-source)` or `Verified
 
 Record the waiver **only** per §Evidence, **Evidence waiver** (from the user's own reply,
 never self-authored — the **Evidence gap stop** row in §Autopilot,
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`). If automated tests are absent, say so —
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`). If automated tests are absent, say so —
 run build/lint/smoke instead and never call a no-tests run a pass. On the bugfix track, a
 fix without a regression test (RED→GREEN evidence) is reported **incomplete**, not done.
 
 ## Update manifest + hand off (order differs by track)
 
 Which command marks the run `done` is the canonical **Terminal convergence** rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`; the per-track routing below implements it (it
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/terminal-convergence.md`; the per-track routing below implements it (it
 does not re-derive it).
 
 Resolve the report's path per the **Durable artifact resolution** rule in
@@ -192,7 +192,7 @@ in **both** `artifacts.verify` and `phases.verify.artifact`: set
   - Otherwise review still has to run. If `manifest.autopilot` is `true`, emit the progress
     strip and proceed directly into the review phase per
     `${CLAUDE_PLUGIN_ROOT}/commands/ff-review.md` — see **Autopilot** in
-    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. If `false` or absent: leave
+    `${CLAUDE_PLUGIN_ROOT}/docs/schema/autopilot.md`. If `false` or absent: leave
     `currentPhase = "verify"`, **STOP**, report the RED→GREEN result, and tell the user to
     run `/feature-flow:ff-review` next.
 
@@ -216,7 +216,7 @@ It is a **no-op unless the KB is active** (`toggles.kb === true` AND `paths.kb` 
 proceed to `currentPhase = "done"`.
 
 When active, follow the **Knowledge base** capture rule in
-`${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md` exactly — that is the canonical procedure (git SHA
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/knowledge-base.md` exactly — that is the canonical procedure (git SHA
 → provenance, distill 1–3 candidates, the cross-turn confirm gate, write accepted entries from
 `${CLAUDE_PLUGIN_ROOT}/templates/kb-entry.md`, **no** `git add`/`commit`, reject-all writes
 nothing); **do not restate its steps here.** The only command-specific input: read this run's

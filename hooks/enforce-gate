@@ -4,7 +4,7 @@
 # Fail-OPEN on any indeterminate state (no jq, unparseable, missing fields,
 # toggles.enforce=false). Deny ONLY on a determinate, illegal transition.
 #
-# Gates (see docs/manifest-schema.md §Enforcement):
+# Gates (see docs/schema/enforcement.md §Enforcement):
 #   A. cannot enter `implement` without the track's sign-off precondition.
 #   B. cannot reach `done` without valid on-disk verify (+ review on bugfix) evidence.
 #
@@ -119,7 +119,7 @@ valid_artifact() {
 }
 
 # valid_verify_evidence <pointer>: v0.9.0/AC10 content floor for artifacts.verify ONLY
-# (see docs/manifest-schema.md §Enforcement + §Evidence). Requires a '## Contract mapping'
+# (see docs/schema/enforcement.md §Enforcement + docs/schema/evidence.md §Evidence). Requires a '## Contract mapping'
 # heading and >=1 captured status token. Whole-file token grep on purpose: the floor
 # command's exit code in '## Commands run' keeps an all-gaps + waived report passable —
 # this denies an empty-shell report, it does NOT grade evidence quality or waiver coverage.
