@@ -1,0 +1,7 @@
+  ok:   architect.md written (/tmp/ff-forward-RwRp0z/.feature-flow/rate-limit/architect.md)
+  ok:   Recommended: line
+  ok:   2 Rejected: line(s)
+  ok:   every Rejected: line carries the three scores
+  ok:   no Rejected: line loses to the spec
+  ok:   no 'one obvious approach' in the fired arm
+  ok:   no source written

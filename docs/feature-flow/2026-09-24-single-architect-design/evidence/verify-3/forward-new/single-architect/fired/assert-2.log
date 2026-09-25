@@ -1,0 +1,6 @@
+  ok:   architect.md written (/tmp/ff-forward-JvVoaO/.feature-flow/rate-limit/architect.md)
+  ok:   Recommended: line
+  ok:   2 Rejected: line(s)
+  FAIL: 2 Rejected: line(s) lack a score
+  ok:   no 'one obvious approach' in the fired arm
+  ok:   no source written

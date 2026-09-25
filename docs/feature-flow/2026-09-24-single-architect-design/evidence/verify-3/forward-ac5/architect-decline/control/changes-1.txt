@@ -1,0 +1,4 @@
+ M .feature-flow/version-flag/manifest.json
+?? .feature-flow/version-flag/architect.md
+?? .feature-flow/version-flag/decision.md
+?? .feature-flow/version-flag/design.md

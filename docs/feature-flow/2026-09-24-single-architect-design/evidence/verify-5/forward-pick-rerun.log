@@ -1,0 +1,5 @@
+  architect-pick/fired run 1/1: FAIL — assertion failed (see assert-1.log) ($0.5977)
+FAIL architect-pick/fired  ($0.5977)  — assertion failed (see assert-1.log)
+  architect-pick/control run 1/1: PASS ($0.9812)
+PASS architect-pick/control  ($0.9812)
+forward-test: 1/2 PASS, 1 FAIL, 0 ERROR · total $1.5789 · .feature-flow/single-architect-design/evidence/verify-5/forward-pick-rerun

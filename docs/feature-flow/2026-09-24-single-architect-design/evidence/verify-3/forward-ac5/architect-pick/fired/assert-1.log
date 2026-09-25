@@ -1,0 +1,7 @@
+  ok:   architect.md written
+  ok:   Recommended: Per-caller sliding-window log file, guarded by an mkdir-based spinlock
+  ok:   first Rejected: fixed-window counter (single `window_start,count` field per caller instead of a
+  FAIL: 0 '## Developed on request:' sections (want 1)
+  ok:   first report kept on top
+  FAIL: no design.md after the pick
+  ok:   no source written
