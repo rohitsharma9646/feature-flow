@@ -12,6 +12,11 @@
 #   expected.md human-readable expected observable (not executed)
 #   assert.sh   `assert.sh <tmpdir> <run.json>` — exit 0 behaved as expected, 1 did not,
 #               anything else = ERROR
+#   followup.txt  optional — the user's answer to a pause: the SAME session is resumed
+#               (`--resume <session_id>`) with it as a second turn, and assert.sh then gets that
+#               turn's run.json (`run-<i>.followup.json`); both turns' costs are summed
+# Each run also leaves run-<i>.wall — its wall-clock seconds, both turns included — and, with
+# FF_FORWARD_KEEP=1, run-<i>.feature-flow/ — a copy of the run's .feature-flow/ state.
 # See evals/forward/README.md for the case shape.
 #
 # Each run is a FRESH process loading the WORKING-TREE plugin (--plugin-dir), which is the
@@ -113,6 +118,7 @@ for b in "${selected[@]}"; do
         ( cd "$tmp" && git init -q && git -c user.name=ff -c user.email=ff@local add -A \
             && git -c user.name=ff -c user.email=ff@local commit -q -m baseline --allow-empty ) >/dev/null 2>&1
         run_json="$arm_out/run-$i.json"
+        t_start=$(date +%s)
         ( cd "$tmp" && timeout "$TIMEOUT" claude -p \
             --plugin-dir "$PLUGIN_DIR" \
             --setting-sources project,local \
@@ -124,6 +130,28 @@ for b in "${selected[@]}"; do
             "$(cat "$case_dir/prompt.txt")" ) >"$run_json" 2>"$arm_out/run-$i.err"
         rc=$?
         cost="$(json_field "$run_json" total_cost_usd)"; [ -n "$cost" ] || cost=0
+        # optional second turn: answer the session's pause by resuming the same session
+        sid="$(json_field "$run_json" session_id)"
+        if [ $rc -eq 0 ] && [ -s "$case_dir/followup.txt" ] && [ -n "$sid" ]; then
+          fu_json="$arm_out/run-$i.followup.json"
+          ( cd "$tmp" && timeout "$TIMEOUT" claude -p \
+              --resume "$sid" \
+              --plugin-dir "$PLUGIN_DIR" \
+              --setting-sources project,local \
+              --strict-mcp-config \
+              --permission-mode bypassPermissions \
+              --max-budget-usd "$BUDGET" \
+              --output-format json \
+              ${model_args[@]+"${model_args[@]}"} \
+              "$(cat "$case_dir/followup.txt")" ) >"$fu_json" 2>"$arm_out/run-$i.followup.err"
+          rc=$?
+          fcost="$(json_field "$fu_json" total_cost_usd)"; [ -n "$fcost" ] || fcost=0
+          cost="$(python3 -c "print(round($cost + $fcost, 4))")"
+          run_json="$fu_json"
+        fi
+        # wall-clock seconds for the whole run (both turns): duration_ms under-reports a session
+        # whose subagents ran in the background, so SM1's wall-time ratio reads this instead
+        echo $(( $(date +%s) - t_start )) >"$arm_out/run-$i.wall"
         arm_cost="$(python3 -c "print(round($arm_cost + $cost, 4))")"
         rep="PASS"; note=""
         if [ $rc -eq 124 ]; then
@@ -143,6 +171,10 @@ for b in "${selected[@]}"; do
           fi
         fi
         ( cd "$tmp" && git status --porcelain ) >"$arm_out/changes-$i.txt" 2>/dev/null
+        # FF_FORWARD_KEEP=1 keeps the run's .feature-flow/ state (artifacts, manifest) as evidence
+        if [ "${FF_FORWARD_KEEP:-0}" = 1 ] && [ -d "$tmp/.feature-flow" ]; then
+          rm -rf "$arm_out/run-$i.feature-flow" && cp -R "$tmp/.feature-flow" "$arm_out/run-$i.feature-flow"
+        fi
         rm -rf "$tmp"
         echo "  $b/$arm run $i/$REPEAT: $rep${note:+ — $note} (\$$cost)"
         # rollup: any ERROR -> ERROR; else any FAIL -> FAIL (flaky is not green)
