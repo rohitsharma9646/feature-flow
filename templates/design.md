@@ -11,15 +11,16 @@
 
 | Alternative | Why rejected |
 |-------------|--------------|
-| <approach B (e.g. minimal)> | <trade-off that lost> |
-| <approach C (e.g. pragmatic)> | <trade-off that lost> |
+| <rejected approach, from the architect's Rejected: lines> | <trade-off that lost> |
+| <another rejected approach, if any> | <trade-off that lost> |
 
-> The architects fan out with differentiated focuses (e.g. minimal / clean /
-> pragmatic). Record the real trade-offs so the choice is auditable.
+> The architect develops the recommended approach in full and reports the
+> approaches it rejected (its `Rejected:` lines), or one obvious approach. Record the real
+> trade-offs so the choice is auditable.
 
 ## Trade-off matrix
 
-Score **every option** the fan-out surfaced (chosen + rejected) on the fixed core — every time,
+Score **every option** the architect considered (chosen + rejected) on the fixed core — every time,
 categorical only (`low / med / high`, no numeric totals):
 
 | Option | Complexity | Risk / operational impact | Test effort |

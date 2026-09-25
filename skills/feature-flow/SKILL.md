@@ -24,7 +24,8 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   **end-to-end check** (both tiers; *verify* proves it as an `E2E` contract item) — plus, on non-trivial full-tier work, optional
   **success metrics** (each a binary threshold *verify* later proves or blocks done on) and a
   **requirement graph** of AC dependencies that feeds *plan*'s task graph — it owns the WHAT; *design* owns the HOW
-  (architects fan out, score a lean trade-off matrix, and stress-test the pick with a
+  (one architect develops the best design and reports the approaches it rejected, a lean trade-off
+  matrix is scored, and stress-test the pick with a
   devil's-advocate pass naming ≥1 failure scenario that *verify* later proves or blocks done on).
   On a full-tier plan, *implement* is a **controller**: each plan task goes to a fresh
   `ff-implementer` subagent with a brief holding only that task, each task's diff is reviewed on its
@@ -227,7 +228,7 @@ by name.
   1–3 candidate entries from the run's artifacts (architectural decisions + project conventions),
   records provenance (capture date, git commit SHA or `null`, referenced files, topic tags), and
   writes only the entries you accept — **no `git add`/`commit`** (write-only; you commit).
-- **Recall** (wired into `ff-explore`, `ff-design`, and `ff-diagnose`, before each fan-out):
+- **Recall** (wired into `ff-explore`, `ff-design`, and `ff-diagnose`, before each agent dispatch):
   tag-matches the request against stored entries and surfaces up to `kb.maxRecallEntries` to the
   agents as context.
 - **Staleness:** an entry is flagged stale if a referenced file is missing/moved OR it is older than

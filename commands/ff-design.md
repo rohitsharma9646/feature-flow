@@ -1,5 +1,5 @@
 ---
-description: "[feature] Fan out architects for design options, present trade-offs, record the chosen design in design.md."
+description: "[feature] Dispatch one architect for the design, present its recommendation and rejected approaches, record the chosen design in design.md."
 argument-hint: "<run after /feature-flow:ff-clarify; or your choice among presented options>"
 ---
 
@@ -34,7 +34,10 @@ the chosen approach and rejected alternatives.
    an inline description in `$ARGUMENTS`.
 3. **Re-run guard:** if `phases.design.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `design.md` — see **Re-run guard** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. A confirmed re-run also discards the previous
+   architect report — delete `<run dir>/architect.md` and clear `manifest.artifacts.architect` — so
+   the architect is dispatched again against the current spec (the **Re-entry check** below reuses a
+   report only for a design phase that was interrupted, never for one being redone).
 4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved),
    **and the explore findings** (`explore.md` in the run dir — resolve via
    `phases.explore.artifact`, else `<run dir>/explore.md`; it is ephemeral, always in the
@@ -42,9 +45,9 @@ the chosen approach and rejected alternatives.
 
 ## KB recall (when enabled)
 
-Run this **after the sign-off gate, before the architect fan-out**. It is a **no-op unless the KB is
+Run this **after the sign-off gate, before the architect dispatch**. It is a **no-op unless the KB is
 active** (`toggles.kb === true` AND `paths.kb` non-null, read from `.feature-flow.json` →
-`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and dispatch the architects
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`); when inactive, skip it and dispatch the architect
 with no KB context.
 
 When active, follow the **Knowledge base** recall rule in
@@ -52,7 +55,7 @@ When active, follow the **Knowledge base** recall rule in
 (glob the store, tag-match, staleness check, recency-ordered surfacing); **do not restate its
 steps here.** The only command-specific input: extract the tag-match keywords from **`$ARGUMENTS`
 and the spec's `## Problem`** (read the spec via `manifest.artifacts.spec` — pointer form, never a
-bare filename), and surface matches to the **architect agents** as context — **stale** entries
+bare filename), and surface matches to the **architect** as context — **stale** entries
 flagged `[STALE — <reason>]`, never dropped. Empty store / no match → one-line note, proceed.
 
 ## Do the work
@@ -66,20 +69,49 @@ First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op un
 > the user back to `/feature-flow:ff-clarify` rather than silently substituting a different *what*.
 
 Read `models.architect` from config (`.feature-flow.json` →
-`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for each dispatched
-agent. **Pass each architect the explore findings (step 4) as context** — the explore phase
-already mapped the codebase (where the feature lives, what to reuse, the conventions in play),
-so the architects build on that instead of cold re-scanning the repo three times over. Dispatch
-`architectAgents` (default 3) **`ff-code-architect`** agents in parallel, each committed to a
-distinct focus so the options are genuinely different:
-- **minimal** — smallest change that satisfies the spec.
-- **clean** — best long-term structure, even if more work.
-- **pragmatic** — the balance the codebase's conventions actually favor.
+`${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for the dispatched agent.
 
-Present the trade-offs side by side with a clear **recommendation**. Ask the user to
-choose (or confirm your recommendation). Do not pick silently. This choice is an
-**in-session pause in both modes** — in autopilot, ask (AskUserQuestion), then continue
-the phase and the chain in the same turn once the user answers.
+**Re-entry check.** If `manifest.artifacts.architect` resolves to an existing file, or
+`<run dir>/architect.md` exists, read it and go straight to **The choice pause** below — never
+re-dispatch for a report that is already on disk. If it already holds a `## Developed on request:`
+section, the choice was made before the drop: skip the pause and resume at the **Do-not-contradict
+STOP** with that appended report — never ask again or re-dispatch a second time.
+
+Otherwise dispatch **exactly ONE** `ff-code-architect` — no fan-out, no agent-count setting —
+giving it the spec and **the explore findings (step 4) as context**, so it builds on the explored
+codebase instead of re-scanning it. Brief it with those two and nothing of your own: **never
+suggest candidate approaches or design sub-choices** — the architect weighs them itself, and a
+seeded list comes back as padded `Rejected:` lines. Per its contract it develops only the best
+approach, within its report budget, and reports the approaches it rejected, or
+`one obvious approach — <why>`. Name `<run dir>/architect.md` as its **report path**: it writes the
+report there itself and returns only its marker lines and a short summary.
+
+**Write the report before the pause.** The architect has written the report to
+`<run dir>/architect.md` — **do not re-emit it**; copying it out again is the slowest step of the
+phase. Check the file exists and starts with `Recommended:`; only if it does not (the write failed,
+or the role ran inline) write the full report there yourself with the Write tool. Then write its
+repo-relative path (`<base>/<slug>/architect.md`) to `manifest.artifacts.architect`.
+
+**Screen the rejected list.** You hold the signed spec; the architect's own last check misses some.
+Before the pause, take every `Rejected:` approach that contradicts the spec — its *what*, a constraint
+or a non-goal — out of the options: in `architect.md`, rewrite its line as
+`Dropped (contradicts the spec): <name> — <the clause it breaks>` and never offer it. If no
+`Rejected:` line remains, the ask is confirm-only, as for `one obvious approach`. The report is ephemeral — never promoted (**Durable artifact
+resolution** in `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`).
+
+**The choice pause.** Present the recommended design (its `Recommended:` line) first, with each
+`Rejected:` approach as a further option, and a clear recommendation — briefly: the architect's summary and each `Rejected:` line, pointing to
+`architect.md` for the full design rather than restating it. When the report says
+`one obvious approach —`, ask the user only to confirm it; if they do not, re-dispatch the same
+`ff-code-architect` **once** with their objection added as context, naming no report path, and
+append its report the same way as below. Do not pick silently. This choice is an
+**in-session pause in both modes** — in autopilot, ask (AskUserQuestion), then continue the phase and
+the chain in the same turn once the user answers.
+
+**A rejected approach picked.** Re-dispatch the same `ff-code-architect` **once**, with the spec, the
+explore findings and the picked approach's `Rejected:` line and **no report path**, to develop that
+approach in full; append its return value to `architect.md` under `## Developed on request: <name>` (never overwrite the first
+report). That appended report is the one the design and decision writes below derive from.
 
 > **Do-not-contradict STOP.** Before finalizing the pick, check the chosen architecture against
 > any **prior** settled decision surfaced by the KB recall above (source 2 only — this run has
@@ -99,7 +131,7 @@ targets the *spec*) — do not skip it because the pick already survived the do-
 above. Follow the canonical **Design trade-offs & devil's advocate** contract in
 `${CLAUDE_PLUGIN_ROOT}/docs/schema/design-tradeoffs.md` — do not restate its rules here.
 
-1. **Trade-off matrix.** Score **every** fanned-out option (not just the winner) on the three core
+1. **Trade-off matrix.** Score **every** option the architect considered (chosen + rejected, not just the winner) on the three core
    axes — **complexity**, **risk / operational impact**, **test effort** — every run. Add another
    axis (performance, maintainability, scalability, security, cost) as an extra column **only when
    it actually differentiates** the options; a matrix padded with axes that score the same
