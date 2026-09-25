@@ -25,6 +25,7 @@ the project you are working in.
 | Task controller | `docs/schema/task-controller.md` | Executable plans; `ff-implement`'s per-task implementer, review, fix loop and ledger. |
 | Assumption records | `docs/schema/assumption-records.md` | Assumption tables, the validation stop, waivers, actuations. |
 | Design trade-offs & devil's advocate | `docs/schema/design-tradeoffs.md` | Trade-off matrix, failure scenarios, devil's advocate. |
+| Critic | `docs/schema/critic.md` | The independent critique of the design and the plan: dispatch, screen, the revise-once cycle, the Critic stop. |
 | Discovery fields | `docs/schema/discovery-fields.md` | Success metrics, AC dependencies, touchpoints, the end-to-end check. |
 | Autopilot | `docs/schema/autopilot.md` | Run-start ask, chaining, mandatory pauses, fix and repair cycles. |
 | Delivery | `docs/schema/delivery.md` | The optional delivery report. |
@@ -59,6 +60,8 @@ the project you are working in.
     "design": "design.md",
     "decision": "decision.md",
     "architect": ".feature-flow/add-oauth/architect.md",
+    "critic-design": ".feature-flow/add-oauth/critic-design.md",
+    "critic-plan": ".feature-flow/add-oauth/critic-plan.md",
     "diagnosis": "diagnosis.md",
     "plan": "plan.md",
     "review": "review.md",
@@ -136,6 +139,12 @@ the project you are working in.
   choice (the architect writes it; `ff-design` checks it and records the pointer) —
   `<base>/<slug>/architect.md`, recorded as that repo-relative path.
   Ephemeral: never promoted. Absent = a run designed before 0.24.0.
+- **`artifacts.critic-design`** / **`artifacts.critic-plan`** (added v0.25.0): the Critic's report
+  on `design.md` / `plan.md` (the Critic writes it; the phase checks it and records the pointer) —
+  `<base>/<slug>/critic-design.md` / `critic-plan.md`, recorded as that repo-relative path. It also
+  holds the revise cycle's `## Resolution` / `## Re-check` record (§Critic in
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/critic.md`). Ephemeral: never promoted. Absent = a phase
+  completed before 0.25.0.
 - **`artifacts.decision`** (added v0.10.0): the resolved path of the run's decision record —
   written by `ff-design` on the **full** tier (a promoted `decision.md`), or set by
   `ff-clarify` to the **spec's** path on the **lite** tier (the spec's inline `## Solution
@@ -189,7 +198,8 @@ the project you are working in.
     keep resolving and the client report is self-contained.
   - **Ephemeral artifacts** (always step 3 — never promoted): `explore`, `review`,
     `smoke-checklist`, `ledger` (with its `tasks/` directory), `architect` (`ff-design`'s architect
-    report), and `manifest.json` itself stay in `<base>/<S>/`.
+    report), `critic-design` and `critic-plan` (the Critic's reports), and `manifest.json` itself
+    stay in `<base>/<S>/`.
   - Promotion is **write-only**: Feature Flow writes the doc into the working tree but never
     runs `git add`/`commit`; the user commits it through their normal flow.
 
@@ -218,7 +228,7 @@ Validation is advisory: **warn and fall back to the safe default — never hard-
 
 **Known keys** (the schema of `defaults.json` — keep in sync when adding a config key):
 `explorerAgents`, `reviewerAgents`, `diagnosticianAgents`;
-`models.{explorer,architect,reviewer,diagnostician,testRunner,implementer,escalation}`; `reviewThreshold`;
+`models.{explorer,architect,reviewer,diagnostician,testRunner,implementer,escalation,critic}`; `reviewThreshold`;
 `toggles.{tdd,worktree,greenfield,autopilot,kb,enforce}`; `paths.{base,spec,plan,durable,kb}`;
 `kb.{freshnessWindowDays,maxRecallEntries}`.
 

@@ -68,6 +68,9 @@ while preserving boundaries:
 - `ff-code-explorer`: read-only exploration
 - `ff-code-architect`: design analysis — never edits code; writes only its own report
   when the caller names a report path (inline: the orchestrator writes it)
+- `ff-critic`: design and plan critique — never edits code or the artifact it
+  reviews; writes only its own report when the caller names a report path
+  (inline: the orchestrator critiques its own artifact and marks the report `(inline)`)
 - `ff-code-reviewer`: read-only review
 - `ff-diagnostician`: read-only diagnosis until a confirmed fix plan exists
 - `ff-test-runner`: executes verification commands and captures real output

@@ -48,7 +48,11 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 
 3. **Re-run guard:** if `phases.plan.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `plan.md` — see **Re-run guard** in
-   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`.
+   `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. A confirmed re-run also discards the previous
+   critique — delete `<run dir>/critic-plan.md` and clear `manifest.artifacts.critic-plan`.
+   **Re-entry:** if `phases.plan.status` is `"in_progress"` and `manifest.artifacts.plan` already
+   resolves to an existing file, the plan was written before a session drop — skip to
+   **Critic — before the plan completes** below; never re-decompose it.
 4. Read the contract at the paths resolved in step 2 via `manifest.artifacts.<name>`:
    **feature** → `artifacts.spec` + `artifacts.design`; **bugfix** → `artifacts.diagnosis`.
    Set `phases.plan.status = "in_progress"`, bump `currentPhase`.
@@ -131,10 +135,21 @@ Resolve the plan's path per the **Durable artifact resolution** rule in
 sandbox `<run dir>/plan.md`; **create the target directory if absent**). Record the resolved
 path in **both** `artifacts.plan` and `phases.plan.artifact`.
 
+## Critic — before the plan completes
+
+With the plan written (`manifest.artifacts.plan`), run the **Critic** step exactly as §Critic in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/critic.md` specifies (do not restate it here), with the plan as the
+artifact under review — its contract the signed spec and the design (**feature**, via `artifacts.spec` +
+`artifacts.design`) or the signed diagnosis (**bugfix**, via `artifacts.diagnosis`) — and
+`<run dir>/critic-plan.md` as its report path, recorded in `manifest.artifacts.critic-plan`. When a
+revision changes tasks, re-derive the planning-intelligence sections and re-run the No-Placeholders
+self-check. The plan is not complete until the step is clear.
+
 ## Update manifest
 
-Set `phases.plan = { status: "complete", artifact: "<resolved plan path>" }`, bump
-`updatedAt`.
+Only once the Critic step is clear, set `phases.plan = { status: "complete", artifact: "<resolved plan path>" }`, bump
+`updatedAt`. The phase's closing message — the autopilot progress strip, or the step-by-step hand-off —
+includes the §Critic **Closing line** (`Critic: <ready | revised | stopped> — …`).
 
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the implement phase per
