@@ -150,7 +150,7 @@ if command -v jq >/dev/null 2>&1; then
   [ "$(jq -r '.models.implementer' config/defaults.json)" = sonnet ] && [ "$(jq -r '.models.escalation' config/defaults.json)" = opus ] \
     && ok "AC17: defaults.json models.implementer=sonnet, models.escalation=opus" || err "AC17: defaults.json needs models.implementer/escalation"
 else err "AC17: needs jq"; fi
-need "$CORE" AC17 'models.{explorer,architect,reviewer,diagnostician,testRunner,implementer,escalation}'
+need "$CORE" AC17 'models.{explorer,architect,reviewer,diagnostician,testRunner,implementer,escalation,critic}'
 
 # --- AC18: Codex ----------------------------------------------------------------------------------------
 need "$CODEX" AC18 '`ff-implementer`: the one editing role'

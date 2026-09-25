@@ -25,6 +25,7 @@ Planning intelligence|planning-intelligence
 Task controller|task-controller
 Assumption records|assumption-records
 Design trade-offs & devil's advocate|design-tradeoffs
+Critic|critic
 Discovery fields|discovery-fields
 Autopilot|autopilot
 Delivery|delivery

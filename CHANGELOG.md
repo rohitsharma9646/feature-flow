@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.25.0] — 2026-09-25 — A Critic inside the design and plan phases
+
+No independent check existed before implement. `ff-clarify`'s red-team pass and `ff-design`'s
+devil's-advocate pass are self-critiques — the same author checking its own work — and the plan
+phase had no adversarial pass at all. This release adds a Critic that reviews the written artifact
+before either phase can complete.
+
+- **The agent.** The new `ff-critic` leaf (Opus via the new `models.critic` config key), distilled
+  from the user's `critical-plan-review` process: basis labels (`verified|from the contract|inferred`)
+  on every finding, load-bearing assumptions surfaced as findings, arithmetic checked rather than
+  trusted, findings verified against the repo, calibrated Critical/Important severity, a ~400-word
+  report budget, fixed one-line markers, and a report written to `critic-design.md` / `critic-plan.md`.
+- **Where it runs.** After `design.md` is written and before `decision.md` in `ff-design`, and after
+  `plan.md` on both the feature and bugfix tracks in `ff-plan`. Neither phase becomes `"complete"`
+  before the Critic clears.
+- **The screen.** Findings are screened at the orchestrator, not by the Critic itself: a finding
+  outside the spec's scope becomes `Dropped (contradicts the spec): …`; a finding that shows the
+  contract itself is wrong routes back to clarify or diagnose; a finding that argues for a different
+  approach goes to the user.
+- **The cycle.** One revise-and-re-check cycle in both modes: `## Resolution` is appended before the
+  revision, the artifact is revised, and the re-check's return is appended under `## Re-check` (the
+  re-check has no report path of its own). A finding still open after the cycle is the new **Critic
+  stop**. Re-entering a stopped phase never re-dispatches on its own: it asks whether to re-critique the
+  artifact you fixed (a fresh critique, at your request) or keep the stop; the user's own
+  `Critic finding accepted by user (<date>): <reason>` also clears it — the Critic never authors its own waiver.
+- **Closing line.** Each phase's closing message now includes a `Critic: <ready | revised | stopped>
+  — <n> Critical, <n> Important (<report path>)` line.
+- **Docs.** The new `docs/schema/critic.md` §Critic is the one canonical procedure; both commands
+  reference it by name instead of restating it. The `manifest.artifacts.critic-design` /
+  `critic-plan` pointers are new and ephemeral — the reports are never promoted. The autopilot table
+  gains the Critic stop row alongside the existing sign-off, choice-pause and do-not-contradict rows.
+- **Also fixed** (v0.24.0 review findings): `ff-design`'s Re-entry check now re-runs the
+  rejected-list screen against the spec before the choice pause instead of trusting a stale list;
+  `SKILL.md` no longer calls `ff-code-architect` read-only, since the architect now writes its own
+  report file.
+
+**Unchanged:** Gates A/B and revision binding (0.22.0) — a WP4 merge must still preserve both; the
+Critic stop is a new mandatory pause alongside them, not a replacement for the existing revision
+agreement checks in *review* and *verify*.
+
+**Not yet live-verified.** This release ships with its structural guards green (`critic-guard.sh` and every other
+guard; `scripts/eval.sh`) and a whole-change review clear, but the Critic has not yet run in a live session: the
+forward tests `critic-design` / `critic-plan` and the cost/time budget (control arm ≤ 1.35× cost and ≤ +90 s wall
+against v0.24.0, `evals/forward/critic-ratio.sh`) are still owed. The Critic defaults to Opus; if it runs too slow or
+too costly for you, set `"models": { "critic": "sonnet" }` in `.feature-flow.json`.
+
 ## [0.24.0] — 2026-09-25 — One architect in ff-design instead of a three-way fan-out
 
 `ff-design` fanned out three `ff-code-architect` agents (minimal / clean / pragmatic) to produce

@@ -35,7 +35,7 @@ the chosen approach and rejected alternatives.
 3. **Re-run guard:** if `phases.design.status` is already `"complete"`, stop and ask for
    explicit confirmation before overwriting `design.md` — see **Re-run guard** in
    `${CLAUDE_PLUGIN_ROOT}/docs/manifest-schema.md`. A confirmed re-run also discards the previous
-   architect report — delete `<run dir>/architect.md` and clear `manifest.artifacts.architect` — so
+   architect report and critique — delete `<run dir>/architect.md` and `<run dir>/critic-design.md` and clear `manifest.artifacts.architect`, `manifest.artifacts.critic-design` and `manifest.artifacts.design` — so
    the architect is dispatched again against the current spec (the **Re-entry check** below reuses a
    report only for a design phase that was interrupted, never for one being redone).
 4. Read the spec at the path from `artifacts.spec` (the same path the step-2 gate resolved),
@@ -71,8 +71,11 @@ First run **KB recall** (see `## KB recall (when enabled)` above) — a no-op un
 Read `models.architect` from config (`.feature-flow.json` →
 `${CLAUDE_PLUGIN_ROOT}/config/defaults.json`) and pass it as the `model` for the dispatched agent.
 
-**Re-entry check.** If `manifest.artifacts.architect` resolves to an existing file, or
-`<run dir>/architect.md` exists, read it and go straight to **The choice pause** below — never
+**Re-entry check.** If `manifest.artifacts.design` already resolves to an existing file while
+`phases.design.status` is `"in_progress"`, the pick was made and the design written before a drop:
+skip to **Critic — before the decision record** below. Otherwise, if `manifest.artifacts.architect` resolves to an existing file, or
+`<run dir>/architect.md` exists, read it, re-run **Screen the rejected list** below (idempotent —
+lines already `Dropped (contradicts the spec):` stay as they are), then go to **The choice pause** — never
 re-dispatch for a report that is already on disk. If it already holds a `## Developed on request:`
 section, the choice was made before the drop: skip the pause and resume at the **Do-not-contradict
 STOP** with that appended report — never ask again or re-dispatch a second time.
@@ -155,8 +158,16 @@ dir>/design.md`; **create the target directory if absent**). **Use the Write too
 the design from `${CLAUDE_PLUGIN_ROOT}/templates/design.md`: chosen approach, rejected
 alternatives + why, the **trade-off matrix** and the **devil's-advocate failure scenarios + edge
 cases** (from the pass above), component map, data flow, risks. Record the resolved path in **both**
-`artifacts.design` and `phases.design.artifact`: set `phases.design = { status: "complete",
-artifact: "<resolved design path>" }`, bump `updatedAt`.
+`artifacts.design` and `phases.design.artifact` (`phases.design.status` stays `"in_progress"`), bump `updatedAt`.
+
+## Critic — before the decision record
+
+With the design written (`manifest.artifacts.design`), run the **Critic** step exactly as §Critic in
+`${CLAUDE_PLUGIN_ROOT}/docs/schema/critic.md` specifies (do not restate it here), with the design as the
+artifact under review and `<run dir>/critic-design.md` as its report path, recorded in
+`manifest.artifacts.critic-design`. When a revision touches the design, keep the trade-off matrix and
+the `FS<n>` list in step with it (`FS<n>` numbers are never reused). The decision record below is
+written only once the step is clear, so it derives from the final design.
 
 **Then record the decision.** Resolve the `decision` path the same way — the **Durable artifact
 resolution** rule, artifact name `decision`, the same `<D>-<slug>/` directory already created for
@@ -173,6 +184,10 @@ design (`artifacts.<name>` is the sole locating authority, so a second artifact 
 rides in `artifacts.decision` with no phases-schema change). This decision record is what
 `ff-implement`'s **Decision recall** checks the implementation against, and what KB capture
 distills at run close.
+
+Then set `phases.design = { status: "complete", artifact: "<resolved design path>" }`, bump
+`updatedAt`. The phase's closing message — the autopilot progress strip, or the step-by-step
+hand-off — includes the §Critic **Closing line** (`Critic: <ready | revised | stopped> — …`).
 
 **STOP (step-by-step) / continue (autopilot).** If `manifest.autopilot` is `true`, emit
 the progress strip and proceed directly into the plan phase per

@@ -19,7 +19,7 @@ err() { echo "FAIL: $1"; fail=1; }
 ok()  { echo "ok:   $1"; }
 
 CASES="evals/forward"
-BEHAVIORS="decision-conflict planning-gap delivery-gap assumption-gap design-gap repair-gap discovery-gap implement-controller single-architect architect-pick architect-decline"
+BEHAVIORS="decision-conflict planning-gap delivery-gap assumption-gap design-gap repair-gap discovery-gap implement-controller single-architect architect-pick architect-decline critic-design critic-plan"
 
 [ -f "$CASES/README.md" ] && ok "$CASES/README.md present" || err "$CASES/README.md must document the case shape"
 [ -f "$CASES/lib.sh" ]    && ok "$CASES/lib.sh present"    || err "$CASES/lib.sh (shared assert helpers) must exist"

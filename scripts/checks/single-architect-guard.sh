@@ -8,6 +8,7 @@
 #         FS3: the appended report is the one the design and decision records derive from.
 #   AC6   derive-not-diverge kept; "every option the architect considered" wording.
 #   AC7   architectAgents gone from defaults, Known keys, README; no "architects fan out" wording.
+#   AC10  (v0.25.0) the Re-entry check re-runs the rejected-list screen before the choice pause.
 # Whether one architect actually reports without padding, and the pause holding with the report on
 # disk, is the forward test evals/forward/single-architect; cost is SM1 (sm1-ratio.sh), by hand.
 set -u
@@ -71,8 +72,12 @@ need "$DES" FS3 'That appended report is the one the design and decision writes 
 need "$DES" AC5 'ask the user only to confirm it'
 need "$DES" AC5 'if they do not, re-dispatch the same'
 need "$DES" AC4 'A confirmed re-run also discards the previous'
-need "$DES" AC4 'delete `<run dir>/architect.md` and clear `manifest.artifacts.architect`'
+need "$DES" AC4 'delete `<run dir>/architect.md` and `<run dir>/critic-design.md` and clear `manifest.artifacts.architect`'
 need "$DES" AC4 'skip the pause and resume at the **Do-not-contradict'
+need "$DES" AC10 're-run **Screen the rejected list** below (idempotent'
+r=$(lineno "$DES" 're-run **Screen the rejected list** below'); p=$(lineno "$DES" 'then go to **The choice pause**')
+if [ -n "$r" ] && [ -n "$p" ] && [ "$r" -le "$p" ]; then ok "AC10: re-entry screens ($r) before the pause ($p)"
+else err "AC10: the Re-entry check must re-run the screen before going to the choice pause"; fi
 lacks docs/schema/knowledge-base.md AC7 'fan-out'
 lacks skills/feature-flow/SKILL.md AC7 'before each fan-out'
 grep -qF 'Design option choice (`ff-design`) | in-session | ask (AskUserQuestion), then continue the chain in the same turn' docs/schema/autopilot.md \
