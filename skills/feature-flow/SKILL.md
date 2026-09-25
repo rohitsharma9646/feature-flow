@@ -24,8 +24,13 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   **end-to-end check** (both tiers; *verify* proves it as an `E2E` contract item) — plus, on non-trivial full-tier work, optional
   **success metrics** (each a binary threshold *verify* later proves or blocks done on) and a
   **requirement graph** of AC dependencies that feeds *plan*'s task graph — it owns the WHAT; *design* owns the HOW
-  (architects fan out, score a lean trade-off matrix, and stress-test the pick with a
+  (one architect develops the best design and reports the approaches it rejected, a lean trade-off
+  matrix is scored, and stress-test the pick with a
   devil's-advocate pass naming ≥1 failure scenario that *verify* later proves or blocks done on).
+  On a full-tier plan, *implement* is a **controller**: each plan task goes to a fresh
+  `ff-implementer` subagent with a brief holding only that task, each task's diff is reviewed on its
+  own, a capped fix loop escalates to a stronger model, and a task ledger makes the phase resumable
+  task by task (`docs/schema/task-controller.md` §Task controller).
   A small, single-approach **lite feature** (`tier: lite`, soft-judged at entry — in doubt,
   full) runs `explore → clarify → implement → review → verify`, skipping the design + plan
   phases and using a 1-agent explore while keeping sign-off; it can escalate to full before
@@ -185,6 +190,8 @@ band-aid doesn't calcify.
 Verification means the `ff-test-runner` agent (which has `Bash`) actually ran the tests,
 build, and lint and returned real output. The analysis agents (`ff-code-explorer`,
 `ff-code-architect`, `ff-code-reviewer`, `ff-diagnostician`) are strictly read-only.
+`ff-implementer` is the one agent that edits code — only its own task, never the git index or
+history — and its "done" is checked by a task review, not taken on trust.
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.
 
 Verification is **evidence-based across the project's whole detected surface**
@@ -221,7 +228,7 @@ by name.
   1–3 candidate entries from the run's artifacts (architectural decisions + project conventions),
   records provenance (capture date, git commit SHA or `null`, referenced files, topic tags), and
   writes only the entries you accept — **no `git add`/`commit`** (write-only; you commit).
-- **Recall** (wired into `ff-explore`, `ff-design`, and `ff-diagnose`, before each fan-out):
+- **Recall** (wired into `ff-explore`, `ff-design`, and `ff-diagnose`, before each agent dispatch):
   tag-matches the request against stored entries and surfaces up to `kb.maxRecallEntries` to the
   agents as context.
 - **Staleness:** an entry is flagged stale if a referenced file is missing/moved OR it is older than

@@ -3,9 +3,11 @@
 # That section reproduces this file byte-for-byte; scripts/checks/revision-binding-guard.sh
 # fails CI if the two ever differ. Edit both together.
 #
-# Run:    bash revision.sh <project-dir>   -> prints the working-tree fingerprint (a git tree id)
-# Source: . revision.sh                    -> defines revision_excludes, revision_fingerprint,
-#                                             revision_changed_paths (no side effects)
+# Run:    bash revision.sh <project-dir>        -> prints the working-tree fingerprint (a git tree id)
+#         bash revision.sh <project-dir> head   -> prints HEAD's tree minus the same bookkeeping paths
+# Source: . revision.sh                         -> defines revision_excludes, revision_fingerprint,
+#                                                  revision_head_tree, revision_changed_paths
+#                                                  (no side effects)
 #
 # The fingerprint covers the whole git top level: tracked files as they are in the working tree
 # plus untracked, non-ignored files — minus Feature Flow's bookkeeping paths (paths.base,
@@ -83,6 +85,34 @@ EOF
   printf '%s\n' "$tree"
 }
 
+# revision_head_tree <project-dir>: print HEAD's tree with the same bookkeeping paths removed — the
+# base a whole-change diff against the fingerprint is taken from (the raw HEAD tree would show every
+# committed bookkeeping file as deleted). On a clean working tree it equals revision_fingerprint.
+revision_head_tree() {
+  local proj top ex idx tree
+  command -v git >/dev/null 2>&1 || return 1
+  proj=$(cd "$1" 2>/dev/null && pwd -P) || return 1
+  top=$(git -C "$proj" rev-parse --show-toplevel 2>/dev/null) || return 1
+  ex=$(revision_excludes "$proj") || return 1
+  idx=$(mktemp) || return 1
+  tree=$(
+    export GIT_INDEX_FILE=$idx
+    rm -f "$idx"
+    git -C "$top" read-tree HEAD >/dev/null 2>&1 || exit 1
+    while IFS= read -r p; do
+      [ -n "$p" ] || continue
+      git --literal-pathspecs -C "$top" rm -r -q --cached --ignore-unmatch -- "$p" >/dev/null 2>&1 || exit 1
+    done <<EOF
+$ex
+EOF
+    git -C "$top" write-tree 2>/dev/null
+  )
+  local rc=$?
+  rm -f "$idx"
+  [ "$rc" -eq 0 ] && [ -n "$tree" ] || return 1
+  printf '%s\n' "$tree"
+}
+
 # revision_changed_paths <project-dir> <tree-a> <tree-b>: paths that differ, comma-separated,
 # at most 10 then "(+N more)"; "changed paths unavailable" when a tree is missing or malformed.
 revision_changed_paths() {
@@ -102,8 +132,12 @@ EOF
   if [ "$n" -gt 10 ]; then printf '%s (+%d more)' "$shown" "$((n - 10))"; else printf '%s' "${shown:-no paths differ}"; fi
 }
 
-# Executed (or piped to `bash -s -- <project-dir>`) rather than sourced: print the fingerprint.
+# Executed (or piped to `bash -s -- <project-dir> [head]`) rather than sourced: print the
+# fingerprint, or with `head` the bookkeeping-free HEAD tree.
 if [ -z "${BASH_SOURCE[0]:-}" ] || [ "${BASH_SOURCE[0]}" = "$0" ]; then
-  revision_fingerprint "${1:-.}"
+  case ${2:-} in
+    head) revision_head_tree "${1:-.}" ;;
+    *) revision_fingerprint "${1:-.}" ;;
+  esac
   exit
 fi

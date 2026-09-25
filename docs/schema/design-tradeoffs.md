@@ -16,7 +16,8 @@ but no phase acts on is a documentation cost, not a capability.
 
 ### Trade-off matrix
 
-`ff-design` scores **every** fanned-out option (not only the winner) in `design.md`'s
+`ff-design` scores **every** option the architect considered (chosen + rejected, not only the
+winner) in `design.md`'s
 `## Trade-off matrix` on three **core axes**, every run: **Complexity**, **Risk / operational
 impact**, **Test effort** — categorical (`low | med | high`), never numeric (upholds §Evidence's
 no-numeric-scores doctrine). Any other axis (performance, maintainability, scalability, security,

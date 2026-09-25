@@ -57,12 +57,21 @@ phase serves the **feature** track and **escalated (`tier: full`) bugfixes** —
 
 Write `plan.md` from the track's template — **feature:**
 `${CLAUDE_PLUGIN_ROOT}/templates/plan.md`; **bugfix (full):**
-`${CLAUDE_PLUGIN_ROOT}/templates/plan-bugfix.md`. Decompose into bite-sized tasks, each with
+`${CLAUDE_PLUGIN_ROOT}/templates/plan-bugfix.md`. Decompose into small tasks, each with
 files-to-touch and a verification step:
 - **feature:** decompose the chosen design.
 - **bugfix (full):** decompose the diagnosis's fix approach into tasks; the template already
   makes the **first task the test-first regression test** (write it, capture RED) before the
   fix tasks — preserve that RED→GREEN order.
+- **Write an executable plan (full tier, both tracks):** the plan is what a fresh implementer
+  agent works from, one task at a time — follow **Executable plans** in
+  `${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md` (do not restate it here). Before decomposing,
+  fill `## Global Constraints`, copied verbatim from the spec's `## Constraints` and the design's
+  binding decisions (bugfix: the diagnosis). While decomposing, give every task an `**Interfaces:**`
+  block (exact `Consumes:` / `Produces:` names and signatures, or `none`), put the complete test
+  code in a fenced block in every step that writes a test, name the exact change in every
+  implementation step (code included where it is short or subtle), and give every step that runs
+  something `**Run:**` and `**Expected:**`.
 - **Map every AC (feature track):** each task names the acceptance criteria it covers
   (`**Covers:** AC1, …`); every AC in the spec must be covered by ≥1 task. If an AC has no
   task (e.g. satisfied by an existing test), record it as an explicit gap in the Outcome gate
@@ -106,6 +115,11 @@ steps here:
 - **Risk register** — categorical (Low/Med/High) rows, cross-referenced later by
   `/feature-flow:ff-verify`'s regression-risk assessment; no numeric scores.
 - **Rollback plan** — the named recovery action per risky task if its `Step N: Verify` fails.
+
+**No Placeholders self-check (full tier):** before populating the Outcome gate, re-read every task
+against the plan template's **No Placeholders** list (§Executable plans), fix every hit, and fill the
+`**Self-check ran:**` line under `## Tasks` (`yes — no hits` or `yes — hits found and fixed`). A plan
+that skips this check is stopped by `/feature-flow:ff-implement`'s pre-flight before any task runs.
 
 **Populate the Outcome gate** from the contract: the resolved contract path (from
 `artifacts.spec` or `artifacts.diagnosis`), acceptance-criteria / "bug no longer reproduces"

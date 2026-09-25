@@ -66,13 +66,29 @@ tooling if it is available. If it is not available, perform the same role inline
 while preserving boundaries:
 
 - `ff-code-explorer`: read-only exploration
-- `ff-code-architect`: read-only design analysis
+- `ff-code-architect`: design analysis — never edits code; writes only its own report
+  when the caller names a report path (inline: the orchestrator writes it)
 - `ff-code-reviewer`: read-only review
 - `ff-diagnostician`: read-only diagnosis until a confirmed fix plan exists
 - `ff-test-runner`: executes verification commands and captures real output
+- `ff-implementer`: the one editing role — implements a single plan task from its
+  brief, never changes the git index or history, and writes only its own report
+  under the run directory
 
-Do not let analysis roles modify files. Verification claims must be backed by
+Do not let analysis roles modify code. Verification claims must be backed by
 commands that actually ran.
+
+`ff-implement`'s task controller (`docs/schema/task-controller.md` §Task
+controller) dispatches one `ff-implementer` per plan task, then one
+`ff-code-reviewer` on that task's diff. Without multi-agent tooling the same
+loop runs inline, with the same files, in the same order, preserving role
+boundaries: write the brief, implement only that task, write the report, then
+review the task's diff as the reviewer would, then fix. The ledger, diffs,
+reviews and RED→GREEN evidence are produced exactly as on Claude Code; only the
+fresh context per task is lost. `hooks/` is not shipped here, so run
+`task_section` / `task_diff` by piping the **Task packaging** block in
+`docs/schema/task-controller.md` through `bash -s --`, and fingerprints by
+piping the **Revision fingerprint** block in `docs/schema/enforcement.md`.
 
 ## Workflow Precedence
 

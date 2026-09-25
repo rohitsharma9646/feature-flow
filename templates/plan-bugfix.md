@@ -14,31 +14,66 @@ GREEN (post-fix), evidence recorded in `manifest.bugfix.red` / `manifest.bugfix.
 > No task executes while sign-off is "no". At completion, `/feature-flow:ff-verify` cites the
 > RED→GREEN evidence and confirms the bug no longer reproduces — not just the task list.
 
+## Global Constraints
+
+- <binding requirement every task inherits: the fix surface, an exact value, format or signature>
+- <constraint copied verbatim from diagnosis.md — e.g. "touch only the fix surface named there">
+
+> Copied verbatim from the diagnosis (fix surface, chosen approach, constraints) — never
+> paraphrased. The controller copies this section unedited into every task brief. Nothing beyond
+> the diagnosis → write "no additional constraints", never omit the section. See
+> `${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md` §Task controller → Executable plans.
+
 ## Tasks
+
+> **No Placeholders.** Every task must be executable by a fresh agent that has read only this
+> task, `## Global Constraints` and the diagnosis path. Forbidden anywhere below: `TBD` / `TODO`;
+> "add appropriate error handling" (or any hand-wave in place of a named behaviour); "similar to
+> Task N" without the code repeated; a step with no concrete action; an unfilled `<…>` template
+> placeholder; a test step without the complete test code in a fenced block; an implementation
+> step that does not name the exact change; a `Consumes:` / `Produces:` name defined nowhere in
+> this plan, the diagnosis or the codebase. `/feature-flow:ff-plan` checks every task against this
+> list and fixes every hit before completing; `/feature-flow:ff-implement` re-checks before its
+> first dispatch and stops on a hit.
+
+**Self-check ran:** <yes — no hits | yes — hits found and fixed>
 
 ### Task 1: Failing regression test (MUST run first — RED before any fix)
 
 **Files:**
 - Create: `<test file path>`
 
-- [ ] **Step 1:** Write the regression test per the diagnosis's regression-test plan.
-- [ ] **Step 2: Verify RED** — run `<test command>`; it MUST fail against the current,
-  pre-fix code. Record command, exit status, and failing output in `manifest.bugfix.red`.
+**Interfaces:**
+- Consumes: `<the function or entry point under test, exact signature>`
+- Produces: `<the regression test's name>`
+
+- [ ] **Step 1:** Write the regression test per the diagnosis's regression-test plan:
+  ```<language>
+  <the complete test code>
+  ```
+- [ ] **Step 2: Verify RED** — **Run:** `<test command>` **Expected:** fails against the current,
+  pre-fix code — `<the failing assertion>`. Record command, exit status, and failing output in
+  `manifest.bugfix.red`.
 
 ### Task 2: Apply the fix
 
 **Files:**
 - Modify: `<path — only the fix surface named in diagnosis.md>`
 
+**Interfaces:**
+- Consumes: `<the regression test's name>`
+- Produces: `<the corrected behaviour, stated as the function and its now-correct result>`
+
 - [ ] **Step 1:** Apply the chosen fix approach from `diagnosis.md` (root-cause unless a
-  hotfix was explicitly chosen).
-- [ ] **Step 2: Verify GREEN** — run `<test command>`; it must pass. Record the passing
-  output in `manifest.bugfix.green`.
+  hotfix was explicitly chosen): <the exact change — function, signature, corrected behaviour>
+  (include the code in a fenced block when it is short or subtle).
+- [ ] **Step 2: Verify GREEN** — **Run:** `<test command>` **Expected:** passes. Record the
+  passing output in `manifest.bugfix.green`.
 
 ### Task 3: <any further task from the diagnosis's fix approach>
 
 - [ ] **Step 1:** ...
-- [ ] **Step 2: Verify** — <command + expected output>
+- [ ] **Step 2: Verify** — **Run:** `<command>` **Expected:** `<exit status and output>`
 
 ## Dependency graph
 

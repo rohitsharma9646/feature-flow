@@ -5,7 +5,7 @@
 
 The Knowledge base (KB) closes feature-flow's learning loop: it **captures** each finished run's
 architectural decisions / project conventions as committed, project-local markdown entries, and
-**recalls** matching entries into the `explore`, `design`, and `diagnose` fan-outs of later runs
+**recalls** matching entries into the `explore`, `design`, and `diagnose` agent dispatches of later runs
 (and, via **Decision recall** below, into `implement`) — stale ones flagged, never silently
 presented as fresh. This is the single canonical contract; the six hooked commands (`ff-verify`,
 `ff-review`, `ff-explore`, `ff-design`, `ff-diagnose`, `ff-implement`) reference this section by
@@ -81,7 +81,7 @@ When active, the command reaching the done-transition:
 
 ### Recall rule (wired into explore, design, and diagnose)
 
-Recall runs **before the agent fan-out** in `ff-explore` (before the explorer dispatch),
+Recall runs **before the agent dispatch** in `ff-explore` (before the explorer dispatch),
 `ff-design` (after the sign-off gate, before the architect dispatch), and `ff-diagnose`
 (before the diagnostician dispatch). When active:
 
@@ -90,7 +90,7 @@ Recall runs **before the agent fan-out** in `ff-explore` (before the explorer di
    spec's `## Problem` resolved via `manifest.artifacts.spec`) and **tag-match** them against each
    entry's `tags` frontmatter.
 3. Run the staleness check (below) on each match.
-4. Surface up to `kb.maxRecallEntries` matches (recency-ordered by `captureDate`) to the fan-out
+4. Surface up to `kb.maxRecallEntries` matches (recency-ordered by `captureDate`) to the dispatched
    agents as appended context — fresh entries plain, stale entries decorated (never dropped).
    **No match** → one-line note, proceed.
 

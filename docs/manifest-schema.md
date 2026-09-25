@@ -22,6 +22,7 @@ the project you are working in.
 | Terminal convergence | `docs/schema/terminal-convergence.md` | Which command marks a run `done`, per track. |
 | Knowledge base | `docs/schema/knowledge-base.md` | KB capture and recall, staleness, decision recall. |
 | Planning intelligence | `docs/schema/planning-intelligence.md` | Plan dependency graph, critical path, risk register. |
+| Task controller | `docs/schema/task-controller.md` | Executable plans; `ff-implement`'s per-task implementer, review, fix loop and ledger. |
 | Assumption records | `docs/schema/assumption-records.md` | Assumption tables, the validation stop, waivers, actuations. |
 | Design trade-offs & devil's advocate | `docs/schema/design-tradeoffs.md` | Trade-off matrix, failure scenarios, devil's advocate. |
 | Discovery fields | `docs/schema/discovery-fields.md` | Success metrics, AC dependencies, touchpoints, the end-to-end check. |
@@ -57,10 +58,12 @@ the project you are working in.
     "spec": "spec.md",
     "design": "design.md",
     "decision": "decision.md",
+    "architect": ".feature-flow/add-oauth/architect.md",
     "diagnosis": "diagnosis.md",
     "plan": "plan.md",
     "review": "review.md",
-    "verify": "verify.md"
+    "verify": "verify.md",
+    "ledger": ".feature-flow/add-oauth/tasks/ledger.md"
   }
 }
 ```
@@ -123,6 +126,16 @@ the project you are working in.
 - **`artifacts`** maps logical names to the file path each phase wrote. `artifacts.<name>` is
   the **sole authority** for locating an artifact — every read (implement, status, resume,
   disk-inference) resolves through it.
+- **`artifacts.ledger`** (added v0.23.0): the task ledger `ff-implement`'s controller keeps at
+  `<run dir>/tasks/ledger.md`, recorded as its resolved repo-relative path
+  (`<base>/<slug>/tasks/ledger.md`) — written when the ledger is created, before the first task is
+  dispatched, so a resumed or compacted session finds it. Absent = the run implemented inline (lite
+  tier, or a plan without `## Global Constraints`). Ephemeral: never promoted. Format and resume rule:
+  **Ledger** in `${CLAUDE_PLUGIN_ROOT}/docs/schema/task-controller.md`.
+- **`artifacts.architect`** (added v0.24.0): the architect's report, on disk before the design
+  choice (the architect writes it; `ff-design` checks it and records the pointer) —
+  `<base>/<slug>/architect.md`, recorded as that repo-relative path.
+  Ephemeral: never promoted. Absent = a run designed before 0.24.0.
 - **`artifacts.decision`** (added v0.10.0): the resolved path of the run's decision record —
   written by `ff-design` on the **full** tier (a promoted `decision.md`), or set by
   `ff-clarify` to the **spec's** path on the **lite** tier (the spec's inline `## Solution
@@ -175,7 +188,8 @@ the project you are working in.
     `evidence/evidence` nesting cannot occur), so the report's relative `evidence/...` links
     keep resolving and the client report is self-contained.
   - **Ephemeral artifacts** (always step 3 — never promoted): `explore`, `review`,
-    `smoke-checklist`, and `manifest.json` itself stay in `<base>/<S>/`.
+    `smoke-checklist`, `ledger` (with its `tasks/` directory), `architect` (`ff-design`'s architect
+    report), and `manifest.json` itself stay in `<base>/<S>/`.
   - Promotion is **write-only**: Feature Flow writes the doc into the working tree but never
     runs `git add`/`commit`; the user commits it through their normal flow.
 
@@ -203,8 +217,8 @@ Validation is advisory: **warn and fall back to the safe default — never hard-
    to that key's default.
 
 **Known keys** (the schema of `defaults.json` — keep in sync when adding a config key):
-`explorerAgents`, `architectAgents`, `reviewerAgents`, `diagnosticianAgents`;
-`models.{explorer,architect,reviewer,diagnostician,testRunner}`; `reviewThreshold`;
+`explorerAgents`, `reviewerAgents`, `diagnosticianAgents`;
+`models.{explorer,architect,reviewer,diagnostician,testRunner,implementer,escalation}`; `reviewThreshold`;
 `toggles.{tdd,worktree,greenfield,autopilot,kb,enforce}`; `paths.{base,spec,plan,durable,kb}`;
 `kb.{freshnessWindowDays,maxRecallEntries}`.
 
