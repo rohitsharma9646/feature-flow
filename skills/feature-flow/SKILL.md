@@ -27,6 +27,9 @@ Codex, read `references/codex-tools.md` before following a phase procedure.
   (one architect develops the best design and reports the approaches it rejected, a lean trade-off
   matrix is scored, and stress-test the pick with a
   devil's-advocate pass naming ≥1 failure scenario that *verify* later proves or blocks done on).
+  Before *design* and *plan* complete, an independent **Critic** (`ff-critic`) reviews the written
+  design and plan against the signed contract and the real code; a Critical finding gets one
+  revise-and-re-check cycle, then stops the run.
   On a full-tier plan, *implement* is a **controller**: each plan task goes to a fresh
   `ff-implementer` subagent with a brief holding only that task, each task's diff is reviewed on its
   own, a capped fix loop escalates to a stronger model, and a task ledger makes the phase resumable
@@ -188,8 +191,9 @@ band-aid doesn't calcify.
 ## Real verification, not reasoning
 
 Verification means the `ff-test-runner` agent (which has `Bash`) actually ran the tests,
-build, and lint and returned real output. The analysis agents (`ff-code-explorer`,
-`ff-code-architect`, `ff-code-reviewer`, `ff-diagnostician`) are strictly read-only.
+build, and lint and returned real output. The analysis agents `ff-code-explorer`,
+`ff-code-reviewer` and `ff-diagnostician` are strictly read-only; `ff-code-architect` and `ff-critic`
+never edit code and write only their own report file when the caller names one.
 `ff-implementer` is the one agent that edits code — only its own task, never the git index or
 history — and its "done" is checked by a task review, not taken on trust.
 "Tests pass" is a claim you back with captured output in `verify.md`, never an assertion.

@@ -7,7 +7,7 @@
     {
       "name": "feature-flow",
       "source": "./",
-      "version": "0.24.0",
+      "version": "0.25.0",
       "description": "Gated, resumable feature-development and test-first bugfix workflow with on-disk run state and real executed verification."
     }
   ]

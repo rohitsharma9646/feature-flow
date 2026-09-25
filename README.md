@@ -3,7 +3,7 @@
 A Claude Code (and Codex) plugin that turns "build this feature" or "fix this bug" into a
 **gated, resumable, verified** workflow — instead of a one-shot edit you have to babysit.
 
-> **Status:** v0.24.0 · MIT licensed
+> **Status:** v0.25.0 · MIT licensed
 
 ## Why use it
 
@@ -87,8 +87,8 @@ step-by-step?** once, and starts phase 1. Each phase writes an artifact and **st
 |---|---|---|
 | **explore** | Read-only agents map the codebase | `explore.md` |
 | **clarify** | Challenges the premise (closed-choice questions via a picker), locks acceptance criteria plus the files it expects to touch and one **end-to-end check**, asks you to **sign off**; on non-trivial full-tier work also captures optional **success metrics** + a **requirement graph** | `spec.md` |
-| **design** | One architect develops the recommended design in full and reports the approaches it rejected; scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick | `design.md` |
-| **plan** | Decomposes the design into tasks with an Outcome gate; full-tier plans are **executable** — global constraints, per-task interfaces, complete test code, no placeholders | `plan.md` |
+| **design** | One architect develops the recommended design in full and reports the approaches it rejected; scores a lean trade-off matrix; stress-tests the pick with a devil's-advocate pass (≥1 failure scenario); you pick; then an independent **Critic** reviews the written design against the spec (one revise cycle on a Critical) | `design.md` |
+| **plan** | Decomposes the design into tasks with an Outcome gate; full-tier plans are **executable** — global constraints, per-task interfaces, complete test code, no placeholders; an independent **Critic** reviews the written plan against the spec and design (one revise cycle on a Critical) | `plan.md` |
 | **implement** | Refuses to code until the spec is signed. On a full-tier plan it is a **task controller**: a fresh implementer subagent per task, a review of each task's diff, a capped fix loop that escalates to a stronger model, and a task ledger that resumes mid-phase | *(code)* + `tasks/ledger.md` |
 | **review** | Reviewer agents report issues, plus a spec-conformance reviewer that checks the diff against the spec/plan (missing criterion = Critical, out-of-scope change = Important); a Critical finding blocks the run | `review.md` |
 | **verify** | Really runs tests/build/lint + detected evidence surfaces; maps each criterion (plus full-tier design failure scenarios and spec success metrics) to evidence + confidence; gaps block done | `verify.md` + `evidence/` |
@@ -117,7 +117,7 @@ automatically, pausing only at the gates that genuinely need you:
 2. Your sign-off resumes the chain: design pauses for **your architecture pick**, then plan →
    implement → review → verify run through.
 3. If review finds Critical issues, autopilot fixes and re-reviews **once**; if any remain it stops
-   for you.
+   for you. The Critic's Critical findings get the same single cycle in *design* and *plan*.
 
 Auto-completed phases show `[auto]` in the strip. **Sign-offs are never automated** — every gate
 still applies. Set `toggles.autopilot` to `true`/`false` in `.feature-flow.json` to skip the
@@ -227,6 +227,7 @@ Drop a `.feature-flow.json` at your repo root to override the shipped defaults:
 | `diagnosticianAgents` | `1` | Diagnostician agents in *diagnose* |
 | `models.*` | `"sonnet"` | Model for each agent role: `explorer`, `architect`, `reviewer`, `diagnostician`, `testRunner`, `implementer` |
 | `models.escalation` | `"opus"` | Model for the third, escalated fix round of a task in *implement* |
+| `models.critic` | `"opus"` | Model for the Critic that reviews the written design and plan |
 | `reviewThreshold` | `80` | Reviewers report only issues with confidence ≥ this (0–100) |
 | `toggles.tdd` | `true` | Test-first on the feature track (bugfix RED→GREEN is always on) |
 | `toggles.worktree` | `false` | Implement in an isolated git worktree |
