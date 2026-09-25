@@ -1,5 +1,68 @@
 # Changelog
 
+## [0.24.0] — 2026-09-25 — One architect in ff-design instead of a three-way fan-out
+
+`ff-design` fanned out three `ff-code-architect` agents (minimal / clean / pragmatic) to produce
+three full designs so the user could pick one. Over the last four full-tier runs the pragmatic
+option won every time — three full designs to use one, which the user called "only time waste".
+This release drops the fan-out for a single, better-briefed dispatch.
+
+- **One dispatch.** `ff-design` now dispatches exactly **one** `ff-code-architect` (`models.architect`
+  stays the architect's model key). It develops the best approach in full and lists the genuinely
+  different approaches it rejected, weighing the smallest change, the cleanest structure and the
+  codebase's conventions, within a **report budget** (~400 words; the plan phase owns exact steps and
+  code), and a last check drops any alternative that loses to the spec itself — `ff-design` screens the list
+  again before the choice, rewriting a spec-breaking line as `Dropped (contradicts the spec): …`. `ff-design` briefs it
+  with the spec and explore findings only — never suggested approaches. Its report uses fixed markers,
+  each one physical line — `Recommended: <name>`, `Rejected: <name> —
+  <why> — complexity: low|med|high, risk: low|med|high, test effort: low|med|high`, or, when only one
+  approach is sane, `one obvious approach — <why>`.
+- **Report saved before the choice.** The architect writes its report to `<run dir>/architect.md`
+  itself (it gains the `Write` tool for that one file — still no `Edit` or `Bash`) and returns only
+  its markers and a short summary, so the main session never re-emits it; the choice pause points to
+  the file. The report is on disk before the choice pause, with its repo-relative path (`<base>/<slug>/architect.md`) recorded in the
+  new `manifest.artifacts.architect`. Re-entering the phase reads that file instead of re-dispatching.
+  Picking a rejected approach re-dispatches the same architect **once** to develop it in full; the new
+  report is appended under `## Developed on request: <name>`, and `design.md` and `decision.md` are
+  derived from it.
+  The trade-off matrix now scores every approach the architect considered, chosen and rejected alike.
+  The devil's-advocate pass, failure scenarios and `decision.md` derivation are unchanged.
+- **Removed the `architectAgents` config key.** A project whose `.feature-flow.json` still sets it
+  gets the standard unknown-key warning (`config: unknown key 'architectAgents' in .feature-flow.json
+  — ignored (did you mean '<nearest>'?)`) rather than any special handling.
+- **Guards:** new `scripts/checks/single-architect-guard.sh` (one dispatch, no `architectAgents`, the
+  architect's fixed markers, the write-before-pause-before-devil's-advocate order, the re-dispatch +
+  append, dist parity). New forward test `evals/forward/single-architect` (fired: a spec with a
+  genuine architectural fork; control: a spec with one sane approach) with `sm1-ratio.sh` comparing
+  mean cost and wall time against a v0.23.0 baseline (`FF_FORWARD_PLUGIN_DIR` on a worktree of
+  `e95c4de`). New two-turn forward tests `architect-pick` and `architect-decline` drive the choice
+  pause live.
+- **Forward-test harness:** an arm may carry `followup.txt` — the runner resumes the same session
+  (`claude -p --resume`) to answer a pause, summing both turns' cost; every run leaves
+  `run-<i>.wall` (wall-clock seconds — `duration_ms` under-reports sessions with background
+  subagents); `FF_FORWARD_KEEP=1` keeps each run's `.feature-flow/` state as evidence.
+
+**Measured** (`single-architect` fired arm, n = 2 per side, against v0.23.0): session cost **0.88×**
+($0.413 vs $0.471) and wall time **~1.9×** (133 s vs 69.5 s) in the final pass — each tightening of the
+architect's no-padding rules made it think longer (an earlier pass measured 0.72× / 1.4×). The main
+session is ~80% of the phase's cost, so the saving is the architects' share plus the report no longer
+being copied out; one architect weighing three lenses alone cannot match three running in parallel on
+wall time. SM1 was amended by the user from "≤ 60%" to "mean cost ≤ 90%, wall time recorded, not
+gated".
+
+**Unchanged:** Gates A/B and revision binding (0.22.0) — a WP4 merge must still preserve both;
+the trade-off matrix, devil's-advocate pass and `decision.md` contracts; the design-choice pause stays
+an in-session ask in both modes.
+
+**Known limits:** the design phase is slower in wall time (1.4–1.9× on the forward-test fixture,
++25–65 s) — the price of one architect instead of three in parallel. The picked-rejected-approach
+branch of the choice pause is not forward-tested live (the `architect-pick` fixture stopped forking
+once alternatives had to satisfy the spec; the same re-dispatch + append is proven by
+`architect-decline`). The no-padding rule is prose-enforced
+in the agent; the forward tests check it (no `Rejected:` line citing the spec) but the pipeline does
+not; design quality itself is not measured,
+only that the forward test and structural guard stay green.
+
 ## [0.23.0] — 2026-09-24 — ff-implement as a per-task controller, with executable plans
 
 Implement was the last phase that did all its work inline: one agent wrote every task in one
