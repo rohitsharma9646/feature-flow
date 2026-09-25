@@ -1,0 +1,8 @@
+  ok:   architect.md written
+  ok:   Recommended: locked sliding-window log file per caller
+  FAIL: no Rejected: line to pick
+  ok:   no Rejected: line loses to the spec
+  FAIL: 0 '## Developed on request:' sections (want 1)
+  ok:   first report kept on top
+  FAIL: no design.md after the pick
+  ok:   no source written

@@ -66,7 +66,8 @@ tooling if it is available. If it is not available, perform the same role inline
 while preserving boundaries:
 
 - `ff-code-explorer`: read-only exploration
-- `ff-code-architect`: read-only design analysis
+- `ff-code-architect`: design analysis — never edits code; writes only its own report
+  when the caller names a report path (inline: the orchestrator writes it)
 - `ff-code-reviewer`: read-only review
 - `ff-diagnostician`: read-only diagnosis until a confirmed fix plan exists
 - `ff-test-runner`: executes verification commands and captures real output
@@ -74,7 +75,7 @@ while preserving boundaries:
   brief, never changes the git index or history, and writes only its own report
   under the run directory
 
-Do not let analysis roles modify files. Verification claims must be backed by
+Do not let analysis roles modify code. Verification claims must be backed by
 commands that actually ran.
 
 `ff-implement`'s task controller (`docs/schema/task-controller.md` §Task

@@ -1,0 +1,8 @@
+  ok:   architect.md written
+  ok:   Recommended: per-caller sliding-window log file with mkdir-based mutual exclusion
+  ok:   first Rejected: single shared state file for all callers under one global lock
+  ok:   no Rejected: line loses to the spec
+  FAIL: 0 '## Developed on request:' sections (want 1)
+  ok:   first report kept on top
+  FAIL: no design.md after the pick
+  ok:   no source written

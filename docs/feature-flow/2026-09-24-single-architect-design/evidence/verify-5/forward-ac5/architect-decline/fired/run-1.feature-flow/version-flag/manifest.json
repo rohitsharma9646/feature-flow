@@ -1,0 +1,38 @@
+{
+  "slug": "version-flag",
+  "track": "feature",
+  "tier": "full",
+  "createdAt": "2026-09-24T09:00:00Z",
+  "updatedAt": "2026-09-25T00:10:00Z",
+  "closedAt": null,
+  "autopilot": false,
+  "revisionBound": true,
+  "currentPhase": "design",
+  "phases": {
+    "explore": {
+      "status": "complete",
+      "artifact": "explore.md"
+    },
+    "clarify": {
+      "status": "complete",
+      "artifact": ".feature-flow/version-flag/spec.md"
+    },
+    "design": {
+      "status": "complete",
+      "artifact": ".feature-flow/version-flag/design.md"
+    }
+  },
+  "signOff": {
+    "required": true,
+    "signed": true,
+    "date": "2026-09-24"
+  },
+  "lock": null,
+  "artifacts": {
+    "explore": "explore.md",
+    "spec": ".feature-flow/version-flag/spec.md",
+    "architect": ".feature-flow/version-flag/architect.md",
+    "design": ".feature-flow/version-flag/design.md",
+    "decision": ".feature-flow/version-flag/decision.md"
+  }
+}

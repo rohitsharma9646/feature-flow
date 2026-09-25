@@ -59,6 +59,7 @@ Each arm holds four parts:
 | `prompt.txt` | The blind prompt passed to `claude -p`. Says what to do, **never** what the expected outcome is. Both arms of a behavior normally use the same prompt — the sandbox is the variable. |
 | `expected.md` | Human-readable expected observable for each arm, and any named coverage limits. Not executed. |
 | `assert.sh` | `assert.sh <tmpdir> <run.json>` — `exit 0` the arm behaved as expected, `exit 1` it did not; any other exit is reported ERROR. Reads the sandbox's final state (manifest via `jq`, artifacts via `grep`, `git -C <tmpdir> status`) and, where a STOP writes nothing, the transcript's `.result` text. |
+| `followup.txt` | *Optional.* The user's answer to a pause. The runner resumes the **same** session (`claude -p --resume <session_id>`) with it as a second turn, sums both turns' cost, and hands `assert.sh` the second turn's `run-<i>.followup.json`. Use it only where the behavior lives *after* an in-session pause a headless turn cannot answer. |
 
 **Assert on the behavior's own marker, never just "nothing happened".** A fired arm can STOP for
 the wrong reason — an unrelated gate (sign-off, cold-start route-back, the enforce-gate hook) —
@@ -80,12 +81,28 @@ made normal progress.
 | `repair-gap` | `ff-verify` (autopilot) | one `## Repair` cycle recorded | no repair, reaches `done` |
 | `discovery-gap` | `ff-verify` | unproven `SM1` blocks `done` | reaches `done` |
 | `implement-controller` | `ff-implement` | task controller: ledger, a subagent + review per task, a fix round on the seeded Task 2 finding | inline implement, no ledger |
+| `single-architect` | `ff-design` | one architect's `architect.md`: `Recommended:` + ≥ 1 scored `Rejected:` line | `one obvious approach —`, no `Rejected:` line |
+| `architect-pick` | `ff-design` + `followup.txt` picking the first alternative offered (not the recommendation) | one `## Developed on request:` section; `design.md`'s Chosen approach names the pick, the original recommendation under Rejected alternatives | followup accepts the recommendation → no re-dispatch; Chosen approach names the recommendation |
+| `architect-decline` | `ff-design` on the one-approach spec + `followup.txt` declining it | `one obvious approach —`, then one `## Developed on request:` section | followup confirms → no re-dispatch; `design.md` written |
 
 **`implement-controller` is a measurement too.** Its fired arm is the v0.23.0 spec's E2E check, and
 SM1 compares the two arms' main-session input tokens:
 `bash evals/forward/implement-controller/sm1-ratio.sh <out>/implement-controller/fired/run-1.json <out>/implement-controller/control/run-1.json`
 (PASS at ≤ 0.60). Its sessions dispatch several subagents, so run it with a higher cap —
 `scripts/forward-test.sh --max-budget-usd 8 implement-controller`.
+
+**`single-architect` is a measurement too.** Its fired arm's spec forces a persistence choice
+(`src/api.sh` runs as a fresh process per request), so a competent architect genuinely forks
+between counter-storage mechanisms; the control arm's spec has one sane implementation. SM1
+compares the fired arm's mean `total_cost_usd` and mean wall time (`run-<i>.wall`) against the same arm
+run on the pre-v0.24.0 three-architect fan-out (`e95c4de`), both with `--repeat 2`:
+`bash evals/forward/single-architect/sm1-ratio.sh <out>/single-architect/fired <baseline out>/single-architect/fired`
+(PASS at cost ≤ 0.90; wall time recorded, not gated — the amended SM1) — see the script's header for
+the baseline worktree steps.
+
+`architect-pick`'s design check matches the words that tell the picked approach's name from the
+recommendation's (`distinct` in `lib.sh`) — a heuristic: a Chosen approach that only mentions the
+picked mechanism to dismiss it would pass.
 
 Coverage limit (named, not silent): `discovery-gap` covers WS-7's `SM<n>` half only; the
 requirement-graph → Outcome-gate gap in `ff-plan` is not forward-tested.

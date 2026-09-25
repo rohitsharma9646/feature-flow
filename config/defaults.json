@@ -1,6 +1,5 @@
 {
   "explorerAgents": 3,
-  "architectAgents": 3,
   "reviewerAgents": 3,
   "diagnosticianAgents": 1,
   "models": { "explorer": "sonnet", "architect": "sonnet", "reviewer": "sonnet", "diagnostician": "sonnet", "testRunner": "sonnet", "implementer": "sonnet", "escalation": "opus" },
