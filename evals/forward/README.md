@@ -84,6 +84,10 @@ made normal progress.
 | `single-architect` | `ff-design` | one architect's `architect.md`: `Recommended:` + ≥ 1 scored `Rejected:` line | `one obvious approach —`, no `Rejected:` line |
 | `architect-pick` | `ff-design` + `followup.txt` picking the first alternative offered (not the recommendation) | one `## Developed on request:` section; `design.md`'s Chosen approach names the pick, the original recommendation under Rejected alternatives | followup accepts the recommendation → no re-dispatch; Chosen approach names the recommendation |
 | `architect-decline` | `ff-design` on the one-approach spec + `followup.txt` declining it | `one obvious approach —`, then one `## Developed on request:` section | followup confirms → no re-dispatch; `design.md` written |
+| `critic-design` | `ff-design` | the Critic flags a false repo premise as Critical, one revise cycle | `Verdict: ready`, no cycle, design complete |
+| `critic-plan` | `ff-plan` | the Critic flags the plan's false premise as Critical, one revise cycle or a route to ff-design | `Verdict: ready`, no cycle, plan complete |
+
+SM1/SM2 (v0.25.0): `evals/forward/critic-ratio.sh` compares each control arm to v0.24.0 (`488bc5d`).
 
 **`implement-controller` is a measurement too.** Its fired arm is the v0.23.0 spec's E2E check, and
 SM1 compares the two arms' main-session input tokens:
